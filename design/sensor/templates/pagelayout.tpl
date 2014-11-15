@@ -1,0 +1,34 @@
+{cache-block ignore_content_expiry keys=array( $user_hash )}
+
+{def $sensor = sensor_root_handler()}
+
+<!doctype html>
+<html class="no-js{if is_current_sensor_page( 'home' )} collapsing_header{/if}" lang="en">
+
+{include uri='design:sensor/parts/head.tpl'}
+
+<body>
+
+{include uri='design:sensor/parts/header.tpl'}
+
+{/cache-block}
+
+
+<div id="main" class="main">
+    <div id="main-container" class="container">
+        {$module_result.content}
+    </div>
+
+    {cache-block expiry=86400 keys=array( $user_hash )}
+        {include uri='design:sensor/parts/footer.tpl'}
+
+</div>
+
+{include uri='design:sensor/parts/footer_script.tpl'}
+
+
+{/cache-block}
+
+<!--DEBUG_REPORT-->
+</body>
+</html>
