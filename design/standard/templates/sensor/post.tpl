@@ -58,21 +58,23 @@
             <aside class="widget">
                 <h4>Partecipanti</h4>
                 <dl class="dl-horizontal">
-                    {section name=Role loop=$participant_list}
-                        <dt>{$:item.name|wash}:</dt>
+                    {foreach $participant_list as $item}
+                        <dt>{$item.name|wash}:</dt>
                         <dd>
-                        {section name=Participant loop=$:item.items}
-                            <p>{collaboration_participation_view view=text_linked collaboration_participant=$:item}</p>
-                        {/section}
+                        {foreach $item.items as $p}
+                            {$p.participant.contentobject.name|wash()}{delimiter}, {/delimiter}
+                        {/foreach}
                         </dd>
-                    {/section}
+                    {/foreach}
                 </dl>
             </aside>
 
+            {def $m = fetch("collaboration","message_list",hash("item_id",$collaboration_item.id))}
+            {if $m|count|gt(0)}
             <aside class="widget">
                 <h4>Timeline</h4>
                 <dl class="dl-horizontal">
-                    {foreach fetch("collaboration","message_list",hash("item_id",$collaboration_item.id)) as $item}
+                    {foreach $m as $item}
                         {if $item.message_type|eq(0)}
                             <dt>{$item.created|l10n(shortdatetime)}</dt>
                             <dd>{$item.simple_message.data_text1|i18n('openpa_sensor')}</dd>
@@ -80,6 +82,7 @@
                     {/foreach}
                 </dl>
             </aside>
+            {/if}
 
             {if $helper.can_do_something}
             <aside class="widget">
@@ -103,16 +106,6 @@
                     </div>
                     </div>
                 {/if}
-                {if $helper.can_fix}
-                    <div class="form-group">
-                        <input class="btn btn-success btn-lg btn-block" type="submit" name="CollaborationAction_Fix" value="Chiudi" /><br />
-                    </div>
-                {/if}
-                {if $helper.can_close}
-                    <div class="form-group">
-                        <input class="btn btn-success btn-lg btn-block" type="submit" name="CollaborationAction_Close" value="Chiudi" /><br />
-                    </div>
-                {/if}
 
                 {if $helper.can_add_observer}
                     <div class="form-group">
@@ -133,6 +126,19 @@
                         </div>
                     </div>
                 {/if}
+
+                {if $helper.can_fix}
+                    <div class="form-group">
+                        <input class="btn btn-success btn-lg btn-block" type="submit" name="CollaborationAction_Fix" value="Chiudi" /><br />
+                    </div>
+                {/if}
+
+                {if $helper.can_close}
+                    <div class="form-group">
+                        <input class="btn btn-success btn-lg btn-block" type="submit" name="CollaborationAction_Close" value="Chiudi" /><br />
+                    </div>
+                {/if}
+
             </aside>
             {/if}
 

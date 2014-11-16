@@ -1,3 +1,4 @@
+{cache-block ignore_content_expiry keys=array( $module_result.uri, $user_hash )}
 <header>
     <div class="container">
         <div class="navbar navbar-default" role="navigation">
@@ -14,7 +15,10 @@
                     <span class="nb_right pull-right">Menu</span>
                 </a>
             </div>
+            {/cache-block}
             {include uri='design:sensor/parts/menu.tpl'}
+            {cache-block ignore_content_expiry keys=array( $module_result.uri, $user_hash )}
         </div>
     </div>
 </header>
+{/cache-block}

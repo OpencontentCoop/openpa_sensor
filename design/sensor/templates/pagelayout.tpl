@@ -1,4 +1,5 @@
-{cache-block ignore_content_expiry keys=array( $user_hash )}
+{def $user_hash  = concat( $current_user.role_id_list|implode( ',' ), ',', $current_user.limited_assignment_value_list|implode( ',' ) )}
+{cache-block ignore_content_expiry keys=array( $module_result.uri, $user_hash )}
 
 {def $sensor = sensor_root_handler()}
 

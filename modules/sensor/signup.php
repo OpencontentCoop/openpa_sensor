@@ -9,7 +9,6 @@ $db = eZDB::instance();
 $Result = array();
 
 $currentUser = eZUser::currentUser();
-$userHash = implode( ',', $currentUser->attribute( 'role_id_list' ) ) . ',' . implode( ',', $currentUser->attribute( 'limited_assignment_value_list' ) );
 
 $invalidForm = false;
 $errors = array();
@@ -286,12 +285,11 @@ else
     $Module->redirectTo( '/sensor/home' );
 }
 
-
+$tpl->setVariable( 'sensor_signup', true );
 $tpl->setVariable( 'show_captcha', $showCaptcha );
 $tpl->setVariable( 'invalid_form', $invalidForm );
 $tpl->setVariable( 'errors', $errors );
 $tpl->setVariable( 'current_user', $currentUser );
-$tpl->setVariable( 'user_hash', $userHash );
 $tpl->setVariable( 'persistent_variable', array() );
 
 $Result['persistent_variable'] = $tpl->variable( 'persistent_variable' );

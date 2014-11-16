@@ -1,3 +1,4 @@
+{cache-block keys=array( $current_user.contentobject_id )}
 <div class="collapse navbar-collapse">
     <ul class="nav pull-right navbar-nav">
         <li class="active"><a href="{'sensor/home'|ezurl(no)}">{'SensorCivico'|i18n('openpa_sensor/menu')}</a></li>
@@ -30,7 +31,7 @@
         {else}
             <li class="dropdown">
                 <a data-toggle="dropdown" class="dropdown-toggle" href="{'user/edit'|ezurl(no)}">
-                    <span style="text-transform: none"><small>{$current_user.email|shorten(40)|wash()}</small></span>
+                    <span style="text-transform: none"><small>{$current_user.contentobject.name|wash()}<br />{$current_user.email|shorten(40)|wash()}</small></span>
                     <span class="caret"></span>
                 </a>
                 <ul class="dropdown-menu">
@@ -50,3 +51,4 @@
         <li><img height="50px" src={"logo_sensor.png"|ezimage()}></li>
     </ul>
 </div>
+{/cache-block}

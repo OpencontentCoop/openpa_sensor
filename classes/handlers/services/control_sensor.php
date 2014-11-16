@@ -530,4 +530,17 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase
             $coords[] = array( 'id' => $area->attribute( 'id' ), 'coords' => array( $data['lat'], $data['lng'] ) );
         }
     }
+
+    public static function executeWorkflow( $parameters, $process, $event )
+    {
+        $id = $parameters['object_id'];
+        $object = eZContentObject::fetch( $id );
+        if ( $object instanceof eZContentObject
+             && $object->attribute( 'class_identifier' ) == 'sensor_post'
+             && $object->attribute( 'current_version') == 1 )
+        {
+            SensorHelper::createCollaborationItem( $id );
+        }
+
+    }
 }

@@ -4,10 +4,8 @@ $Module = $Params['Module'];
 $tpl = eZTemplate::factory();
 
 $currentUser = eZUser::currentUser();
-$userHash = implode( ',', $currentUser->attribute( 'role_id_list' ) ) . ',' . implode( ',', $currentUser->attribute( 'limited_assignment_value_list' ) );
 
 $tpl->setVariable( 'current_user', $currentUser );
-$tpl->setVariable( 'user_hash', $userHash );
 $tpl->setVariable( 'persistent_variable', array() );
 
 $Result = array();

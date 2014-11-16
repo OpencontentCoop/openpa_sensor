@@ -1,6 +1,7 @@
-{def $message_limit=20
+{def $message_limit=100
      $message_offset=0
      $message_list=fetch("collaboration","message_list",hash("item_id",$collaboration_item.id,"limit",$message_limit,"offset",$message_offset))}
+{if $message_list|count()|gt(0)}
 <div id="post_comments">
     <div class="comment">
         <h4>Commenti</h4>
@@ -28,6 +29,7 @@
         {/foreach}
     </div>
 </div>
+{/if}
 {if fetch( user, current_user ).is_logged_in}
 <div class="new_comment">
     <h4>{'Aggiungi un messaggio'|i18n('openpa_sensor')}</h4>
