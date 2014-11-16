@@ -37,9 +37,9 @@
 
 </div>
 
+{/cache-block}
 {include uri='design:sensor/parts/footer_script.tpl'}
 
-{/cache-block}
 
 <!--DEBUG_REPORT-->
 </body>
