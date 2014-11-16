@@ -69,8 +69,15 @@
                 </dl>
             </aside>
 
-            {def $m = fetch("collaboration","message_list",hash("item_id",$collaboration_item.id))}
-            {if $m|count|gt(0)}
+            {def $m = fetch("collaboration","message_list",hash("item_id",$collaboration_item.id))
+                 $hasTimeline = false()}
+            {foreach $m as $item}
+                {if $item.message_type|eq(0)}
+                    {set $hasTimeline = true()}
+                    {break}
+                {/if}
+            {/foreach}
+            {if $hasTimeline}
             <aside class="widget">
                 <h4>Timeline</h4>
                 <dl class="dl-horizontal">

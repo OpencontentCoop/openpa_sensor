@@ -1,23 +1,31 @@
 {def $message_limit=100
      $message_offset=0
-     $message_list=fetch("collaboration","message_list",hash("item_id",$collaboration_item.id,"limit",$message_limit,"offset",$message_offset))}
-{if $message_list|count()|gt(0)}
+     $message_list=fetch("collaboration","message_list",hash("item_id",$collaboration_item.id,"limit",$message_limit,"offset",$message_offset))
+     $hasMessage = false()}
+
+{foreach $message_list as $item}
+    {if $item.message_type|eq(1)}
+        {set $hasMessage = true()}
+        {break}
+    {elseif and($item.message_type|ne(1),$item.message_type|ne(0),$current_participant,or( $item.message_type|eq($current_participant.participant_id), $item.participant_id|eq($current_participant.participant_id) ))}
+        {set $hasMessage = true()}
+        {break}
+    {/if}
+{/foreach}
+{if $hasMessage}
 <div id="post_comments">
     <div class="comment">
         <h4>Commenti</h4>
         {foreach $message_list as $item}
 
-            {if $item.message_type|eq(0)}
-                {*include uri='design:sensor/parts/post_message/robot.tpl'
-                         is_read=cond( $current_participant, $current_participant.last_read|gt($item.modified), true())
-                         item_link=$item
-                         message=$item.simple_message*}
-            {elseif $item.message_type|eq(1)}
+            {if $item.message_type|eq(1)}
                 {include uri='design:sensor/parts/post_message/public.tpl'
                         is_read=cond( $current_participant, $current_participant.last_read|gt($item.modified), true())
                         item_link=$item
                         message=$item.simple_message}
             {elseif and(
+                $item.message_type|ne(1),
+                $item.message_type|ne(0),
                 $current_participant,
                 or( $item.message_type|eq($current_participant.participant_id), $item.participant_id|eq($current_participant.participant_id) )
             )}

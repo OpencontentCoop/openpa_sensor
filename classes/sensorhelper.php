@@ -548,8 +548,12 @@ class SensorHelper
 
     protected function setStatus( $status )
     {
-        $this->collaborationItem->setAttribute( self::ITEM_STATUS, $status );
         $timestamp = time();
+        $content = $this->collaborationItem->content();
+        $id = $content['content_object_id'];
+        $object = eZContentObject::fetch( $id );
+
+        $this->collaborationItem->setAttribute( self::ITEM_STATUS, $status );
         $this->collaborationItem->setAttribute( 'modified', $timestamp );
         if ( $status == self::STATUS_CLOSED )
         {
@@ -557,6 +561,10 @@ class SensorHelper
             foreach( $this->participantIds() as $participantID )
             {
                 $this->collaborationItem->setIsActive( false, $participantID );
+            }
+            if ( $object instanceof eZContentObject )
+            {
+                ObjectHandlerServiceControlSensor::setState( $object, 'sensor', 'close' );
             }
         }
         elseif ( $status == self::STATUS_WAITING )
@@ -574,8 +582,17 @@ class SensorHelper
             {
                 $this->collaborationItem->setIsActive( true, $participantID );
             }
+            if ( $object instanceof eZContentObject )
+            {
+                ObjectHandlerServiceControlSensor::setState( $object, 'sensor', 'open' );
+            }
         }
         $this->collaborationItem->sync();
+        if ( $object instanceof eZContentObject )
+        {
+            $object->setAttribute( 'modified', $timestamp );
+            $object->store();
+        }
     }
 
     protected function getCommentMessage( $status )

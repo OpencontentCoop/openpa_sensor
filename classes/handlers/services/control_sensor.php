@@ -531,6 +531,30 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase
         }
     }
 
+    public static function setState( eZContentObject $object, $stateGroup, $stateIdentifier )
+    {
+        $states = array();
+        if ( $stateGroup == 'privacy' )
+            $states = OpenPABase::initStateGroup( self::$privacyStateGroupIdentifier, self::$privacyStateIdentifiers );
+        elseif ( $stateGroup == 'sensor' )
+            $states = OpenPABase::initStateGroup( self::$stateGroupIdentifier, self::$stateIdentifiers );
+
+        $state = $states[$stateGroup . '.' . $stateIdentifier];
+        if ( $state instanceof eZContentObjectState )
+        {
+            if ( eZOperationHandler::operationIsAvailable( 'content_updateobjectstate' ) )
+            {
+                eZOperationHandler::execute( 'content', 'updateobjectstate',
+                    array( 'object_id' => $object->attribute( 'id' ),
+                           'state_id_list' => array( $state->attribute( 'id' ) ) ) );
+            }
+            else
+            {
+                eZContentOperationCollection::updateObjectState( $object->attribute( 'id' ), array( $state->attribute( 'id' ) ) );
+            }
+        }
+    }
+
     public static function executeWorkflow( $parameters, $process, $event )
     {
         $id = $parameters['object_id'];
@@ -540,6 +564,14 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase
              && $object->attribute( 'current_version') == 1 )
         {
             SensorHelper::createCollaborationItem( $id );
+            $dataMap = $object->attribute( 'data_map' );
+            if ( isset( $dataMap['privacy'] ) )
+            {
+                if ( $dataMap['privacy']->attribute( 'data_int' ) == 0 )
+                {
+                    self::setState( $object, 'privacy', 'private' );
+                }
+            }
         }
 
     }
