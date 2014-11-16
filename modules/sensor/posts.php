@@ -33,7 +33,7 @@ else
         $sensor = OpenPAObjectHandler::instanceFromContentObject( $object )->attribute( 'control_sensor' );
 
         /** @var SensorHelper $helper */
-        $helper = $sensor->attribute( 'collaboration_item' );
+        $helper = $sensor->attribute( 'helper' );
 
         /** @var eZCollaborationItem $collaborationItem */
         $collaborationItem = $helper->attribute( 'collaboration_item' );

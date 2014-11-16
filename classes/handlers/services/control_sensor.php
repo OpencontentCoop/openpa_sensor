@@ -29,12 +29,14 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase
 
     function run()
     {
-        $this->fnData['collaboration_item'] = 'getCollaborationItem';
+        $this->fnData['helper'] = 'getHelper';
 
         $this->fnData['author_id'] = 'getAuthorId';
         $this->fnData['approver_id_array'] = 'getApproverIdArray';
 
         $this->fnData['geo_js_array'] = 'getGeoJsArray';
+
+        $this->fnData['operators'] = 'getOperators';
 
         $this->fnData['type'] = 'getType';
         $this->fnData['current_status'] = 'getCurrentStatus';
@@ -67,7 +69,16 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase
         $this->data['areas'] = self::postAreas();
     }
 
-    protected function getCollaborationItem()
+    protected function getOperators()
+    {
+        return self::rootNode()->subTree( array(
+            'ClassFilterType' => 'include',
+            'ClassFilterArray' => array( 'user' ),
+            'SortBy' => array( 'name', true )
+        ) );
+    }
+
+    protected function getHelper()
     {
         if ( $this->container->getContentObject() instanceof eZContentObject )
             return SensorHelper::instanceFromContentObjectId( $this->container->getContentObject()->attribute( 'id' ) );
@@ -139,40 +150,109 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase
 
     protected function getType()
     {
-        return array(
-            'name' => 'Segnalazione',
-            'identifier' => 'segnalazione',
-            'css_class' => 'info'
-        );
+        $data = false;
+        if ( $this->container->hasAttribute( 'type' )
+             &&  $this->container->attribute( 'type' )->attribute( 'has_content' ) )
+        {
+            $content = $this->container->attribute( 'type' )->attribute(
+                'contentobject_attribute'
+            )->toString();
+            if ( $content == 'segnalazione' )
+            {
+                $data = array(
+                    'name' => ezpI18n::tr( 'openpa_sensor', 'Segnalazione' ),
+                    'identifier' => 'segnalazione',
+                    'css_class' => 'info'
+                );
+            }
+            elseif ( $content == 'suggerimento' )
+            {
+                $data = array(
+                    'name' => ezpI18n::tr( 'openpa_sensor', 'Suggerimento' ),
+                    'identifier' => 'suggerimento',
+                    'css_class' => 'warning'
+                );
+            }
+            elseif ( $content == 'reclamo' )
+            {
+                $data = array(
+                    'name' => ezpI18n::tr( 'openpa_sensor', 'Reclamo' ),
+                    'identifier' => 'reclamo',
+                    'css_class' => 'danger'
+                );
+            }
+        }
+        return $data;
     }
 
     protected function getCommentCount()
     {
-        return 10;
+        return eZCollaborationItemMessageLink::fetchItemCount(
+            array(
+                'item_id' => $this->getHelper()->attribute( 'collaboration_item' )->attribute( 'id' ),
+                'conditions' => array(
+                    'message_type' => SensorHelper::MESSAGE_TYPE_PUBLIC
+                )
+            )
+        );
     }
 
     protected function getCurrentOwner()
     {
-        return 'Pinco Pallino - Ufficio test';
+        $object = eZContentObject::fetch( $this->getHelper()->attribute( 'owner_id' ) );
+        if ( $object instanceof eZContentObject )
+        {
+            return $object->attribute( 'name' );
+        }
+        return '?';
+
     }
 
 
     protected function getCurrentPrivacyStatus()
     {
-        return array(
-            'name' => 'Privato',
-            'identifier' => 'private',
-            'css_class' => 'default'
-        );
+        if ( $this->container->getContentObject() instanceof eZContentObject )
+        {
+            $states = OpenPABase::initStateGroup(
+                self::$privacyStateGroupIdentifier,
+                self::$privacyStateIdentifiers
+            );
+            foreach ( $states as $state )
+            {
+                if ( in_array( $state->attribute( 'id' ), $this->container->getContentObject()->attribute( 'state_id_array' ) ) )
+                {
+                    return array(
+                        'name' => $state->attribute( 'current_translation' )->attribute( 'name' ),
+                        'identifier' => $state->attribute( 'identifier' ),
+                        'css_class' => $state->attribute( 'identifier' ) == 'private' ? 'default' : 'info'
+                    );
+                }
+            }
+        }
+        return array();
     }
 
     protected function getCurrentStatus()
     {
-        return array(
-            'name' => 'In corso',
-            'identifier' => 'open',
-            'css_class' => 'danger'
-        );
+        if ( $this->container->getContentObject() instanceof eZContentObject )
+        {
+            $states = OpenPABase::initStateGroup(
+                self::$stateGroupIdentifier,
+                self::$stateIdentifiers
+            );
+            foreach ( $states as $state )
+            {
+                if ( in_array( $state->attribute( 'id' ), $this->container->getContentObject()->attribute( 'state_id_array' ) ) )
+                {
+                    return array(
+                        'name' => $state->attribute( 'current_translation' )->attribute( 'name' ),
+                        'identifier' => $state->attribute( 'identifier' ),
+                        'css_class' => $state->attribute( 'identifier' ) == 'open' ? 'danger' : 'success'
+                    );
+                }
+            }
+        }
+        return array();
     }
 
     protected function getFooterPrivacy()

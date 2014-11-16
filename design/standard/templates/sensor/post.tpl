@@ -83,30 +83,56 @@
 
             {if $helper.can_do_something}
             <aside class="widget">
-            {if $helper.can_assign}
-                <input class="defaultbutton" type="submit" name="CollaborationAction_Assign" value="Assign" />
-                <input type="text" name="Collaboration_OpenPASensorItemAssignTo[]" value="" /><br />
-            {/if}
-            {if $helper.can_fix}
-                <input class="defaultbutton" type="submit" name="CollaborationAction_Fix" value="Fix" /><br />
-            {/if}
-            {if $helper.can_close}
-                <input class="defaultbutton" type="submit" name="CollaborationAction_Close" value="Close" /><br />
-            {/if}
+                <h4>Azioni</h4>
+                {if $helper.can_assign}
+                    <div class="form-group">
+                    <div class="row">
+                        <div class="col-xs-7">
+                            <select name="Collaboration_OpenPASensorItemAssignTo[]" class="form-control">
+                                <option></option>
+                                {foreach $sensor.operators as $user}
+                                    {if $user.contentobject_id|ne($current_participant.participant_id)}
+                                        <option value="{$user.contentobject_id}">{$user.name|wash()}</option>
+                                    {/if}
+                                {/foreach}
+                            </select>
+                        </div>
+                        <div class="col-xs-5">
+                            <input class="btn btn-info btn-block" type="submit" name="CollaborationAction_Assign" value="Assegna" />
+                        </div>
+                    </div>
+                    </div>
+                {/if}
+                {if $helper.can_fix}
+                    <div class="form-group">
+                        <input class="btn btn-success btn-lg btn-block" type="submit" name="CollaborationAction_Fix" value="Chiudi" /><br />
+                    </div>
+                {/if}
+                {if $helper.can_close}
+                    <div class="form-group">
+                        <input class="btn btn-success btn-lg btn-block" type="submit" name="CollaborationAction_Close" value="Chiudi" /><br />
+                    </div>
+                {/if}
 
-            {if $helper.can_add_observer}
-                <div>
-                    <input class="defaultbutton" type="submit" name="CollaborationAction_AddObserver" value="Aggiungi cc" />
-                    <select name="Collaboration_OpenPASensorItemAddObserver">
-                        <option></option>
-                        {foreach fetch( content, tree, hash( 'parent_node_id', 1, 'class_filter_type', 'include', 'class_filter_array', array( 'user' ) ) ) as $user}
-                            {if $user.contentobject_id|ne($current_participant.participant_id)}
-                                <option value="{$user.contentobject_id}">{$user.name|wash()}</option>
-                            {/if}
-                        {/foreach}
-                    </select>
-                </div>
-            {/if}
+                {if $helper.can_add_observer}
+                    <div class="form-group">
+                        <div class="row">
+                            <div class="col-xs-7">
+                            <select name="Collaboration_OpenPASensorItemAddObserver" class="form-control">
+                                <option></option>
+                                {foreach $sensor.operators as $user}
+                                    {if $user.contentobject_id|ne($current_participant.participant_id)}
+                                        <option value="{$user.contentobject_id}">{$user.name|wash()}</option>
+                                    {/if}
+                                {/foreach}
+                            </select>
+                            </div>
+                            <div class="col-xs-5">
+                                <input class="btn btn-info btn-block" type="submit" name="CollaborationAction_AddObserver" value="Aggiungi cc" />
+                            </div>
+                        </div>
+                    </div>
+                {/if}
             </aside>
             {/if}
 

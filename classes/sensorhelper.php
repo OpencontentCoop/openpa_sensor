@@ -76,7 +76,8 @@ class SensorHelper
             'can_fix',
             'can_add_observer',
             'can_send_private_message',
-            'participants'
+            'participants',
+            'owner_id'
         );
     }
 
@@ -131,6 +132,22 @@ class SensorHelper
                     if ( $obj instanceof eZContentObject ) $users[] = $obj;
                 }
                 return $users;
+                break;
+
+            case 'owner_id':
+                $ids = $this->participantIds( eZCollaborationItemParticipantLink::ROLE_OWNER );
+                if ( count( $ids ) )
+                {
+                    return array_shift( $ids );
+                }
+                else
+                {
+                    $ids = $this->participantIds( eZCollaborationItemParticipantLink::ROLE_APPROVER );
+                    if ( count( $ids ) )
+                    {
+                        return array_shift( $ids );
+                    }
+                }
                 break;
 
             default:

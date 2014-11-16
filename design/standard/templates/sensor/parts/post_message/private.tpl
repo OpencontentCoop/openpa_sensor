@@ -1,10 +1,17 @@
+{def $participant = first_set( $item_link.participant.participant.contentobject, fetch( content, object, hash( object_id, $item_link.participant_id ) ) )}
 <div class="row">
-    <figure class="col-sm-2 col-md-2"> <img alt="" src="images/1as.jpg" class="img-circle"> </figure>
+    <figure class="col-sm-2 col-md-2">
+        {include uri='design:sensor/parts/user_image.tpl' object=$participant}
+    </figure>
     <div class="col-sm-10 col-md-10">
-        <div class="comment_name"> Johny Boycot <a href="#" class="reply">Reply</a> </div>
-        <div class="comment_date"><i class="fa-time"></i> March 1, 2013</div>
+        <div class="comment_name"> <small>MESSAGGIO PRIVATO</small><br />{$participant.name|wash()}</div>
+        <div class="comment_date"><i class="fa-time"></i>
+            {if $is_read|not}<strong>{/if}
+                {$item.created|l10n(shortdatetime)}
+                {if $is_read|not}</strong>{/if}
+        </div>
         <div class="the_comment">
-            <p>In hac habitasse platea dictumst. Suspendisse non tellus ligula. Morbi molestie feugiat tortor a hendrerit.</p>
+            <p>{$message.data_text1}</p>
         </div>
     </div>
 </div>
