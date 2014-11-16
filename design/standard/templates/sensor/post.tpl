@@ -1,0 +1,124 @@
+{if is_set( $error )}
+    <div class="alert alert-danger">{$error}</div>
+{else}
+
+<form method="post" action={"collaboration/action/"|ezurl} xmlns="http://www.w3.org/1999/html">
+
+    <section class="hgroup">
+        <h1>{$object.name|wash()}</h1>
+        <h2>{$object.owner.name|wash()}</h2>
+        <ul class="breadcrumb pull-right">
+            <li><span class="label label-{$post.type.css_class}">{$post.type.name}</span></li>
+            <li><span class="label label-{$post.current_status.css_class}">{$post.current_status.name}</span></li>
+            {if $post.current_privacy_status.identifier|eq('private')}
+                <li><span class="label label-{$post.current_privacy_status.css_class}">{$post.current_privacy_status.name}</span></li>
+            {/if}
+        </ul>
+    </section>
+
+    <div class="row">
+        <div class="col-md-8">
+
+            <div class="clearfix">
+                <p class="pull-left">
+                    {if $object|has_attribute('geo')}
+                        <i class="fa fa-map-marker"></i> {$object|attribute('geo').content.address}
+                    {elseif $object|has_attribute('area')}
+                        {attribute_view_gui attribute=$object|attribute('area')}
+                    {/if}
+                </p>
+                {*<p class="pull-right">
+                    <span class="label label-{$post.type.css_class}">{$post.type.name}</span>
+                    <span class="label label-{$post.current_status.css_class}">{$post.current_status.name}</span>
+                    {if $post.current_privacy_status.identifier|eq('private')}
+                        <span class="label label-{$post.current_privacy_status.css_class}">{$post.current_privacy_status.name}</span>
+                    {/if}
+                </p>*}
+            </div>
+            <p>
+                {attribute_view_gui attribute=$object|attribute('description')}
+            </p>
+            {if $object|has_attribute('attachment')}
+                <p>{attribute_view_gui attribute=$object|attribute('attachment')}</p>
+            {/if}
+            <ul class="list-inline">
+                <li><small><i class="fa fa-clock"></i> {'Pubblicata il'|i18n('openpa_sensor')} {$object.published|l10n(shortdate)}</small></li>
+                {if $object.modified|gt($object.published)}
+                    <li><small><i class="fa fa-clock-o"></i> {'Ultima modifica del'|i18n('openpa_sensor')} {$object.modified|l10n(shortdate)}</small></li>
+                {/if}
+                <li><small><i class="fa fa-user"></i> {'In carico a'|i18n('openpa_sensor')} {$post.current_owner}</small></li>
+                <li><small><i class="fa fa-comment"></i> {$post.comment_count} commenti</small></li>
+            </ul>
+
+            {include uri='design:sensor/parts/post_messages.tpl'}
+
+        </div>
+        <div class="col-md-4" id="sidebar">
+
+            <aside class="widget">
+                <h4>Partecipanti</h4>
+                <dl class="dl-horizontal">
+                    {section name=Role loop=$participant_list}
+                        <dt>{$:item.name|wash}:</dt>
+                        <dd>
+                        {section name=Participant loop=$:item.items}
+                            <p>{collaboration_participation_view view=text_linked collaboration_participant=$:item}</p>
+                        {/section}
+                        </dd>
+                    {/section}
+                </dl>
+            </aside>
+
+            <aside class="widget">
+                <h4>Timeline</h4>
+                <dl class="dl-horizontal">
+                    {foreach fetch("collaboration","message_list",hash("item_id",$collaboration_item.id)) as $item}
+                        {if $item.message_type|eq(0)}
+                            <dt>{$item.created|l10n(shortdatetime)}</dt>
+                            <dd>{$item.simple_message.data_text1|i18n('openpa_sensor')}</dd>
+                        {/if}
+                    {/foreach}
+                </dl>
+            </aside>
+
+            {if $helper.can_do_something}
+            <aside class="widget">
+            {if $helper.can_assign}
+                <input class="defaultbutton" type="submit" name="CollaborationAction_Assign" value="Assign" />
+                <input type="text" name="Collaboration_OpenPASensorItemAssignTo[]" value="" /><br />
+            {/if}
+            {if $helper.can_fix}
+                <input class="defaultbutton" type="submit" name="CollaborationAction_Fix" value="Fix" /><br />
+            {/if}
+            {if $helper.can_close}
+                <input class="defaultbutton" type="submit" name="CollaborationAction_Close" value="Close" /><br />
+            {/if}
+
+            {if $helper.can_add_observer}
+                <div>
+                    <input class="defaultbutton" type="submit" name="CollaborationAction_AddObserver" value="Aggiungi cc" />
+                    <select name="Collaboration_OpenPASensorItemAddObserver">
+                        <option></option>
+                        {foreach fetch( content, tree, hash( 'parent_node_id', 1, 'class_filter_type', 'include', 'class_filter_array', array( 'user' ) ) ) as $user}
+                            {if $user.contentobject_id|ne($current_participant.participant_id)}
+                                <option value="{$user.contentobject_id}">{$user.name|wash()}</option>
+                            {/if}
+                        {/foreach}
+                    </select>
+                </div>
+            {/if}
+            </aside>
+            {/if}
+
+        </div>
+    </div>
+
+
+    <input type="hidden" name="CollaborationActionCustom" value="custom" />
+    <input type="hidden" name="CollaborationTypeIdentifier" value="openpasensor" />
+    <input type="hidden" name="CollaborationItemID" value="{$collaboration_item.id}" />
+
+
+</form>
+
+{/if} {* if error *}

@@ -9,6 +9,7 @@ $userHash = implode( ',', $currentUser->attribute( 'role_id_list' ) ) . ',' . im
 $tpl->setVariable( 'current_user', $currentUser );
 $tpl->setVariable( 'user_hash', $userHash );
 $tpl->setVariable( 'persistent_variable', array() );
+$tpl->setVariable( 'sensor_home', true );
 
 $Result = array();
 

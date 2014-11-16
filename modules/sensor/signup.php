@@ -14,8 +14,9 @@ $userHash = implode( ',', $currentUser->attribute( 'role_id_list' ) ) . ',' . im
 $invalidForm = false;
 $errors = array();
 $showCaptcha = false;
+$name = $email = $password = false;
 
-if ( $http->hasSessionVariable( "RegisterUserID" ) ) echo '<pre>'.$http->sessionVariable( "RegisterUserID" ).'</pre>';
+#if ( $http->hasSessionVariable( "RegisterUserID" ) ) echo '<pre>'.$http->sessionVariable( "RegisterUserID" ).'</pre>';
 
 if ( $http->hasPostVariable( 'RegisterButton' ) )
 {
@@ -90,7 +91,7 @@ if ( $http->hasPostVariable( 'RegisterButton' ) )
     }
 
 
-    if ( !$invalidForm && !$http->hasSessionVariable( "RegisterUserID" ) )
+    if ( !$invalidForm && !$http->hasSessionVariable( "RegisterUserID" ) && $name && $email && $password )
     {
         $showCaptcha = true;
 
@@ -135,7 +136,7 @@ if ( $http->hasPostVariable( 'RegisterButton' ) )
                     eZDebugSetting::writeDebug( 'kernel-user', $email, "email" );
                     eZDebugSetting::writeDebug( 'kernel-user', $objectID, "contentObjectID" );
 
-                    $user->setInformation( $objectID, $login, $email, $password, $passwordConfirm );
+                    $user->setInformation( $objectID, $login, $email, $password, $password );
                     $handler->attribute( 'user_account' )->attribute( 'contentobject_attribute' )->setContent( $user );
                     $handler->attribute( 'user_account' )->attribute( 'contentobject_attribute' )->store();
                 }
@@ -269,7 +270,6 @@ elseif ( $http->hasPostVariable( 'CaptchaButton' ) && $http->hasSessionVariable(
 
                 $mail = new eZMail();
                 $mail->setSender( $emailSender );
-                $user = eZUser::fetch( $userID );
                 $receiver = $user->attribute( 'email' );
                 $mail->setReceiver( $receiver );
                 $mail->setSubject( $subject );

@@ -1,3 +1,6 @@
+{if is_set( $sensor )|not()}
+    {def $sensor = sensor_root_handler()}
+{/if}
 {if $sensor.banner}
 <div class="full_page_photo" style='background-image: url({$sensor.banner|ezroot()});'>
     <div class="container">

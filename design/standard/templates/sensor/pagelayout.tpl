@@ -3,7 +3,7 @@
 {def $sensor = sensor_root_handler()}
 
 <!doctype html>
-<html class="no-js{if is_current_sensor_page( 'home' )} collapsing_header{/if}" lang="en">
+<html class="no-js" lang="en">
 
 {include uri='design:sensor/parts/head.tpl'}
 
@@ -11,11 +11,13 @@
 
 {include uri='design:sensor/parts/header.tpl'}
 
-{if is_current_sensor_page( 'home' )}
-    {include uri='design:sensor/parts/home_image.tpl'}
-{/if}
-
 {/cache-block}
+
+{if is_set( $sensor_home )}
+    {include uri='design:sensor/parts/home_image.tpl'}
+{elseif is_set( $sensor_post )}
+    {include uri='design:sensor/parts/post_map.tpl'}
+{/if}
 
 <div class="main">
     <div class="container">

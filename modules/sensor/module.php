@@ -15,7 +15,7 @@ $ViewList['info'] = array(
 
 $ViewList['posts'] = array(
     'script' =>	'posts.php',
-    'params' => array( 'ID' ),
+    'params' => array( 'ID', 'Offset' ),
     'functions' => array( 'use' )
 );
 

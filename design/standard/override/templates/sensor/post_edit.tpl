@@ -1,13 +1,10 @@
-{def $sensor = sensor_root_handler()}
+{def $sensor = sensor_root_handler()
+     $areas = $sensor.areas}
 
-{literal}
 <script type="text/javascript">
-  var CenterMap = [48.85346, 2.34956];
-  var PointsOfInterest = [
-	{ id: '12345', coords: [51.505, -0.09] }
-  ];
+  var PointsOfInterest = {$sensor.areas.coords_json};
 </script>  
-{/literal}
+
 
 <form id="edit" class="edit col-md-6 col-xs-12" enctype="multipart/form-data" method="post" action={concat("/content/edit/",$object.id,"/",$edit_version,"/",$edit_language|not|choose(concat($edit_language,"/"),''))|ezurl}>
 
@@ -22,9 +19,6 @@
 		  </a>
 	  </div>
 	  
-	  <a class="fitbounds">Test</a>
-	  <a class="poi" id="poi-12345">Test2</a>
-
 	{include uri="design:content/edit_validation.tpl"}
 
 	{if ezini_hasvariable( 'EditSettings', 'AdditionalTemplates', 'content.ini' )}
@@ -126,10 +120,12 @@
 								</div>
 							{else}
 								<div class="col-md-3">
-									<p{if $attribute.has_validation_error} class="message-error"{/if}>{first_set( $contentclass_attribute.nameList[$content_language], $contentclass_attribute.name )|wash}
-										{if $attribute.is_required} <span class="required" title="{'required'|i18n( 'design/admin/content/edit_attribute' )}">*</span>{/if}
-										{if $attribute.is_information_collector} <span class="collector">({'information collector'|i18n( 'design/admin/content/edit_attribute' )})</span>{/if}
+									{if $contentclass_attribute.data_type_string|ne('ezboolean')}
+                                    <p{if $attribute.has_validation_error} class="message-error"{/if}>
+                                        <span style="white-space: nowrap">{first_set( $contentclass_attribute.nameList[$content_language], $contentclass_attribute.name )|wash}{if $attribute.is_required} <span class="required" title="{'required'|i18n( 'design/admin/content/edit_attribute' )}">*</span>{/if}</span>
+                                        {if $attribute.is_information_collector} <span class="collector">({'information collector'|i18n( 'design/admin/content/edit_attribute' )})</span>{/if}
 									</p>
+                                    {/if}
 								</div>
 								<div class="col-md-9">
 									{if $contentclass_attribute.description} <span class="classattribute-description">{first_set( $contentclass_attribute.descriptionList[$content_language], $contentclass_attribute.description)|wash}</span>{/if}

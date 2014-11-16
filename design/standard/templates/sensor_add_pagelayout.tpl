@@ -63,33 +63,71 @@
 
 {literal}
     <script type="text/javascript">
-	  if ( typeof CenterMap != 'undefined' ) {
+	  if ( PointsOfInterest.length > 0 ) {
+        var CenterMap = new L.latLng(PointsOfInterest[0].coords[0],PointsOfInterest[0].coords[1]);
+
 		//var geocoder = new L.Control.Geocoder.Bing('Ahmnz1XxcrJXgiVWzx6W8ewWeqLGztZRIB1hysjaoHI5nV38WXxywjh6vj0lyl4u');
 		var geocoder = new L.Control.Geocoder.Google('AIzaSyDVnxoH2lLysFsPPQcwxZ0ROYNVCBkmQZk');		  
 		var map = new L.Map('sensor_full_map').setActiveArea('viewport').setView(CenterMap, 13);
 		map.scrollWheelZoom.disable();
 
-		var markers = L.featureGroup([L.marker(CenterMap)]);
-		if ( typeof PointsOfInterest != 'undefined' ) {		  
+		var markers = L.featureGroup();
+        var userMarker;
+        var setUserMarker = function(latlng) {
+          if( typeof( userMarker ) === 'undefined' ){
+              var customIcon = L.MakiMarkers.icon({icon: "star", color: "#f00", size: "l"});
+              userMarker = new L.marker(latlng,{icon:customIcon});
+              userMarker.addTo(map);
+              markers.addLayer(userMarker);
+          }else{
+              userMarker.setLatLng(latlng);
+          }
+          setContent(latlng);
+          map.setView(latlng, 17);
+        };
+        var setContent = function(latlng) {
+          $('input#latitude').val( latlng.lat );
+          $('input#longitude').val( latlng.lng );
+          console.log(latlng);
+          geocoder.reverse( latlng, 0, function(result) {
+              $container = $('#input-results');
+              $container.empty();
+              $('input#input-address').val(result[0].name);
+              //if (result.length > 1) {
+              //  $.each(result,function(i,o){
+              //	var item = $('<li><span class="name hide">'+o.name+'</span>'+o.name+'</li>');
+              //	item.on( 'click', function(e){
+              //	  var name = $(e.target).find('.name').text();
+              //	  $('input#input-address').val(name)
+              //	});
+              //	item.appendTo($container);
+              //  });
+              //}else{
+              //  $('input#input-address').val(o.name);
+              //}
+          }, this );
+        };
+        setUserMarker(CenterMap);
+		/*if ( typeof PointsOfInterest != 'undefined' ) {
 		  $.each(PointsOfInterest, function (i,element) {			  
 			  var customIcon = L.MakiMarkers.icon({icon: "heart", color: "#b0b", size: "m"});
 			  markers.addLayer(L.marker(element.coords,{icon:customIcon}));
 		  });
-		}		
+		}
 		markers.addTo(map);
-		map.setView(CenterMap, 13);
+		map.setView(CenterMap, 13);*/
 
 		L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
 			attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
 		}).addTo(map);
 
-		$('.poi').on( 'click', function(e){
-		  var id = $(e.target).attr( 'id' );		  
+		$('#poi').on( 'change', function(e){
+		  var id = $('#poi option:selected').val();
 		  $.each(PointsOfInterest, function (i,element) {
-			  if (id == 'poi-'+element.id) {
-				setContent(new L.latLng(element.coords[0],element.coords[1]));
-				map.setView(element.coords, 13);				
-			  }			  
+			  if (id == element.id) {
+				var latLng = new L.latLng(element.coords[0],element.coords[1]);
+				setUserMarker(latLng);
+			  }
 		  });
 		});		
 		$('.zoomIn').on( 'click', function(e){
@@ -109,43 +147,7 @@
 		  e.preventDefault();
 		  map.fitBounds(markers.getBounds(), {padding: [10, 10]});
 		});
-		
-		var userMarker;
-		
-		var setUserMarker = function(latlng) {
-		  if( typeof( userMarker ) === 'undefined' ){
-			var customIcon = L.MakiMarkers.icon({icon: "star", color: "#f00", size: "l"});
-			userMarker = new L.marker(latlng,{icon:customIcon});
-			userMarker.addTo(map);
-			markers.addLayer(userMarker);
-		  }else{
-			userMarker.setLatLng(latlng);
-		  }
-		  setContent(latlng);		  
-		}
-		var setContent = function(latlng) {		  		  
-		  $('input#latitude').val( latlng.lat );
-		  $('input#longitude').val( latlng.lng );		  
-		  console.log(latlng);
-		  geocoder.reverse( latlng, 0, function(result) {
-			$container = $('#input-results');
-			$container.empty();
-			$('input#input-address').val(result[0].name);
-			//if (result.length > 1) {				
-			//  $.each(result,function(i,o){				  
-			//	var item = $('<li><span class="name hide">'+o.name+'</span>'+o.name+'</li>');				  
-			//	item.on( 'click', function(e){
-			//	  var name = $(e.target).find('.name').text();
-			//	  $('input#input-address').val(name)
-			//	});
-			//	item.appendTo($container);
-			//  });
-			//}else{			  
-			//  $('input#input-address').val(o.name);
-			//}
-		  }, this );	
-		}
-		
+
 		map.on('click', function(e){		  
 		  setUserMarker(e.latlng);
 		});

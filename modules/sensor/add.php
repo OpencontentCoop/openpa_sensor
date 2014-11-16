@@ -8,7 +8,7 @@ $class = ObjectHandlerServiceControlSensor::postContentClass();
 
 eZSys::addAccessPath( array( 'layout', 'set', 'sensor_add' ), 'layout', false );
 
-if ( $node instanceof eZContentObjectTreeNode && $class instanceof eZContentClass && $node->canCreate() )
+if ( $node instanceof eZContentObjectTreeNode && $class instanceof eZContentClass )
 {
     $languageCode = eZINI::instance()->variable( 'RegionalSettings', 'Locale' );
     $object = eZContentObject::createWithNodeAssignment( $node,
@@ -17,7 +17,7 @@ if ( $node instanceof eZContentObjectTreeNode && $class instanceof eZContentClas
         false );
     if ( $object )
     {
-        $module->redirectTo( 'content/edit/' . $object->attribute( 'id' ) . '/' . $object->attribute( 'current_version' ) . $queryString );
+        $module->redirectTo( 'content/edit/' . $object->attribute( 'id' ) . '/' . $object->attribute( 'current_version' ) );
         return;
     }
     else

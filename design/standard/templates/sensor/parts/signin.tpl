@@ -46,7 +46,7 @@
         <div class="form col-lg-8">
             <form name="loginform" method="post" action={'/user/login/'|ezurl}>
                 <input placeholder="{'Indirizzo Email'|i18n('openpa_sensor')}" class="form-control" type="text" name="Login">
-                <input placeholder="{'Password'|i18n('openpa_sensor')}" class="form-control" type="text" name="Password">
+                <input placeholder="{'Password'|i18n('openpa_sensor')}" class="form-control" type="password" name="Password">
                 <div class="forgot">
                     <div class="checkbox">
                         <label class="">
