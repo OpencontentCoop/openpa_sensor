@@ -186,7 +186,7 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase
             if ( $content == 'segnalazione' )
             {
                 $data = array(
-                    'name' => ezpI18n::tr( 'openpa_sensor', 'Segnalazione' ),
+                    'name' => ezpI18n::tr( 'openpa_sensor/type', 'Segnalazione' ),
                     'identifier' => 'segnalazione',
                     'css_class' => 'info'
                 );
@@ -194,7 +194,7 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase
             elseif ( $content == 'suggerimento' )
             {
                 $data = array(
-                    'name' => ezpI18n::tr( 'openpa_sensor', 'Suggerimento' ),
+                    'name' => ezpI18n::tr( 'openpa_sensor/type', 'Suggerimento' ),
                     'identifier' => 'suggerimento',
                     'css_class' => 'warning'
                 );
@@ -202,7 +202,7 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase
             elseif ( $content == 'reclamo' )
             {
                 $data = array(
-                    'name' => ezpI18n::tr( 'openpa_sensor', 'Reclamo' ),
+                    'name' => ezpI18n::tr( 'openpa_sensor/type', 'Reclamo' ),
                     'identifier' => 'reclamo',
                     'css_class' => 'danger'
                 );

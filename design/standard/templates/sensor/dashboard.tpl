@@ -9,13 +9,13 @@
      $post = false()}
 <table class="table table-condensed">
 <tr>
-  <th  class="text-center">{"Date"|i18n('openpa_sensor/collaboration')}</th>
-  <th  class="text-center">{"Modified"|i18n('openpa_sensor/collaboration')}</th>
-  <th  class="text-center">{"Type"|i18n('openpa_sensor/collaboration')}</th>
-  <th  class="text-center">{"Status"|i18n('openpa_sensor/collaboration')}</th>
-  <th  class="text-center">{"Subject"|i18n('openpa_sensor/collaboration')}</th>
-  <th  class="text-center">{"Messages"|i18n('openpa_sensor/collaboration')}</th>
-  <th  class="text-center">{"Owner"|i18n('openpa_sensor/collaboration')}</th>
+  <th  class="text-center">{"Creata"|i18n('openpa_sensor/dashboard')}</th>
+  <th  class="text-center">{"Modificata"|i18n('openpa_sensor/dashboard')}</th>
+  <th  class="text-center">{"Tipo"|i18n('openpa_sensor/dashboard')}</th>
+  <th  class="text-center">{"Stato"|i18n('openpa_sensor/dashboard')}</th>
+  <th  class="text-center">{"Oggetto"|i18n('openpa_sensor/dashboard')}</th>
+  <th  class="text-center">{"Commenti"|i18n('openpa_sensor/dashboard')}</th>
+  <th  class="text-center">{"In carico a"|i18n('openpa_sensor/dashboard')}</th>
   <th  class="text-center"></th>
 </tr>
 {foreach $item_list as $item}
@@ -66,7 +66,7 @@
     <p>{$post.current_owner}</p>
   </td>
   <td class="text-center">
-    <a href={concat('sensor/posts/',$item.content.content_object_id)|ezurl()} class="btn btn-info btn-sm">{"Read"|i18n('openpa_sensor/collaboration')}</a>
+    <a href={concat('sensor/posts/',$item.content.content_object_id)|ezurl()} class="btn btn-info btn-sm">{"Dettagli"|i18n('openpa_sensor/dashboard')}</a>
   </td>
 </tr>
 {/foreach}

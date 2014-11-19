@@ -41,16 +41,16 @@ if ( $http->hasPostVariable( 'RegisterButton' ) )
             {
                 $invalidForm = true;
                 $errors[] = ezpI18n::tr(
-                    'kernel/classes/datatypes',
-                    'The email address is not valid.'
+                    'openpa_sensor/signup',
+                    'Indirizzo email non valido'
                 );
             }
             if ( eZUser::fetchByEmail( $email ) )
             {
                 $invalidForm = true;
                 $errors[] = ezpI18n::tr(
-                    'kernel/classes/datatypes',
-                    'A user with this email already exists.'
+                    'openpa_sensor/signup',
+                    'Email già in uso'
                 );
             }
         }
@@ -64,8 +64,8 @@ if ( $http->hasPostVariable( 'RegisterButton' ) )
                 $password = false;
                 $minPasswordLength = $ini->variable( 'UserSettings', 'MinPasswordLength' );
                 $errors[] = ezpI18n::tr(
-                    'kernel/classes/datatypes',
-                    'The password must be at least %1 characters long.',
+                    'openpa_sensor/signup',
+                    'La password deve essere lunga almeno %1 caratteri',
                     null,
                     array( $minPasswordLength )
                 );
@@ -75,8 +75,8 @@ if ( $http->hasPostVariable( 'RegisterButton' ) )
                 $invalidForm = true;
                 $password = false;
                 $errors[] = ezpI18n::tr(
-                    'kernel/classes/datatypes',
-                    'The password must not be "password".'
+                    'openpa_sensor/signup',
+                    'La password non può essere "password".'
                 );
             }
         }
@@ -87,7 +87,7 @@ if ( $http->hasPostVariable( 'RegisterButton' ) )
         if ( !$name || !$email || !$password )
         {
             $invalidForm = true;
-            $errors[] = ezpI18n::tr( 'openpa_sensor', 'Inserire tutti i dati richiesti' );
+            $errors[] = ezpI18n::tr( 'openpa_sensor/signup', 'Inserire tutti i dati richiesti' );
             $showCaptcha = true;
         }
     }
@@ -104,7 +104,7 @@ if ( $http->hasPostVariable( 'RegisterButton' ) )
         $count = $rows[0]['count'];
         if ( $count < 1 )
         {
-            $errors[] = ezpI18n::tr( 'design/standard/user', 'The node (%1) specified in [UserSettings].DefaultUserPlacement setting in site.ini does not exist!', null, array( $defaultUserPlacement ) );
+            $errors[] = ezpI18n::tr( 'openpa_sensor/signup', 'Il nodo (%1) specificato in [UserSettings].DefaultUserPlacement setting in site.ini non esiste!', null, array( $defaultUserPlacement ) );
             $invalidForm = true;
         }
         else
@@ -178,13 +178,13 @@ elseif ( $http->hasPostVariable( 'CaptchaButton' ) && $http->hasSessionVariable(
         if( !$capchaResponse->is_valid )
         {
             $showCaptcha = true;
-            $errors[] = ezpI18n::tr( 'ezcomments/comment/add', 'The words you input are incorrect.' );
+            $errors[] = ezpI18n::tr( 'openpa_sensor/signup', 'Il codice inserito non è corretto.' );
         }
     }
     else
     {
         $showCaptcha = true;
-        $errors[] = ezpI18n::tr( 'ezcomments/comment/add', 'Captcha parameter error.' );
+        $errors[] = ezpI18n::tr( 'openpa_sensor/signup', 'Errore nella configurazione del Captcha.' );
     }
 
     if ( !$showCaptcha )
@@ -248,6 +248,7 @@ elseif ( $http->hasPostVariable( 'CaptchaButton' ) && $http->hasSessionVariable(
             else
             {
                 $http->removeSessionVariable( 'RegisterUserID' );
+                /** @var eZUser $user */
                 $user = eZUser::fetch( $object->attribute( 'id' ) );
 
                 if ( $user === null )
@@ -267,7 +268,7 @@ elseif ( $http->hasPostVariable( 'CaptchaButton' ) && $http->hasSessionVariable(
                 if ( $tpl->hasVariable( 'subject' ) )
                     $subject = $tpl->variable( 'subject' );
                 else
-                    $subject = ezpI18n::tr( 'kernel/user/register', 'Registration info' );
+                    $subject = ezpI18n::tr( 'kernel/user/register', 'Informazioni di registrazione' );
                 
                 $tpl->setVariable( 'title', $subject );
                 $tpl->setVariable( 'content', $body );

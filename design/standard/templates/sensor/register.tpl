@@ -23,10 +23,10 @@
                         {def $bypass_captcha = false()}
                         {if $bypass_captcha|not}
                             <fieldset>
-                                <legend>{'Security text:'|i18n( 'ezcomments/comment/add/form' )}</legend>
+                                <legend>{'Codice di sicurezza'|i18n( 'openpa_sensor/signup' )}</legend>
                                 {if ezini( 'RecaptchaSetting', 'PublicKey', 'ezcomments.ini' )|eq('')}
                                     <div class="message-warning">
-                                        {'reCAPTCHA API key missing.'|i18n( 'ezcomments/comment/add' )}
+                                        {'reCAPTCHA API key non trovata'|i18n( 'openpa_sensor/signup' )}
                                     </div>
                                 {else}
                                     <script type="text/javascript">
@@ -40,9 +40,9 @@
                                     {if $theme|eq('custom')}
                                         {*Customized theme start*}
                                         <p>
-                                            {'Enter security code'|i18n( 'ezcomments/comment/add/form' )}
+                                            {'Inserisci il codice di sicurezza'|i18n( 'openpa_sensor/signup' )}
                                             <a href="javascript:;" onclick="Recaptcha.reload();">
-                                                {'Try another'|i18n( 'ezcomments/comment/add/form' )}
+                                                {'Clicca qui per ottenere un nuovo codice'|i18n( 'openpa_sensor/signup' )}
                                             </a>
                                         </p>
                                         <div id="recaptcha_image" style="margin: 0 auto"></div>
