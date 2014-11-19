@@ -40,17 +40,14 @@
 {/if}
 {if fetch( user, current_user ).is_logged_in}
 <div class="new_comment">
-    <h4>{'Aggiungi un messaggio'|i18n('openpa_sensor')}</h4>
+    <h4>{'Aggiungi un commento'|i18n('openpa_sensor')}</h4>
     <div class="row">
         <div class="col-sm-8 col-md-8"><br>
-            <textarea name="Collaboration_OpenPASensorItemComment" class="form-control" placeholder="Comments" rows="7"></textarea><br />
+            <textarea name="Collaboration_OpenPASensorItemComment" class="form-control" placeholder="Commenti" rows="7"></textarea><br />
         </div>
     </div>
-    <div class="row"><br>
-        <div class="col-sm-4 col-md-4">
-            <input class="btn send btn-primary btn-lg btn-block" type="submit" name="CollaborationAction_Comment" value="{'Aggiungi un messaggio'|i18n('openpa_sensor')}" />
-        </div>
-        <div class="col-sm-4 col-md-4">
+    <div class="row"><br>        
+        <div class="col-sm-8 col-md-8">
             {if $collaboration_item.content.helper.can_send_private_message}
                 <select name="Collaboration_OpenPASensorItemCommentPrivateReceiver" class="form-control input-lg">
                     <option>Visibile a tutti</option>
@@ -61,6 +58,9 @@
                     {/foreach}
                 </select>
             {/if}
+        </div>
+		<div class="col-sm-8 col-md-8">
+            <input class="btn send btn-primary btn-lg btn-block" type="submit" name="CollaborationAction_Comment" value="{'Aggiungi un commento'|i18n('openpa_sensor')}" />
         </div>
     </div>
 </div>

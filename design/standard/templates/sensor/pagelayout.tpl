@@ -14,12 +14,8 @@
 
 {include uri='design:sensor/parts/header.tpl'}
 
-
-
 {if is_set( $sensor_home )}
     {include uri='design:sensor/parts/home_image.tpl'}
-{elseif is_set( $sensor_post )}
-    {include uri='design:sensor/parts/post_map.tpl'}
 {/if}
 
 <div class="main">
@@ -36,9 +32,9 @@
         {include uri='design:sensor/parts/footer.tpl'}
 
 </div>
-
-{/cache-block}
 {include uri='design:sensor/parts/footer_script.tpl'}
+{/cache-block}
+
 
 
 <!--DEBUG_REPORT-->

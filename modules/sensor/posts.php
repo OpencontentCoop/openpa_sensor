@@ -30,10 +30,10 @@ else
         }
 
         /** @var ObjectHandlerServiceControlSensor $sensor */
-        $sensor = OpenPAObjectHandler::instanceFromContentObject( $object )->attribute( 'control_sensor' );
+        $post = OpenPAObjectHandler::instanceFromContentObject( $object )->attribute( 'control_sensor' );
 
         /** @var SensorHelper $helper */
-        $helper = $sensor->attribute( 'helper' );
+        $helper = $post->attribute( 'helper' );
 
         /** @var eZCollaborationItem $collaborationItem */
         $collaborationItem = $helper->attribute( 'collaboration_item' );
@@ -46,7 +46,7 @@ else
         $viewParameters = array( 'offset' => $Offset );
 
         $tpl->setVariable( 'view_parameters', $viewParameters );
-        $tpl->setVariable( 'post', $sensor );
+        $tpl->setVariable( 'post', $post );
         $tpl->setVariable( 'helper', $helper );
         $tpl->setVariable( 'object', $object );
         $tpl->setVariable( 'collaboration_item', $collaborationItem );
@@ -57,17 +57,13 @@ else
             array(  "item_id" => $collaborationItem->attribute( 'id' ) )
         );
 
-        $participantList = eZFunctionHandler::execute(
-            "collaboration",
-            "participant_map",
-            array( "item_id" => $collaborationItem->attribute( 'id' ) )
-        );
+        $participantList = $helper->fetchParticipantMap();
 
         $tpl->setVariable( 'current_participant', $currentParticipant );
         $tpl->setVariable( 'participant_list', $participantList );
 
         $tpl->setVariable( 'sensor_post', true );
-        $tpl->setVariable( 'post_geo_array_js', $sensor->attribute( 'geo_js_array' ) );
+        $tpl->setVariable( 'post_geo_array_js', $post->attribute( 'geo_js_array' ) );
 
         $collaborationHandler->readItem( $collaborationItem );
     }

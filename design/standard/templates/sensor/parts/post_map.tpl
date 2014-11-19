@@ -8,7 +8,14 @@
 <script src="http://techblog.mappy.com/Leaflet-active-area/src/leaflet.activearea.js"></script>
 <script src="{'javascript/Leaflet.MakiMarkers.js'|ezdesign(no)}"></script>
 
-<div class="full_page_photo"><div id="map"></div></div>
+<div id="map" style="width: 100%; height: 200px;"></div>
+
+{if $object|has_attribute('geo')}
+	<small><i class="fa fa-map-marker"></i> {$object|attribute('geo').content.address}</small>
+{elseif $object|has_attribute('area')}
+	<small><i class="fa fa-map-marker"></i> {attribute_view_gui attribute=$object|attribute('area')}</small>
+{/if}
+
 
 {literal}
     <script type="text/javascript">
@@ -18,7 +25,7 @@
         var customIcon = L.MakiMarkers.icon({icon: "star", color: "#f00", size: "l"});
         var postMarker = new L.marker(latlng,{icon:customIcon});
         postMarker.addTo(map);
-        map.setView(latlng, 17);
+        map.setView(latlng, 18);
         L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
             attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
         }).addTo(map);

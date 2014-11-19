@@ -18,7 +18,7 @@
 <input type="hidden" name="ezgml_hidden_latitude_{$attribute.id}" value="{$latitude}" disabled="disabled" />
 <input type="hidden" name="ezgml_hidden_longitude_{$attribute.id}" value="{$longitude}" disabled="disabled" />
 
-<div class="row">
+<div class="row" style="display: none">
   <div class="col-xs-6">
     <input placeholder="{'Latitude'|i18n('extension/ezgmaplocation/datatype')}" id="latitude" class="form-control" type="text" name="{$attribute_base}_data_gmaplocation_latitude_{$attribute.id}" value="{$latitude}" />
   </div>

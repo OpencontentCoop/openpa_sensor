@@ -1,5 +1,13 @@
+{def $dimensions = ''}
+{if is_set( $height )}
+  {set $dimensions = concat( $dimensions, 'height="', $height, '" ' )}
+{/if}
+{if is_set( $width )}
+  {set $dimensions = concat( $dimensions, 'width="', $width, '" ' )}
+{/if}
+
 {if $object.data_map.image.has_content}
-    <img src={"user_placeholder.jpg"|ezimage()} class="img-circle">
+    <img src={"user_placeholder.jpg"|ezimage()} class="img-circle" {$dimensions} />
 {else}
-    <img src={"user_placeholder.jpg"|ezimage()} class="img-circle">
+    <img src={"user_placeholder.jpg"|ezimage()} class="img-circle" {$dimensions} />
 {/if}

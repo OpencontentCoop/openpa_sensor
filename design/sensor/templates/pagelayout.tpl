@@ -4,7 +4,7 @@
 {def $sensor = sensor_root_handler()}
 
 <!doctype html>
-<html class="no-js{if is_current_sensor_page( 'home' )} collapsing_header{/if}" lang="en">
+<html class="no-js" lang="en">
 
 {include uri='design:sensor/parts/head.tpl'}
 
@@ -18,6 +18,11 @@
 <div id="main" class="main">
     <div id="main-container" class="container">
         {$module_result.content}
+		
+		{if and( $current_user.is_logged_in|not(), is_set( $sensor_signup )|not )}
+            {include uri='design:sensor/parts/login.tpl'}
+        {/if}
+		
     </div>
 
     {cache-block expiry=86400 keys=array( $user_hash )}

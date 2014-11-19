@@ -7,6 +7,6 @@ TranslationExtensions[]=openpa_sensor
 ExtensionAutoloadPath[]=openpa_sensor
 
 [RoleSettings]
-PolicyOmitList[]=sensor
+PolicyOmitList[]=sensor/use
 
 */ ?>

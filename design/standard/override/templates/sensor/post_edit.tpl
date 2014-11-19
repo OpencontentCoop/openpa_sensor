@@ -11,7 +11,7 @@
   <div class="panel panel-default">
 	<div class="panel-body">
 	  
-	  <div class="navbar" style="margin-top: 0">
+	  <div class="navbar hidden-sm hidden-md hidden-lg" style="margin-top: 0">
 		  <a class="navbar-brand" href="{'sensor/home'|ezurl(no)}">
 			  <img src="{$sensor.logo|ezroot(no)}" alt="{$sensor.site_title}" height="90" width="90">
 			  <span class="logo_title">{$sensor.logo_title}</span>

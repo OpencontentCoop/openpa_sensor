@@ -31,13 +31,29 @@ $ViewList['add'] = array(
     'functions' => array( 'use' )
 );
 
+$ViewList['dashboard'] = array(
+    'script' =>	'dashboard.php',
+    'params' => array(),
+    'unordered_params' => array(
+        "language" => "Language",
+        "offset" => "Offset" ),
+    'functions' => array( 'use' )
+);
+
 $ViewList['redirect'] = array(
     'script' =>	'redirect.php',
     'params' => array( 'View' ),
     'functions' => array( 'use' )
 );
 
+$ViewList['test_mail'] = array(
+    'script' =>	'test_mail.php',
+    'params' => array(),
+    'functions' => array( 'debug' )
+);
+
 
 $FunctionList = array();
 $FunctionList['use'] = array();
+$FunctionList['debug'] = array();
 

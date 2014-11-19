@@ -15,6 +15,9 @@ $errors = array();
 $showCaptcha = false;
 $name = $email = $password = false;
 
+$tpl->setVariable( 'name', $name );
+$tpl->setVariable( 'email', $email );
+
 #if ( $http->hasSessionVariable( "RegisterUserID" ) ) echo '<pre>'.$http->sessionVariable( "RegisterUserID" ).'</pre>';
 
 if ( $http->hasPostVariable( 'RegisterButton' ) )
@@ -252,10 +255,9 @@ elseif ( $http->hasPostVariable( 'CaptchaButton' ) && $http->hasSessionVariable(
 
                 $user->loginCurrent();
 
-                $templateResult = $tpl->fetch( 'design:sensor/registrationinfo.tpl' );
-                if ( $tpl->hasVariable( 'content_type' ) )
-                    $mail->setContentType( $tpl->variable( 'content_type' ) );
-
+                $tpl->setVariable( 'user', $user );
+                $body = $tpl->fetch( 'design:sensor/mail/registrationinfo.tpl' );
+                
                 $emailSender = $ini->variable( 'MailSettings', 'EmailSender' );
                 if ( $tpl->hasVariable( 'email_sender' ) )
                     $emailSender = $tpl->variable( 'email_sender' );
@@ -266,14 +268,22 @@ elseif ( $http->hasPostVariable( 'CaptchaButton' ) && $http->hasSessionVariable(
                     $subject = $tpl->variable( 'subject' );
                 else
                     $subject = ezpI18n::tr( 'kernel/user/register', 'Registration info' );
-
+                
+                $tpl->setVariable( 'title', $subject );
+                $tpl->setVariable( 'content', $body );
+                $templateResult = $tpl->fetch( 'design:sensor/mail/mail_pagelayout.tpl' ); 
+                
                 $mail = new eZMail();
                 $mail->setSender( $emailSender );
                 $receiver = $user->attribute( 'email' );
                 $mail->setReceiver( $receiver );
                 $mail->setSubject( $subject );
                 $mail->setBody( $templateResult );
+                $mail->setContentType( 'text/html' );
                 $mailResult = eZMailTransport::send( $mail );
+                
+                $rule = eZCollaborationNotificationRule::create( OpenPASensorCollaborationHandler::TYPE_STRING, $user->id() );
+                $rule->store();
 
                 $Module->redirectTo( '/sensor/home' );
             }

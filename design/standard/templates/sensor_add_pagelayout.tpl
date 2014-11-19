@@ -25,8 +25,7 @@
 	  }
 	  #edit{
 		  position: fixed;
-		  right: 30px;
-		  top: 30px;		
+		  right: 30px;		  	
 		  z-index: 1000000;        
 		  bottom: 30px;
 	  }

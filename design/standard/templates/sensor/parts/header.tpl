@@ -1,7 +1,7 @@
 {cache-block ignore_content_expiry keys=array( $module_result.uri, $user_hash )}
 <header>
     <div class="container">
-        <div class="navbar navbar-default" role="navigation">
+        <div class="navbar navbar-default" role="navigation" style="position: relative; z-index: 10;">
             <div class="navbar-header">
                 <a class="navbar-brand" href="{'sensor/home'|ezurl(no)}">
                     <img src="{$sensor.logo|ezroot(no)}" alt="{$sensor.site_title}" height="90" width="90">
@@ -21,4 +21,5 @@
         </div>
     </div>
 </header>
+<img alt="SensorCivico" src={"sensor_border.png"|ezimage()} style="position: absolute; top: 0; right: 0; border: 0;">
 {/cache-block}

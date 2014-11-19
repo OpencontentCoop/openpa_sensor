@@ -12,13 +12,22 @@
     {ezcss_load( array(
         'animate.css',
         'style.css',
-        'fonts/font-awesome/css/font-awesome.min.css',
+        'font-awesome.min.css',
         'debug.css',
         'websitetoolbar.css'
     ) )}
 
     {ezscript_load(array(
-        'modernizr.custom.48287.js'
+        'modernizr.custom.48287.js',
+        'ezjsc::jquery',
+        'bootstrap.min.js',
+        'isotope/jquery.isotope.min.js',
+        'jquery.ui.totop.js',
+        'easing.js',
+        'wow.min.js',
+        'snap.svg-min.js',
+        'restart_theme.js',
+        'collapser.js'
     ))}
 
     <link rel="apple-touch-icon-precomposed" sizes="114x114" href={$sensor.site_images["apple-touch-icon-114x114-precomposed"]}>

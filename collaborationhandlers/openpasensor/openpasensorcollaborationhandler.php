@@ -287,27 +287,45 @@ class OpenPASensorCollaborationHandler extends eZCollaborationItemHandler
 
         $tpl = eZTemplate::factory();
         $tpl->resetVariables();
+        
+        $object = eZContentObject::fetch( $item->attribute( "data_int1" ) );
+        if ( !$object instanceof eZContentObject )
+        {
+            return eZNotificationEventHandler::EVENT_SKIPPED;
+        }
+        $post = OpenPAObjectHandler::instanceFromContentObject( $object )->attribute( 'control_sensor' );
+        
         foreach( $userCollection as $participantRole => $collectionItems )
         {
             $templateName = $itemHandler->notificationParticipantTemplate( $participantRole );
+            $templatePath = 'design:sensor/mail/' . $templateName;
             if ( !$templateName )
+            {
                 $templateName = eZCollaborationItemHandler::notificationParticipantTemplate( $participantRole );
-
-            $itemInfo = $itemHandler->attribute( 'info' );
-            $typeIdentifier = $itemInfo['type-identifier'];
+                $itemInfo = $itemHandler->attribute( 'info' );
+                $typeIdentifier = $itemInfo['type-identifier'];
+                $templatePath = 'design:notification/handler/ezcollaboration/view/' . $typeIdentifier . '/' . $templateName;
+            }
 
             $tpl->setVariable( 'collaboration_item', $item );
             $tpl->setVariable( 'collaboration_participant_role', $participantRole );
+            $tpl->setVariable( 'collaboration_item_status', $item->attribute( SensorHelper::ITEM_STATUS ) );
+            $tpl->setVariable( 'post', $post );
+            $tpl->setVariable( 'object', $object );
+            $tpl->setVariable( 'node', $object->attribute( 'main_node' ) );
 
-            $tpl->setVariable( 'item_status', $item->attribute( SensorHelper::ITEM_STATUS ) );
-
-            $result = $tpl->fetch( 'design:notification/handler/ezcollaboration/view/' . $typeIdentifier . '/' . $templateName );
+            $result = $tpl->fetch( $templatePath );
 
             $body = $tpl->variable( 'body' );
             $subject = $tpl->variable( 'subject' );
 
             if ( !empty( $body ) )
             {
+                $tpl->setVariable( 'title', $subject );
+                $tpl->setVariable( 'content', $body );
+                $templateResult = $tpl->fetch( 'design:sensor/mail/mail_pagelayout.tpl' ); 
+
+                
                 if ( $tpl->hasVariable( 'message_id' ) )
                 {
                     $parameters['message_id'] = $tpl->variable( 'message_id' );
@@ -328,6 +346,10 @@ class OpenPASensorCollaborationHandler extends eZCollaborationItemHandler
                 {
                     $parameters['content_type'] = $tpl->variable( 'content_type' );
                 }
+                else
+                {
+                    $parameters['content_type'] = 'text/html';
+                }
 
                 $collection = eZNotificationCollection::create(
                     $event->attribute( 'id' ),
@@ -336,7 +358,7 @@ class OpenPASensorCollaborationHandler extends eZCollaborationItemHandler
                 );
 
                 $collection->setAttribute( 'data_subject', $subject );
-                $collection->setAttribute( 'data_text', $body );
+                $collection->setAttribute( 'data_text', $templateResult );
                 $collection->store();
                 foreach ( $collectionItems as $collectionItem )
                 {

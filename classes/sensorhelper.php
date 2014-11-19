@@ -77,7 +77,14 @@ class SensorHelper
             'can_add_observer',
             'can_send_private_message',
             'participants',
-            'owner_id'
+            'owner_id',
+            'owner_name',
+            'sensor',
+            'object',
+            'human_unread_message_count',
+            'human_message_count',
+            'robot_unread_message_count',
+            'robot_message_count'
         );
     }
 
@@ -94,7 +101,7 @@ class SensorHelper
             case 'collaboration_item':
                 return $this->collaborationItem;
                 break;
-
+            
             case 'current_status':
                 return $this->collaborationItem->attribute( self::ITEM_STATUS );
                 break;
@@ -140,7 +147,7 @@ class SensorHelper
                 {
                     return array_shift( $ids );
                 }
-                else
+                elseif ( !$this->is( self::STATUS_WAITING ) )
                 {
                     $ids = $this->participantIds( eZCollaborationItemParticipantLink::ROLE_APPROVER );
                     if ( count( $ids ) )
@@ -149,11 +156,118 @@ class SensorHelper
                     }
                 }
                 break;
+            
+            case 'owner_name':
+                $id = $this->attribute( 'owner_id' );                
+                if ( $id )
+                {
+                    $object = eZContentObject::fetch( $id );
+                    if ( $object )
+                    {
+                        return $object->attribute( 'name' );
+                    }
+                }
+                break;
+            
+            case 'sensor':
+                {
+                    return $this->getControlSensor();
+                } break;
+                
+            case 'object':
+                {
+                    return $this->getContentObject();
+                } break;
+                
+            case 'human_message_count':
+                {
+                    return eZCollaborationItemMessageLink::fetchItemCount(
+                        array(
+                            'item_id' => $this->collaborationItem->attribute( 'id' ),
+                            'conditions' => array(
+                                'message_type' => array( array( SensorHelper::MESSAGE_TYPE_PUBLIC, eZUser::currentUserID() ) )
+                            )
+                        )
+                    );
+                } break;
+            
+            case 'human_unread_message_count':
+                {
+                    $lastRead = 0;
+                    /** @var eZCollaborationItemStatus $status */
+                    $status = $this->collaborationItem->attribute( 'user_status' );
+                    if ( $status )
+                    {
+                        $lastRead = $status->attribute( 'last_read' );
+                    }
+                    return eZCollaborationItemMessageLink::fetchItemCount(
+                        array(
+                            'item_id' => $this->collaborationItem->attribute( 'id' ),
+                            'conditions' => array(
+                                'message_type' => array( array( SensorHelper::MESSAGE_TYPE_PUBLIC, eZUser::currentUserID() ) ),
+                                'modified' => array( '>', $lastRead )
+                            )
+                        )
+                    );
+                } break;
+            
+            case 'robot_message_count':
+                {
+                    return eZCollaborationItemMessageLink::fetchItemCount(
+                        array(
+                            'item_id' => $this->collaborationItem->attribute( 'id' ),
+                            'conditions' => array(
+                                'message_type' => SensorHelper::MESSAGE_TYPE_ROBOT
+                            )
+                        )
+                    );
+                } break;
+            
+            case 'robot_unread_message_count':
+                {
+                    $lastRead = 0;
+                    /** @var eZCollaborationItemStatus $status */
+                    $status = $this->collaborationItem->attribute( 'user_status' );
+                    if ( $status )
+                    {
+                        $lastRead = $this->status->attribute( 'last_read' );
+                    }
+                    return eZCollaborationItemMessageLink::fetchItemCount(
+                        array(
+                            'item_id' => $collaborationItem->attribute( 'id' ),
+                            'conditions' => array(
+                                'message_type' => SensorHelper::MESSAGE_TYPE_ROBOT,
+                                'modified' => array( '>', $lastRead )
+                            )
+                        )
+                    );
+                } break;
 
             default:
                 eZDebug::writeError( "Attribute $key not found", get_called_class() );
                 return false;
         }
+    }
+    
+    public function getContentObject()
+    {
+        $objectId = $this->collaborationItem->attribute( "data_int1" );
+        $object = eZContentObject::fetch( $objectId );
+        if ( $object instanceof eZContentObject )
+        {
+            return $object;
+        }
+        return null;
+    }
+
+    public function getControlSensor()
+    {        
+        $object = $this->getContentObject();
+        if ( $object instanceof eZContentObject )
+        {
+            return OpenPAObjectHandler::instanceFromContentObject( $object )->attribute( 'control_sensor' );
+        }
+        return null;
     }
 
     /**
@@ -207,8 +321,8 @@ class SensorHelper
             }
         }
 
-        $collaborationItem->createNotificationEvent();
         $handler->setStatus( self::STATUS_WAITING );
+        $collaborationItem->createNotificationEvent();        
 
         return $collaborationItem;
     }
@@ -217,10 +331,24 @@ class SensorHelper
     {
         if ( $this->userIsA( eZCollaborationItemParticipantLink::ROLE_APPROVER )
              && ( $this->is( self::STATUS_WAITING ) || $this->is( self::STATUS_REOPENED ) ) )
-        {
-            $this->addComment( $this->getCommentMessage( self::STATUS_READ ), false, self::MESSAGE_TYPE_ROBOT );
+        {            
+            $this->addComment( $this->getCommentMessage( self::STATUS_READ, $this->userName() ), false, self::MESSAGE_TYPE_ROBOT );
             $this->setStatus( self::STATUS_READ );
         }
+    }
+    
+    protected function userName( $id = null )
+    {
+        if ( !$id )
+        {
+            $id = eZUser::currentUserID();
+        }
+        $user = eZUser::fetch( $id );
+        if ( $user instanceof eZUser )
+        {
+            return $user->attribute( 'contentobject' )->attribute( 'name' );
+        }
+        return false;
     }
 
     public function addObserver( $userId )
@@ -250,7 +378,7 @@ class SensorHelper
 
         if ( $type !== self::MESSAGE_TYPE_PUBLIC && $type !== self::MESSAGE_TYPE_ROBOT && !$this->canSendPrivateMessage() )
         {
-
+            $userCanComment = false;
         }
 
         if ( trim( $text ) != '' && $userCanComment )
@@ -271,6 +399,11 @@ class SensorHelper
             {
                 $this->collaborationItem->createNotificationEvent();
                 $this->setStatus( self::STATUS_REOPENED );
+                $this->addComment( $this->getCommentMessage( self::STATUS_REOPENED, $this->userName() ), false, self::MESSAGE_TYPE_ROBOT );                
+            }
+            else
+            {
+                $this->setStatus(); // touch
             }
         }
     }
@@ -320,7 +453,7 @@ class SensorHelper
         }
         if ( !$message )
         {
-            $message = $this->getCommentMessage( self::STATUS_FIXED );
+            $message = $this->getCommentMessage( self::STATUS_FIXED, $this->userName() );
         }
         $this->addComment( $message, false, self::MESSAGE_TYPE_ROBOT );
         $this->collaborationItem->createNotificationEvent();
@@ -331,7 +464,7 @@ class SensorHelper
     {
         if ( !$message )
         {
-            $message = $this->getCommentMessage( self::STATUS_CLOSED );
+            $message = $this->getCommentMessage( self::STATUS_CLOSED, $this->userName() );
         }
         $this->addComment( $message, false, self::MESSAGE_TYPE_ROBOT );
         $this->collaborationItem->createNotificationEvent();
@@ -379,7 +512,7 @@ class SensorHelper
             }
             if ( !$message )
             {
-                $message = $this->getCommentMessage( self::STATUS_ASSIGNED );
+                $message = $this->getCommentMessage( self::STATUS_ASSIGNED, $this->userName( $userIds[0] ) );
             }
             $this->addComment( $message, false, self::MESSAGE_TYPE_ROBOT );
             $this->collaborationItem->createNotificationEvent();
@@ -391,6 +524,14 @@ class SensorHelper
     {
         return $this->collaborationItem->attribute( self::ITEM_STATUS ) == $status;
     }
+    
+    public static function currentUserCollaborationGroup()
+    {
+        $participantID = eZUser::currentUserID();
+        $collaboration = new eZCollaborationItem( array() ); //@todo
+        $helper = new static( $collaboration );
+        return $helper->collaborationGroup( $participantID );
+    }
 
     protected function customCollaborationGroupName()
     {
@@ -398,7 +539,7 @@ class SensorHelper
     }
 
     protected function collaborationGroup( $participantID )
-    {
+    {        
         $profile = eZCollaborationProfile::instance( $participantID );
 
         if ( $this->customCollaborationGroupName() !== false )
@@ -530,7 +671,7 @@ class SensorHelper
     {
         $participantIds = array();
         /** @var eZCollaborationItemParticipantLink[] $participantList */
-        $participantList = eZCollaborationItemParticipantLink::fetchParticipantList( array( 'item_id' => $this->collaborationItem->attribute( 'id' ) ) );
+        $participantList = eZCollaborationItemParticipantLink::fetchParticipantList( array( 'item_id' => $this->collaborationItem->attribute( 'id' ), 'limit' => 100 ) );        
         foreach( $participantList as $participant )
         {
             if ( $role !== null )
@@ -546,79 +687,328 @@ class SensorHelper
         return $participantIds;
     }
 
-    protected function setStatus( $status )
+    protected function setStatus( $status = null )
     {
         $timestamp = time();
         $content = $this->collaborationItem->content();
         $id = $content['content_object_id'];
         $object = eZContentObject::fetch( $id );
-
-        $this->collaborationItem->setAttribute( self::ITEM_STATUS, $status );
-        $this->collaborationItem->setAttribute( 'modified', $timestamp );
-        if ( $status == self::STATUS_CLOSED )
+        if ( $status !== null )
         {
-            $this->collaborationItem->setAttribute( 'status', eZCollaborationItem::STATUS_INACTIVE );
-            foreach( $this->participantIds() as $participantID )
+            $this->collaborationItem->setAttribute( self::ITEM_STATUS, $status );
+            $this->collaborationItem->setAttribute( 'modified', $timestamp );
+            if ( $status == self::STATUS_CLOSED )
             {
-                $this->collaborationItem->setIsActive( false, $participantID );
+                $this->collaborationItem->setAttribute( 'status', eZCollaborationItem::STATUS_INACTIVE );
+                foreach( $this->participantIds() as $participantID )
+                {
+                    $this->collaborationItem->setIsActive( false, $participantID );
+                }
+                if ( $object instanceof eZContentObject )
+                {
+                    ObjectHandlerServiceControlSensor::setState( $object, 'sensor', 'close' );
+                }
             }
-            if ( $object instanceof eZContentObject )
+            elseif ( $status == self::STATUS_WAITING )
             {
-                ObjectHandlerServiceControlSensor::setState( $object, 'sensor', 'close' );
+                $this->collaborationItem->setAttribute( 'status', eZCollaborationItem::STATUS_ACTIVE );
+                foreach( $this->participantIds() as $participantID )
+                {
+                    $this->collaborationItem->setIsActive( true, $participantID );
+                }
             }
+            elseif ( $status == self::STATUS_REOPENED )
+            {
+                $this->collaborationItem->setAttribute( 'status', eZCollaborationItem::STATUS_ACTIVE );
+                foreach( $this->participantIds() as $participantID )
+                {
+                    $this->collaborationItem->setIsActive( true, $participantID );
+                }
+                if ( $object instanceof eZContentObject )
+                {
+                    OpenPABase::sudo(
+                        function() use( $object ){
+                            ObjectHandlerServiceControlSensor::setState( $object, 'sensor', 'open' );
+                        }
+                    );                
+                }
+            }
+            $this->collaborationItem->sync();
         }
-        elseif ( $status == self::STATUS_WAITING )
-        {
-            $this->collaborationItem->setAttribute( 'status', eZCollaborationItem::STATUS_ACTIVE );
-            foreach( $this->participantIds() as $participantID )
-            {
-                $this->collaborationItem->setIsActive( true, $participantID );
-            }
-        }
-        elseif ( $status == self::STATUS_REOPENED )
-        {
-            $this->collaborationItem->setAttribute( 'status', eZCollaborationItem::STATUS_ACTIVE );
-            foreach( $this->participantIds() as $participantID )
-            {
-                $this->collaborationItem->setIsActive( true, $participantID );
-            }
-            if ( $object instanceof eZContentObject )
-            {
-                ObjectHandlerServiceControlSensor::setState( $object, 'sensor', 'open' );
-            }
-        }
-        $this->collaborationItem->sync();
         if ( $object instanceof eZContentObject )
         {
             $object->setAttribute( 'modified', $timestamp );
             $object->store();
-        }
+            eZContentCacheManager::clearContentCacheIfNeeded( $id );
+        }        
     }
 
-    protected function getCommentMessage( $status )
+    protected function getCommentMessage( $status, $name = null )
     {
         $message = '';
         if ( $status == self::STATUS_FIXED )
-        {
-            $message = '_fixed';
+        {            
+            if ( $name )
+            {
+                $message = '_fixed by ' .  $name;    
+            }
+            else
+            {
+                $message = '_fixed';    
+            }
+            
         }
         elseif( $status == self::STATUS_READ )
         {
-            $message = '_read';
+            if ( $name )
+            {
+                $message = '_read by ' .  $name;    
+            }
+            else
+            {
+                $message = '_read';
+            }
         }
         elseif( $status == self::STATUS_CLOSED )
         {
-            $message = '_closed';
+            if ( $name )
+            {
+                $message = '_closed by ' .  $name;    
+            }
+            else
+            {
+                $message = '_closed';
+            }
         }
         elseif( $status == self::STATUS_ASSIGNED )
         {
-            $message = '_assigned';
+            if ( $name )
+            {
+                $message = '_assigned to ' .  $name;    
+            }
+            else
+            {
+                $message = '_assigned';
+            }
         }
         elseif( $status == self::STATUS_REOPENED )
         {
-            $message = '_reopened';
+            if ( $name )
+            {
+                $message = '_reopened by ' .  $name;    
+            }
+            else
+            {
+                $message = '_reopened';
+            }
         }
         return $message;
+    }
+    
+    public static function roleName( $collaborationID, $roleID )
+    {
+        if ( $roleID < eZCollaborationItemParticipantLink::TYPE_CUSTOM )
+        {
+            if ( empty( $GLOBALS['SensorParticipantRoleNameMap'] ) )
+            {
+
+                $GLOBALS['SensorParticipantRoleNameMap'] =
+                    array( eZCollaborationItemParticipantLink::ROLE_STANDARD => ezpI18n::tr( 'openpa_sensor/role_name', 'Standard' ),
+                           eZCollaborationItemParticipantLink::ROLE_OBSERVER => ezpI18n::tr( 'openpa_sensor/role_name', 'Osservatore' ),
+                           eZCollaborationItemParticipantLink::ROLE_OWNER => ezpI18n::tr( 'openpa_sensor/role_name', 'Assegnatario' ),
+                           eZCollaborationItemParticipantLink::ROLE_APPROVER => ezpI18n::tr( 'openpa_sensor/role_name', 'Responsabile' ),
+                           eZCollaborationItemParticipantLink::ROLE_AUTHOR => ezpI18n::tr( 'openpa_sensor/role_name', 'Autore' ) );
+            }
+            $roleNameMap = $GLOBALS['SensorParticipantRoleNameMap'];
+            if ( isset( $roleNameMap[$roleID] ) )
+            {
+                return $roleNameMap[$roleID];
+            }
+            return null;
+        }
+
+        $item = eZCollaborationItem::fetch( $collaborationID );
+        return $item->handler()->roleName( $collaborationID, $roleID );
+    }
+    
+    public function fetchParticipantMap()
+    {        
+        $itemID = $this->collaborationItem->attribute( 'id' );        
+        $list = eZCollaborationItemParticipantLink::fetchParticipantList( array( 'item_id' => $this->collaborationItem->attribute( 'id' ) ) );
+        if ( $list === null )
+        {            
+            return null;
+        }
+
+        $listMap = array();
+        foreach ( $list as $listItem )
+        {
+            $sortKey = $listItem->attribute( 'participant_role' );
+            if ( !isset( $listMap[$sortKey] ) )
+            {
+                $sortName = self::roleName( $itemID, $sortKey );
+                $listMap[$sortKey] = array( 'name' => $sortName,
+                                            'items' => array() );
+            }
+            $listMap[$sortKey]['items'][] = $listItem;
+        }
+        return $listMap;
+    }
+    
+    /**
+     * @see eZCollaborationItem::fetchListTool
+     */
+    public static function fetchListTool( $parameters = array(), $asCount )
+    {
+        $parameters = array_merge( array( 'as_object' => true,
+                                          'offset' => false,
+                                          'parent_group_id' => false,
+                                          'limit' => false,
+                                          'is_active' => null,
+                                          'is_read' => null,
+                                          'status' => false,
+                                          'sort_by' => false ),
+                                   $parameters );
+        $asObject = $parameters['as_object'];
+        $offset = $parameters['offset'];
+        $limit = $parameters['limit'];
+        $statusTypes = $parameters['status'];
+        $isRead = $parameters['is_read'];
+        $isActive = $parameters['is_active'];
+        $parentGroupID = $parameters['parent_group_id'];
+
+        $sortText = '';
+        if ( !$asCount )
+        {
+            $sortCount = 0;
+            $sortList = $parameters['sort_by'];
+            if ( is_array( $sortList ) and
+                 count( $sortList ) > 0 )
+            {
+                if ( count( $sortList ) > 1 and
+                     !is_array( $sortList[0] ) )
+                {
+                    $sortList = array( $sortList );
+                }
+            }
+            if ( $sortList !== false )
+            {
+                $sortingFields = '';
+                foreach ( $sortList as $sortBy )
+                {
+                    if ( is_array( $sortBy ) and count( $sortBy ) > 0 )
+                    {
+                        if ( $sortCount > 0 )
+                            $sortingFields .= ', ';
+                        $sortField = $sortBy[0];
+                        switch ( $sortField )
+                        {
+                            case 'created':
+                            {
+                                $sortingFields .= 'ezcollab_item.created';
+                            } break;
+                            case 'modified':
+                            {
+                                $sortingFields .= 'ezcollab_item.modified';
+                            } break;
+                            default:
+                            {
+                                eZDebug::writeWarning( 'Unknown sort field: ' . $sortField, __METHOD__ );
+                                continue;
+                            }
+                        }
+                        $sortOrder = true; // true is ascending
+                        if ( isset( $sortBy[1] ) )
+                            $sortOrder = $sortBy[1];
+                        $sortingFields .= $sortOrder ? ' ASC' : ' DESC';
+                        ++$sortCount;
+                    }
+                }
+            }
+            if ( $sortCount == 0 )
+            {
+                $sortingFields = ' ezcollab_item_group_link.modified DESC';
+            }
+            $sortText = "ORDER BY $sortingFields";
+        }
+
+        $parentGroupText = '';
+        if ( $parentGroupID > 0 )
+        {
+            $parentGroupText = "ezcollab_item_group_link.group_id = '$parentGroupID' AND";
+        }
+
+        $isReadText = '';
+        if ( $isRead !== null )
+        {
+            $isReadValue = $isRead ? 1 : 0;
+            $isReadText = "ezcollab_item_status.is_read = '$isReadValue' AND";
+        }
+
+        $isActiveText = '';
+        if ( $isActive !== null )
+        {
+            $isActiveValue = $isActive ? 1 : 0;
+            $isActiveText = "ezcollab_item_status.is_active = '$isActiveValue' AND";
+        }
+
+        $userID = eZUser::currentUserID();
+
+        $statusText = '';
+        if ( $statusTypes === false )
+            $statusTypes = array( eZCollaborationItem::STATUS_ACTIVE,
+                                  eZCollaborationItem::STATUS_INACTIVE );
+        $statusText = implode( ', ', $statusTypes );
+
+        if ( $asCount )
+            $selectText = 'count( ezcollab_item.id ) as count';
+        else
+            $selectText = 'ezcollab_item.*, ezcollab_item_status.is_read, ezcollab_item_status.is_active, ezcollab_item_status.last_read';
+
+        $sql = "SELECT $selectText
+                FROM
+                       ezcollab_item,
+                       ezcollab_item_status,
+                       ezcollab_item_group_link
+                WHERE  ezcollab_item.status IN ( $statusText ) AND
+                       $isReadText
+                       $isActiveText
+                       ezcollab_item.id = ezcollab_item_status.collaboration_id AND
+                       ezcollab_item.id = ezcollab_item_group_link.collaboration_id AND
+                       $parentGroupText
+                       ezcollab_item_status.user_id = '$userID' AND
+                       ezcollab_item_group_link.user_id = '$userID'
+                $sortText";
+
+        $db = eZDB::instance();
+        if ( !$asCount )
+        {
+            $sqlParameters = array();
+            if ( $offset !== false and $limit !== false )
+            {
+                $sqlParameters['offset'] = $offset;
+                $sqlParameters['limit'] = $limit;
+            }
+            $itemListArray = $db->arrayQuery( $sql, $sqlParameters );
+
+            foreach( $itemListArray as $key => $value )
+            {
+                $itemData =& $itemListArray[$key];
+                $statusObject = eZCollaborationItemStatus::create( $itemData['id'], $userID );
+                $statusObject->setAttribute( 'is_read', $itemData['is_read'] );
+                $statusObject->setAttribute( 'is_active', $itemData['is_active'] );
+                $statusObject->setAttribute( 'last_read', $itemData['last_read'] );
+                $statusObject->updateCache();
+            }
+            $returnItemList = eZPersistentObject::handleRows( $itemListArray, 'eZCollaborationItem', $asObject );
+            eZDebugSetting::writeDebug( 'collaboration-item-list', $returnItemList );
+            return $returnItemList;
+        }
+        else
+        {
+            $itemCount = $db->arrayQuery( $sql );
+            return $itemCount[0]['count'];
+        }
     }
 
 }

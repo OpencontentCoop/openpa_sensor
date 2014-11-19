@@ -73,7 +73,7 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase
     {
         return self::rootNode()->subTree( array(
             'ClassFilterType' => 'include',
-            'ClassFilterArray' => array( 'user' ),
+            'ClassFilterArray' => array( 'user', 'sensor_operator' ),
             'SortBy' => array( 'name', true )
         ) );
     }
