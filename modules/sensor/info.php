@@ -2,11 +2,13 @@
 
 $Module = $Params['Module'];
 $tpl = eZTemplate::factory();
+$identifier = $Params['Page'];
 
 $currentUser = eZUser::currentUser();
 
 $tpl->setVariable( 'current_user', $currentUser );
 $tpl->setVariable( 'persistent_variable', array() );
+$tpl->setVariable( 'identifier', $identifier );
 
 $Result = array();
 

@@ -1,7 +1,7 @@
 <div class="signin">
     <div class="social_sign">
 
-        <h3>{'Accedi con il tuo account social'|i18n('openpa_sensor')}</h3>
+        <h3>{'Accedi con il tuo account social'|i18n('openpa_sensor/signin')}</h3>
 
         {if $login_methods|count}
             {foreach $login_methods as $l}
@@ -37,25 +37,25 @@
     </div>
     <div class="or">
         <div class="or_l"></div>
-        <span>{'oppure'|i18n('openpa_sensor')}</span>
+        <span>{'oppure'|i18n('openpa_sensor/signin')}</span>
         <div class="or_r"></div>
     </div>
-    <p class="sign_title">{'Accedi con il tuo account SensorCivico'|i18n('openpa_sensor')}</p>
+    <p class="sign_title">{'Accedi con il tuo account SensorCivico'|i18n('openpa_sensor/signin')}</p>
     <div class="row">
         <div class="col-lg-2"></div>
         <div class="form col-lg-8">
             <form name="loginform" method="post" action={'/user/login/'|ezurl}>
-                <input placeholder="{'Indirizzo Email'|i18n('openpa_sensor')}" class="form-control" type="text" name="Login">
-                <input placeholder="{'Password'|i18n('openpa_sensor')}" class="form-control" type="password" name="Password">
+                <input placeholder="{'Indirizzo Email'|i18n('openpa_sensor/signin')}" class="form-control" type="text" name="Login">
+                <input placeholder="{'Password'|i18n('openpa_sensor/signin')}" class="form-control" type="password" name="Password">
                 <div class="forgot">
                     <div class="checkbox">
                         <label class="">
-                            <input type="checkbox" name="Cookie"> {'Resta collegato'|i18n('openpa_sensor')}
+                            <input type="checkbox" name="Cookie"> {'Resta collegato'|i18n('openpa_sensor/signin')}
                         </label>
                     </div>
-                    <a href={'/user/forgotpassword'|ezurl}>{'Hai dimenticato la password?'|i18n('openpa_sensor')}</a>
+                    <a href={'/user/forgotpassword'|ezurl}>{'Hai dimenticato la password?'|i18n('openpa_sensor/signin')}</a>
                 </div>
-                <button name="LoginButton" type="submit" class="btn btn-primary btn-lg">{'Accedi'|i18n('openpa_sensor')}</button>
+                <button name="LoginButton" type="submit" class="btn btn-primary btn-lg">{'Accedi'|i18n('openpa_sensor/signin')}</button>
             </form>
         </div>
         <div class="col-lg-2"></div>

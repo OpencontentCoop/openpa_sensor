@@ -58,7 +58,7 @@
 			</aside>
 			
 			<aside class="widget">
-                <h4>{'Partecipanti'|i18n('openpa_sensor/post')}</h4>
+                <h4>{'Soggetti coinvolti'|i18n('openpa_sensor/post')}</h4>
                 <dl class="dl-horizontal">
                     {foreach $participant_list as $item}
                         <dt>{$item.name|wash}:</dt>
@@ -80,13 +80,16 @@
                 {/if}
             {/foreach}
             {if $hasTimeline}
-            <aside class="widget">
+            <aside class="widget timeline">
                 <h4>{'Timeline'|i18n('openpa_sensor/post')}</h4>
-                <dl>
+                <ol class="list-unstyled">
                     {foreach $m as $item}
                         {if $item.message_type|eq(0)}
-                            <dt>{$item.created|l10n(shortdatetime)}</dt>
-                            <dd>{$item.simple_message.data_text1|sensor_robot_message()}</dd>
+                            <li>
+                              <div class="icon"><i class="fa fa-clock-o"></i></div>
+                              <div class="title">{$item.created|l10n(shortdatetime)}</div>
+                              <div class="content">{$item.simple_message.data_text1|sensor_robot_message()}</div>
+                            </li>
                         {/if}
                     {/foreach}
                 </dl>

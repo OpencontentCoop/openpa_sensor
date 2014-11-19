@@ -15,7 +15,7 @@
 {if $hasMessage}
 <div id="post_comments">
     <div class="comment">
-        <h4>Commenti</h4>
+        <h4{'Commenti'|i18n('openpa_sensor/messages')}</h4>
         {foreach $message_list as $item}
 
             {if $item.message_type|eq(1)}
@@ -40,7 +40,7 @@
 {/if}
 {if fetch( user, current_user ).is_logged_in}
 <div class="new_comment">
-    <h4>{'Aggiungi un commento'|i18n('openpa_sensor')}</h4>
+    <h4>{'Aggiungi un commento'|i18n('openpa_sensor/messages')}</h4>
     <div class="row">
         <div class="col-sm-8 col-md-8"><br>
             <textarea name="Collaboration_OpenPASensorItemComment" class="form-control" placeholder="Commenti" rows="7"></textarea><br />
@@ -60,7 +60,7 @@
             {/if}
         </div>
 		<div class="col-sm-8 col-md-8">
-            <input class="btn send btn-primary btn-lg btn-block" type="submit" name="CollaborationAction_Comment" value="{'Aggiungi un commento'|i18n('openpa_sensor')}" />
+            <input class="btn send btn-primary btn-lg btn-block" type="submit" name="CollaborationAction_Comment" value="{'Aggiungi un commento'|i18n('openpa_sensor/messages')}" />
         </div>
     </div>
 </div>
