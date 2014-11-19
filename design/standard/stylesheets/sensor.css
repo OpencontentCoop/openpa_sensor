@@ -1,0 +1,65 @@
+.timeline li {
+    position: relative;
+    border-left: 4px solid #dddddd;
+    padding-bottom: 20px; }
+.timeline li .date {
+    width: 40px;
+    height: 40px;
+    background-color: red;
+    text-align: center;
+    color: white;
+    position: absolute;
+    top: 0;
+    left: 0;}
+.timeline li:first-child:before, .timeline li:last-child:before {
+    content: "";
+    width: 10px;
+    height: 10px;
+    display: block;
+    position: absolute;
+    top: 0;
+    left: -7px;
+    background-color: #dddddd; }
+.timeline li:last-child:before {
+    top: auto;
+    bottom: 0; }
+.timeline li:last-child {
+    padding-bottom: 0; }
+.timeline li .content {
+    padding: 10px;
+    background-color: white;
+    border: 1px solid #dddddd;
+    position: relative;
+    margin-top: 10px;
+    margin-left: 20px;
+    position: relative; }
+.timeline li .icon {
+    width: 40px;
+    height: 40px;
+    text-align: center;
+    color: white;
+    vertical-align: middle;
+    line-height: 40px;
+    font-size: 25px;
+    position: absolute;
+    top: 0;
+    left: 20px; }
+.timeline li .icon:before {
+    content: "";
+    width: 20px;
+    height: 4px;
+    background-color: #dddddd;
+    position: absolute;
+    vertical-align: middle;
+    top: 50%;
+    margin-top: -2px;
+    left: -20px; }
+.timeline li .title {
+    font-family: Montserrat;
+    margin-left: 70px;
+    padding: 2px 0;
+    font-size: 16px; }
+.timeline li .title small {
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    display: block;
+    font-size: 10px; }

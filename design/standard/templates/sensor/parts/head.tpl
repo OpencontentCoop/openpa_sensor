@@ -12,6 +12,7 @@
     {ezcss_load( array(
         'animate.css',
         'style.css',
+        'sensor.css',
         'font-awesome.min.css',
         'debug.css',
         'websitetoolbar.css'
