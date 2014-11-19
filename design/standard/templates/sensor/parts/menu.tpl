@@ -1,4 +1,3 @@
-{*cache-block keys=array( $current_user.contentobject_id )*}
 <div class="collapse navbar-collapse">
     <ul class="nav pull-right navbar-nav">
         {*<li class="active"><a href="{'sensor/home'|ezurl(no)}">{'SensorCivico'|i18n('openpa_sensor/menu')}</a></li>*}
@@ -8,7 +7,12 @@
                 <li><a href="#">Segnalazioni</a></li>
                 <li><a href="#">Aggiornamenti</a></li>
             </ul>
-        </li>*}        
+        </li>*}
+        {if ezini( 'RegionalSettings', 'Locale' )|eq('ita-IT')}
+          <li><a href='/de/sensor/home'><span class="label label-default" style="font-size: 100%">Deutsch</span></a></li>
+        {else}
+          <li><a href='sensor/home'><span class="label label-default" style="font-size: 100%">Italiano</span></a></li>
+        {/if}
         <li class="dropdown">
             <a data-toggle="dropdown" class="dropdown-toggle" href="{'sensor/info'|ezurl(no)}">{'Informazioni'|i18n('openpa_sensor/menu')}
                 <span class="caret"></span>
@@ -63,4 +67,3 @@
         {*<li><img height="50px" src={"logo_sensor.png"|ezimage()}></li>*}
     </ul>
 </div>
-{*/cache-block*}

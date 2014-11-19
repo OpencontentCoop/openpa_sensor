@@ -4,7 +4,7 @@
         {include uri='design:sensor/parts/user_image.tpl' object=$participant}
     </figure>
     <div class="col-xs-10 col-md-10">
-        <div class="comment_name"> <small>{'MESSAGGIO PRIVATO'|i18n('openpa_sensor/signup')}</small><br />{$participant.name|wash()}</div>
+        <div class="comment_name"> <small>{'MESSAGGIO PRIVATO'|i18n('openpa_sensor/messages')}</small><br />{$participant.name|wash()}</div>
         <div class="comment_date"><i class="fa-time"></i>
             {if $is_read|not}<strong>{/if}
                 {$item.created|l10n(shortdatetime)}
