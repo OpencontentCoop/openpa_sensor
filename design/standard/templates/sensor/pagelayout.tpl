@@ -10,9 +10,35 @@
 
 <body>
 
+<header>
+    <div class="container">
+        <div class="navbar navbar-default" role="navigation" style="position: relative; z-index: 10;">
+            <div class="navbar-header">
+                <a class="navbar-brand" href="{'sensor/home'|ezurl(no)}">
+                    <img src="{$sensor.logo|ezroot(no)}" alt="{$sensor.site_title}" height="90" width="90">
+                    <span class="logo_title">{$sensor.logo_title}</span>
+                    <span class="logo_subtitle">{$sensor.logo_subtitle}</span>
+                </a>
+                <a class="btn btn-navbar btn-default navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                    <span class="nb_left pull-left">
+                        <span class="fa fa-reorder"></span>
+                    </span>
+                    <span class="nb_right pull-right">Menu</span>
+                </a>
+            </div>
 {/cache-block}
+            
+{cache-block ignore_content_expiry keys=$current_user.contentobject_id}
+            {include uri='design:sensor/parts/menu.tpl'}
+{/cache-block}
+            
 
-{include uri='design:sensor/parts/header.tpl'}
+        </div>
+    </div>
+</header>
+<img alt="SensorCivico" src={"sensor_border.png"|ezimage()} style="position: absolute; top: 0; right: 0; border: 0;">
+
+
 
 {if is_set( $sensor_home )}
     {include uri='design:sensor/parts/home_image.tpl'}
@@ -23,16 +49,41 @@
         {$module_result.content}
 
         {if and( $current_user.is_logged_in|not(), is_set( $sensor_signup )|not )}
-            {include uri='design:sensor/parts/login.tpl'}
+{cache-block ignore_content_expiry}            
+          {include uri='design:sensor/parts/login.tpl'}
+{/cache-block}            
         {/if}
 
     </div>
 
-    {cache-block expiry=86400 keys=array( $user_hash )}
-        {include uri='design:sensor/parts/footer.tpl'}
+{cache-block expiry=86400 keys=array( $user_hash )}
+
+  {if is_set( $sensor )|not()}{def $sensor = sensor_root_handler()}{/if}
+  <footer>
+      <section id="footer_teasers_wrapper">
+          <div class="container">
+              <div class="row">
+                  <div class="footer_teaser col-sm-6 col-md-6">
+                      <h3>{'Contatti'|i18n('openpa_sensor/menu')}</h3>
+                      <p>{$sensor.footer_contacts}</p>
+                  </div>
+                  <div class="footer_teaser col-sm-6 col-md-6">
+                      <h3>{'Privacy'|i18n('openpa_sensor/menu')}</h3>
+                      <p>{$sensor.footer_privacy}</p>
+                  </div>
+              </div>
+          </div>
+      </section>
+      <section class="copyright">
+          <div class="container">
+              <div class="row">
+                  <div class="col-sm-6 col-md-6"> ©2014 Comune di Bolzano</div>
+              </div>
+          </div>
+      </section>
+  </footer>
 
 </div>
-{include uri='design:sensor/parts/footer_script.tpl'}
 {/cache-block}
 
 

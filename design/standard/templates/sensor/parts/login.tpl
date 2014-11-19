@@ -1,5 +1,3 @@
-{cache-block ignore_content_expiry}
-
 {def $user = $current_user $method_name = '' $icon = false() $class = ''}
 {def $is_user_anonymous = $user.contentobject_id|eq( ezini( 'UserSettings', 'AnonymousUserID' ) )}
 {def $login_methods = ezini( 'ngconnect', 'LoginMethods', 'ngconnect.ini' )}
@@ -15,4 +13,3 @@
         </div>
     </div>
 </section>
-{/cache-block}

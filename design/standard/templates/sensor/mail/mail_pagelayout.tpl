@@ -116,8 +116,8 @@
                         <td align='center' valign='top'>
                           <small>
                             &copy; {currentdate()|datetime('custom', '%Y')} {$sensor.logo_title} - 
-                            {'%privacy_link_start%Informazioni sulla privacy%privacy_link_end%'|i18n('openpa_sensor/mail/registration',, hash( '%privacy_link_start%', concat( '<a href=http://', ezini( 'SiteSettings', 'SiteURL' ), '/info/privacy/>' ), '%privacy_link_end%', '</a>' ))} -
-                            {'%terms_link_start%Termini di utilizzo%terms_link_end%'|i18n('openpa_sensor/mail/registration',, hash( '%terms_link_start%', concat( '<a href=http://', ezini( 'SiteSettings', 'SiteURL' ), '/info/terms/>' ), '%terms_link_end%', '</a>' ))}
+                            {'%privacy_link_start%Informazioni sulla privacy%privacy_link_end%'|i18n('openpa_sensor/mail/registration',, hash( '%privacy_link_start%', concat( '<a href=http://', ezini( 'SiteSettings', 'SiteURL' ), '/sensor/info/privacy/>' ), '%privacy_link_end%', '</a>' ))} -
+                            {'%terms_link_start%Termini di utilizzo%terms_link_end%'|i18n('openpa_sensor/mail/registration',, hash( '%terms_link_start%', concat( '<a href=http://', ezini( 'SiteSettings', 'SiteURL' ), '/sensor/info/terms/>' ), '%terms_link_end%', '</a>' ))}
                           </small>
                         </td>
                     </tr>

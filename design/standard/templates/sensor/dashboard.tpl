@@ -1,8 +1,8 @@
+{if $item_count|gt(0)}
+
 <section class="hgroup">
   <h1>{"Le mie segnalazioni"|i18n('openpa_sensor/dashboard')}</h1>
 </section>
-
-{if $item_count|gt(0)}
 
 {def $item_class = ''
      $row_class = ''

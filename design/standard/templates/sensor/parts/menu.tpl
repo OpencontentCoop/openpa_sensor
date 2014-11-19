@@ -8,11 +8,20 @@
                 <li><a href="#">Aggiornamenti</a></li>
             </ul>
         </li>*}
-        {if ezini( 'RegionalSettings', 'Locale' )|eq('ita-IT')}
-          <li><a href='/de/sensor/home'><span class="label label-default" style="font-size: 100%">Deutsch</span></a></li>
-        {else}
-          <li><a href='sensor/home'><span class="label label-default" style="font-size: 100%">Italiano</span></a></li>
-        {/if}
+        
+        {def $avail_translation = language_switcher( $site.uri.original_uri)}
+        {foreach $avail_translation as $siteaccess => $lang}
+          <li>
+            <a href={$lang.url|ezurl}>
+              {if $siteaccess|eq($access_type.name)}
+                <span class="label label-default" style="font-size: 100%">{$lang.text|wash}</span>
+              {else}
+                {$lang.text|wash}
+              {/if}
+            </a>
+          </li>
+        {/foreach}
+        
         <li class="dropdown">
             <a data-toggle="dropdown" class="dropdown-toggle" href="{'sensor/info'|ezurl(no)}">{'Informazioni'|i18n('openpa_sensor/menu')}
                 <span class="caret"></span>
