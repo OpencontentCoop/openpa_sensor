@@ -63,10 +63,36 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase
         $this->fnData['footer_contacts'] = 'getFooterContacts';
         $this->fnData['footer_privacy'] = 'getFooterPrivacy';
 
+        $this->fnData['privacy'] = 'getPrivacy';
+        $this->fnData['faq'] = 'getFaq';
+        $this->fnData['terms'] = 'getTerms';
+
         $this->data['post_container_node'] = self::postContainerNode();
         $this->data['post_class'] = self::postContentClass();
 
         $this->data['areas'] = self::postAreas();
+
+    }
+
+    protected function getPrivacy()
+    {
+        $node = self::rootNode();
+        $dataMap = $node->attribute( 'data_map' );
+        return $dataMap['privacy'];
+    }
+
+    protected function getFaq()
+    {
+        $node = self::rootNode();
+        $dataMap = $node->attribute( 'data_map' );
+        return $dataMap['faq'];
+    }
+
+    protected function getTerms()
+    {
+        $node = self::rootNode();
+        $dataMap = $node->attribute( 'data_map' );
+        return $dataMap['terms'];
     }
 
     protected function getOperators()
