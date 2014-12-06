@@ -700,16 +700,17 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase
             }
             $anonymousRole->assignToUser( $anonymousUserId );
 
+            /** @var eZRole $reporterRole */
+            $reporterRole = eZRole::fetchByName( "Sensor Reporter" );
+            if ( !$reporterRole instanceof eZRole )
+            {
+                throw new Exception( "Error: problem with roles" );
+            }
             $memberNodeId = eZINI::instance()->variable( 'UserSettings', 'DefaultUserPlacement' );
             $members = eZContentObject::fetchByNodeID( $memberNodeId );
             if ( $members instanceof eZContentObject )
             {
-                /** @var eZRole $reporterRole */
-                $reporterRole = eZRole::fetchByName( "Sensor Reporter" );
-                if ( !$reporterRole instanceof eZRole )
-                {
-                    throw new Exception( "Error: problem with roles" );
-                }
+                $anonymousRole->assignToUser( $members->attribute( 'id' ) );
                 $reporterRole->assignToUser( $members->attribute( 'id' ) );
             }
 
@@ -719,6 +720,8 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase
             {
                 throw new Exception( "Error: problem with roles" );
             }
+            $anonymousRole->assignToUser( $groupObject->attribute( 'id' ) );
+            $reporterRole->assignToUser( $groupObject->attribute( 'id' ) );
             $operatorRole->assignToUser( $groupObject->attribute( 'id' ) );
 
         }
