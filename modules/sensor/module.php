@@ -33,9 +33,9 @@ $ViewList['add'] = array(
 
 $ViewList['dashboard'] = array(
     'script' =>	'dashboard.php',
-    'params' => array(),
+    'params' => array( "Group" ),
     'unordered_params' => array(
-        "language" => "Language",
+        "list" => "List",
         "offset" => "Offset" ),
     'functions' => array( 'use' )
 );
@@ -52,8 +52,23 @@ $ViewList['test_mail'] = array(
     'functions' => array( 'debug' )
 );
 
+$ViewList['config'] = array(
+    'script' =>	'config.php',
+    'params' => array( "Part" ),
+    'unordered_params' => array( 'offset' => 'Offset' ),
+    'functions' => array( 'config' )
+);
+
+$ViewList['user'] = array(
+    'script' =>	'user.php',
+    'params' => array( "ID" ),
+    'unordered_params' => array(),
+    'functions' => array( 'config' )
+);
 
 $FunctionList = array();
 $FunctionList['use'] = array();
 $FunctionList['debug'] = array();
+$FunctionList['config'] = array();
+$FunctionList['manage'] = array();
 

@@ -12,14 +12,17 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase
      */
     protected static $rootNode;
     protected static $postContainerNode;
+    protected static $postCategoriesNode;
     protected static $postContentClass;
     protected static $postAreas;
+    protected static $postCategories;
 
     protected static $stateGroupIdentifier = 'sensor';
     protected static $privacyStateGroupIdentifier = 'privacy';
 
     protected static $stateIdentifiers = array(
-        'open' => "In corso",
+        'pending' => "Inviato",
+        'open' => "In carico",
         'close' => "Chiusa"
     );
     protected static $privacyStateIdentifiers = array(
@@ -36,13 +39,12 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase
 
         $this->fnData['geo_js_array'] = 'getGeoJsArray';
 
-        $this->fnData['operators'] = 'getOperators';
-
         $this->fnData['type'] = 'getType';
         $this->fnData['current_status'] = 'getCurrentStatus';
         $this->fnData['current_privacy_status'] = 'getCurrentPrivacyStatus';
         $this->fnData['current_owner'] = 'getCurrentOwner';
         $this->fnData['comment_count'] = 'getCommentCount';
+        $this->fnData['response_count'] = 'getResponseCount';
 
         $this->fnData['site_title'] = 'getSiteTitle';
         $this->data['site_images'] = array(
@@ -60,17 +62,20 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase
         $this->fnData['banner_title'] = 'getBannerTitle';
         $this->fnData['banner_subtitle'] = 'getBannerSubTitle';
 
-        $this->fnData['footer_contacts'] = 'getFooterContacts';
-        $this->fnData['footer_privacy'] = 'getFooterPrivacy';
+        $this->fnData['footer'] = 'getFooter';        
+        $this->fnData['contacts'] = 'getContacts';
 
         $this->fnData['privacy'] = 'getPrivacy';
         $this->fnData['faq'] = 'getFaq';
         $this->fnData['terms'] = 'getTerms';
 
         $this->data['post_container_node'] = self::postContainerNode();
+        $this->data['post_categories_container_node'] = self::postCategoriesNode();
         $this->data['post_class'] = self::postContentClass();
-
+               
         $this->data['areas'] = self::postAreas();
+        $this->data['categories'] = self::postCategories();
+        $this->data['operators'] = self::operators();
 
     }
 
@@ -93,15 +98,6 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase
         $node = self::rootNode();
         $dataMap = $node->attribute( 'data_map' );
         return $dataMap['terms'];
-    }
-
-    protected function getOperators()
-    {
-        return self::rootNode()->subTree( array(
-            'ClassFilterType' => 'include',
-            'ClassFilterArray' => array( 'user', 'sensor_operator' ),
-            'SortBy' => array( 'name', true )
-        ) );
     }
 
     protected function getHelper()
@@ -222,6 +218,18 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase
             )
         );
     }
+    
+    protected function getResponseCount()
+    {
+        return eZCollaborationItemMessageLink::fetchItemCount(
+            array(
+                'item_id' => $this->getHelper()->attribute( 'collaboration_item' )->attribute( 'id' ),
+                'conditions' => array(
+                    'message_type' => SensorHelper::MESSAGE_TYPE_RESPONSE
+                )
+            )
+        );
+    }
 
     protected function getCurrentOwner()
     {
@@ -230,7 +238,7 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase
         {
             return $object->attribute( 'name' );
         }
-        return '?';
+        return false;
 
     }
 
@@ -268,12 +276,25 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase
             );
             foreach ( $states as $state )
             {
+                $cssClass = 'info';
+                if ( $state->attribute( 'identifier' ) == 'pending' )
+                {
+                    $cssClass = 'danger';
+                }
+                elseif ( $state->attribute( 'identifier' ) == 'open' )
+                {
+                    $cssClass = 'warning';
+                }
+                elseif ( $state->attribute( 'identifier' ) == 'close' )
+                {
+                    $cssClass = 'success';
+                }
                 if ( in_array( $state->attribute( 'id' ), $this->container->getContentObject()->attribute( 'state_id_array' ) ) )
                 {
                     return array(
                         'name' => $state->attribute( 'current_translation' )->attribute( 'name' ),
                         'identifier' => $state->attribute( 'identifier' ),
-                        'css_class' => $state->attribute( 'identifier' ) == 'open' ? 'danger' : 'success'
+                        'css_class' => $cssClass
                     );
                 }
             }
@@ -281,14 +302,32 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase
         return array();
     }
 
-    protected function getFooterPrivacy()
+    protected function getFooter()
     {
-        return $this->getAttributeString( 'footer_contacts' );
+        $data = '';
+        if ( $this->container->hasAttribute( 'footer' ) )
+        {
+            $attribute = $this->container->attribute( 'footer' )->attribute( 'contentobject_attribute' );
+            if ( $attribute instanceof eZContentObjectAttribute )
+            {
+                $data = $attribute;
+            }
+        }
+        return $data;
     }
-
-    protected function getFooterContacts()
+    
+    protected function getContacts()
     {
-        return $this->getAttributeString( 'footer_privacy' );
+        $data = '';
+        if ( $this->container->hasAttribute( 'contacts' ) )
+        {
+            $attribute = $this->container->attribute( 'contacts' )->attribute( 'contentobject_attribute' );
+            if ( $attribute instanceof eZContentObjectAttribute )
+            {
+                $data = $attribute;
+            }
+        }
+        return $data;
     }
 
     protected function getBanner()
@@ -467,12 +506,32 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase
     {
         if ( self::$rootNode == null )
         {
-            $root = eZContentObject::fetchByRemoteID( self::sensorRootRemoteId() );
-            self::$rootNode = $root->attribute( 'main_node' );
+            if ( !isset( $GLOBALS['SensorRootNode'] ) )
+            {
+                $GLOBALS['SensorRootNode'] = eZContentObject::fetchByRemoteID( self::sensorRootRemoteId() )->attribute( 'main_node' );    
+            }            
+            self::$rootNode = $GLOBALS['SensorRootNode'];
         }
         return self::$rootNode;
     }
 
+    public static function postCategoriesNode()
+    {
+        if ( self::$postCategoriesNode == null )
+        {
+            $root = eZContentObject::fetchByRemoteID( self::sensorRootRemoteId() . '_postcategories' );
+            if ( $root instanceof eZContentObject )
+            {
+                self::$postCategoriesNode = $root->attribute( 'main_node' );
+            }
+            else
+            {
+                self::$postCategoriesNode = self::rootNode();;
+            }
+        }
+        return self::$postCategoriesNode;
+    }
+    
     public static function postContainerNode()
     {
         if ( self::$postContainerNode == null )
@@ -498,8 +557,17 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase
         }
         return self::$postContentClass;
     }
+    
+    public static  function operators()
+    {
+        return self::rootNode()->subTree( array(
+            'ClassFilterType' => 'include',
+            'ClassFilterArray' => array( 'user', 'sensor_operator' ),
+            'SortBy' => array( 'name', true )
+        ) );
+    }
 
-    public function postAreas()
+    public static function postAreas()
     {
         if ( self::$postAreas == null )
         {
@@ -510,6 +578,7 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase
                     'Depth' => 1,
                     'DepthOperator' => 'eq',
                     'ClassFilterArray' => array( 'sensor_area' ),
+                    'Limitation' => array(),
                     'SortBy' => array( 'depth', true )
                 ) );
 
@@ -526,6 +595,35 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase
         }
         return self::$postAreas;
     }
+    
+    public static function postCategories()
+    {
+        if ( self::$postCategories == null )
+        {
+            $data = array();
+            $false = false;
+            /** @var eZContentObjectTreeNode[] $treeAreas */
+            $treeCategories = self::postCategoriesNode()->subTree( array(
+                    'ClassFilterType' => 'include',
+                    'Depth' => 1,
+                    'DepthOperator' => 'eq',
+                    'ClassFilterArray' => array( 'sensor_category' ),
+                    'Limitation' => array(),
+                    'SortBy' => array( 'depth', true )
+                ) );
+
+            foreach( $treeCategories as $node )
+            {                
+                $data[] = array(
+                    'node' => $node,
+                    'children' => self::walkSubtree( $node, $false )
+                );
+            }
+
+            self::$postCategories = array( 'tree' => $data );
+        }
+        return self::$postCategories;
+    }
 
     protected static function walkSubtree( eZContentObjectTreeNode $node, &$coords )
     {
@@ -534,7 +632,10 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase
         {
             foreach( $node->children() as $subNode )
             {
-                self::findAreaCoords( $subNode->attribute( 'object' ), $coords );
+                if ( is_array( $coords ) )
+                {
+                    self::findAreaCoords( $subNode->attribute( 'object' ), $coords );
+                }
                 $data[] = array(
                     'node' => $subNode,
                     'children' => self::walkSubtree( $subNode, $coords )
@@ -582,22 +683,117 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase
 
     public static function executeWorkflow( $parameters, $process, $event )
     {
-        $id = $parameters['object_id'];
-        $object = eZContentObject::fetch( $id );
-        if ( $object instanceof eZContentObject
-             && $object->attribute( 'class_identifier' ) == 'sensor_post'
-             && $object->attribute( 'current_version') == 1 )
+        $trigger = $parameters['trigger_name'];
+        if ( $trigger == 'post_publish' )
         {
-            SensorHelper::createCollaborationItem( $id );
-            $dataMap = $object->attribute( 'data_map' );
-            if ( isset( $dataMap['privacy'] ) )
+            $id = $parameters['object_id'];
+            $object = eZContentObject::fetch( $id );
+            if ( $object instanceof eZContentObject
+                 && $object->attribute( 'class_identifier' ) == 'sensor_post'
+                 && $object->attribute( 'current_version') == 1 )
             {
-                if ( $dataMap['privacy']->attribute( 'data_int' ) == 0 )
+                SensorHelper::createCollaborationItem( $id );
+                $dataMap = $object->attribute( 'data_map' );
+                if ( isset( $dataMap['privacy'] ) )
                 {
-                    self::setState( $object, 'privacy', 'private' );
+                    if ( $dataMap['privacy']->attribute( 'data_int' ) == 0 )
+                    {
+                        self::setState( $object, 'privacy', 'private' );
+                    }
+                }
+            }
+            elseif ( $object instanceof eZContentObject
+                 && $object->attribute( 'class_identifier' ) == 'sensor_root'  )
+            {                
+                eZCache::clearByTag( 'template' );
+            }
+        }
+        elseif ( $trigger == 'pre_delete' )
+        {
+            $nodeIdList = $parameters['node_id_list'];
+            $inTrash = (bool) $parameters['move_to_trash'];
+            foreach( $nodeIdList as $nodeId )
+            {
+                $object = eZContentObject::fetchByNodeID( $nodeId );
+                if ( $object instanceof eZContentObject )
+                {
+                    try
+                    {
+                        $helper = SensorHelper::instanceFromContentObjectId( $object->attribute( 'id' ) );
+                        if ( $inTrash )
+                            $helper->moveToTrash();
+                        else
+                            $helper->delete();
+                    }
+                    catch( Exception $e )
+                    {
+                        
+                    }
                 }
             }
         }
-
+    }
+    
+    public static function fetchPosts( $asObject = false )
+    {
+        $solrFetchParams = array(
+            'SearchOffset' => 0,
+            'SearchLimit' => 1000,
+            'Facet' => null,
+            'SortBy' => array( 'published' => 'desc' ),
+            'Filter' => array( 'attr_privacy_b:1' ),
+            'SearchContentClassID' => array( 'sensor_post' ),
+            'SearchSectionID' => null,
+            'SearchSubTreeArray' => array( self::postContainerNode()->attribute( 'node_id' ) ),
+            'AsObjects' => $asObject,
+            'SpellCheck' => null,
+            'IgnoreVisibility' => null,
+            'Limitation' => null,
+            'BoostFunctions' => null,
+            'QueryHandler' => 'ezpublish',
+            'EnableElevation' => true,
+            'ForceElevation' => true,
+            'SearchDate' => null,
+            'DistributedSearch' => null,
+            'FieldsToReturn' => array(
+                'subattr_geo___coordinates____gpt',
+                'attr_type_s',
+                'attr_subject_t',
+                'subattr_category___name____s',
+                'meta_object_states_si'
+            ),
+            'SearchResultClustering' => null,
+            'ExtendedAttributeFilter' => array()
+        );        
+        $solrSearch = new eZSolr();
+        $solrResult = $solrSearch->search( '', $solrFetchParams );
+        return $solrResult;
+    }
+    
+    function fetchSensorGeoJsonFeatureCollection()
+    {
+        $data = new SensorGeoJsonFeatureCollection();
+        $items = self::fetchPosts( false );
+        foreach( $items['SearchResult'] as $item )
+        {
+            $geo = isset( $item['fields']['subattr_geo___coordinates____gpt'] ) ? $item['fields']['subattr_geo___coordinates____gpt'] : array();            
+            if ( count( $geo ) > 0 )
+            {
+                $geometryArray = explode( ',', $geo[0] );
+                
+                $id = $item['id_si'];
+                $type = isset( $item['fields']['attr_type_s'] ) ? $item['fields']['attr_type_s'] : false;
+                $name = isset( $item['fields']['attr_subject_t'] ) ? $item['fields']['attr_subject_t'] : false;
+                
+                $properties = array(
+                    'type' => $type,
+                    'name' => $name,
+                    'popupContent' => '<em>Loading...</em>'
+                );
+                $feature = new SensorGeoJsonFeature( $id, $geometryArray, $properties );
+                $data->add( $feature );
+            }                
+        }
+        return $data;
     }
 }

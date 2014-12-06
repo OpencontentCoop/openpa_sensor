@@ -6,7 +6,7 @@
 </script>  
 
 
-<form id="edit" class="edit col-md-6 col-xs-12" enctype="multipart/form-data" method="post" action={concat("/content/edit/",$object.id,"/",$edit_version,"/",$edit_language|not|choose(concat($edit_language,"/"),''))|ezurl}>
+<form id="edit" class="post-edit edit col-md-6 col-xs-12" enctype="multipart/form-data" method="post" action={concat("/content/edit/",$object.id,"/",$edit_version,"/",$edit_language|not|choose(concat($edit_language,"/"),''))|ezurl}>
 
   <div class="panel panel-default">
 	<div class="panel-body">
@@ -18,8 +18,6 @@
 			  <span class="logo_subtitle">{$sensor.logo_subtitle}</span>
 		  </a>
 	  </div>
-	  
-	{include uri="design:content/edit_validation.tpl"}
 
 	{if ezini_hasvariable( 'EditSettings', 'AdditionalTemplates', 'content.ini' )}
 	  {foreach ezini( 'EditSettings', 'AdditionalTemplates', 'content.ini' ) as $additional_tpl}
@@ -142,12 +140,64 @@
 	  {/foreach}
 	</div>
 
+	{section show=$validation.processed}
+		{section show=or( $validation.attributes, $validation.placement, $validation.custom_rules )}
+			<div class="alert alert-warning alert-dismissible" role="alert"> 
+			  <button type="button" class="close" data-dismiss="alert">
+			  <span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+				{section show=$validation.attributes}
+					<p>{'Required data is either missing or is invalid'|i18n( 'design/admin/content/edit' )}:</p>
+					<ul class="list-unstyled">
+						{section var=UnvalidatedAttributes loop=$validation.attributes}
+							<li><strong>{$UnvalidatedAttributes.item.name|wash}:</strong> {$UnvalidatedAttributes.item.description}</li>
+						{/section}
+					</ul>
+				{/section}
+	
+				{section show=$validation.placement}
+					<p>{'The following locations are invalid'|i18n( 'design/admin/content/edit' )}:</p>
+					<ul class="list-unstyled">
+						{section var=UnvalidatedPlacements loop=$validation.placement}
+							<li>{$UnvalidatedPlacements.item.text}</li>
+						{/section}
+					</ul>
+				{/section}
+	
+				{section show=$validation.custom_rules}
+					<p>{'The following data is invalid according to the custom validation rules'|i18n( 'design/admin/content/edit' )}:</p>
+					<ul class="list-unstyled">
+						{section var=UnvalidatedCustomRules loop=$validation.custom_rules}
+							<li>{$UnvalidatedCustomRules.item.text}</li>
+						{/section}
+					</ul>
+				{/section}
+			</div>
+	
+		{section-else}
+	
+			{section show=$validation_log}
+				<div class="alert alert-warning alert-dismissible" role="alert">
+  <button type="button" class="close" data-dismiss="alert"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+					{section var=ValidationLogs loop=$validation_log}
+						<p>{$ValidationLogs.item.name|wash}:</p>
+						<ul>
+							{section var=LogMessages loop=$ValidationLogs.item.description}
+								<li>{$LogMessages.item}</li>
+							{/section}
+						</ul>
+					{/section}
+				</div>            
+			{/section}
+		{/section}
+	{/section}
+
+	
 	  <div class="buttonblock">
 		<input class="btn btn-lg btn-success pull-right" type="submit" name="PublishButton" value="Salva" />
 		<input class="btn btn-lg btn-danger" type="submit" name="DiscardButton" value="{'Discard'|i18n('design/standard/content/edit')}" />
 		<input type="hidden" name="DiscardConfirm" value="0" />
 		<input type="hidden" name="RedirectIfDiscarded" value="/sensor/redirect/home" />
-		<input type="hidden" name="RedirectURIAfterPublish" value="/sensor/redirect/posts" />
+		<input type="hidden" name="RedirectURIAfterPublish" value="/sensor/redirect/posts:{$object.id}" />
 	  </div>
   </div>
 </div>

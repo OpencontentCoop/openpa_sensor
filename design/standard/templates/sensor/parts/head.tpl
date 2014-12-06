@@ -8,6 +8,7 @@
 
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
 
     {ezcss_load( array(
         'animate.css',
@@ -28,8 +29,14 @@
         'wow.min.js',
         'snap.svg-min.js',
         'restart_theme.js',
-        'collapser.js'
+        'collapser.js',
+        'placeholders.min.js'
     ))}
+    
+    <!--[if lt IE 9]>
+    <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>    
+    <script src="{'javascript/respond.min.js'|ezdesign(no)}"></script>
+    <![endif]-->
 
     <link rel="apple-touch-icon-precomposed" sizes="114x114" href={$sensor.site_images["apple-touch-icon-114x114-precomposed"]}>
     <link rel="apple-touch-icon-precomposed" sizes="72x72" href={$sensor.site_images["apple-touch-icon-72x72-precomposed"]}>

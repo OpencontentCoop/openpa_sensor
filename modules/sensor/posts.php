@@ -17,6 +17,8 @@ else
 {
     try
     {
+        eZPreferences::sessionCleanup();
+        
         $object = eZContentObject::fetch( $postId );
         //SensorHelper::createCollaborationItem($postId);die();
         if ( !$object instanceof eZContentObject )

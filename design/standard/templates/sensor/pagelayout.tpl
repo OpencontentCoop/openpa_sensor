@@ -1,8 +1,6 @@
 {def $user_hash  = concat( $current_user.role_id_list|implode( ',' ), ',', $current_user.limited_assignment_value_list|implode( ',' ) )}
 {cache-block ignore_content_expiry keys=array( $module_result.uri, $user_hash )}
-
 {def $sensor = sensor_root_handler()}
-
 <!doctype html>
 <html class="no-js" lang="en">
 
@@ -44,6 +42,10 @@
     {include uri='design:sensor/parts/home_image.tpl'}
 {/if}
 
+{if and( is_set( $module_result.node_id ), $module_result.node_id|eq( sensor_postcontainer().node_id ) )}
+  {include uri='design:sensor/parts/map.tpl'}
+{/if}
+
 <div class="main">
     <div class="container">
         {$module_result.content}
@@ -65,11 +67,10 @@
               <div class="row">
                   <div class="footer_teaser col-sm-6 col-md-6">
                       <h3>{'Contatti'|i18n('openpa_sensor/menu')}</h3>
-                      <p>{$sensor.footer_contacts}</p>
+                      <p>{attribute_view_gui attribute=$sensor.contacts}</p>
                   </div>
-                  <div class="footer_teaser col-sm-6 col-md-6">
-                      <h3>{'Privacy'|i18n('openpa_sensor/menu')}</h3>
-                      <p>{$sensor.footer_privacy}</p>
+                  <div class="footer_teaser col-sm-6 col-md-6">                      
+                      <p>{attribute_view_gui attribute=$sensor.footer}</p>
                   </div>
               </div>
           </div>
@@ -77,7 +78,7 @@
       <section class="copyright">
           <div class="container">
               <div class="row">
-                  <div class="col-sm-6 col-md-6"> ©2014 Comune di Bolzano</div>
+                  <div class="col-sm-12 col-md-12"> ©2014 Sensorcivico - progetto di riuso del Consorzio dei Comuni Trentini - realizzato da Opencontent con ComunWeb</div>
               </div>
           </div>
       </section>

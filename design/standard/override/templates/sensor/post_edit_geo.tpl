@@ -12,7 +12,7 @@
     <input class="btn-sm btn pull-left" type="button" id="mylocation-button" value="{'My current location'|i18n('extension/ezgmaplocation/datatype')}" title="{'Gets your current position if your browser support GeoLocation and you grant this website access to it! Most accurate if you have a built in gps in your Internet device! Also note that you might still have to type in address manually!'|i18n('extension/ezgmaplocation/datatype')}" />
 	<input class="btn btn-sm pull-right" type="button" id="input-address-button" value="{'Find address'|i18n('extension/ezgmaplocation/datatype')}"/>    
 </div>
-<ul class="list-unstyled" id="input-results"></ul>
+<ul class="list-unstyled" id="input-results" style="max-height: 50px;overflow-y: auto;"></ul>
 
 <input type="hidden" name="ezgml_hidden_address_{$attribute.id}" value="{$attribute.content.address}" disabled="disabled" />
 <input type="hidden" name="ezgml_hidden_latitude_{$attribute.id}" value="{$latitude}" disabled="disabled" />

@@ -250,14 +250,24 @@
 		document.getElementsByTagName('head')[0].appendChild(script);
 	};
 	L.Control.Geocoder.getJSON = function(url, params, callback) {
-		var xmlHttp = new XMLHttpRequest();
-		xmlHttp.open( "GET", url + L.Util.getParamString(params), true);
-		xmlHttp.send(null);
-		xmlHttp.onreadystatechange = function () {
-			if (xmlHttp.readyState != 4) return;
-			if (xmlHttp.status != 200 && req.status != 304) return;
-			callback(JSON.parse(xmlHttp.response));
-		};
+		//var xmlHttp = new XMLHttpRequest();        
+        if (window.XDomainRequest){
+            var xmlHttp = new XDomainRequest();
+            xmlHttp.open( "get", url + L.Util.getParamString(params), true);            
+            xmlHttp.onload = function () {                
+                callback(JSON.parse(xmlHttp.responseText));
+            };                        
+            xmlHttp.send();            
+        }else if (window.XMLHttpRequest){
+            var xmlHttp = new XMLHttpRequest();
+            xmlHttp.open( "GET", url + L.Util.getParamString(params), true);
+            xmlHttp.send(null);
+            xmlHttp.onreadystatechange = function () {
+                if (xmlHttp.readyState != 4) return;
+                if (xmlHttp.status != 200 && req.status != 304) return;
+                callback(JSON.parse(xmlHttp.response));
+            };
+        }        
 	};
 
 	L.Control.Geocoder.template = function (str, data, htmlEscape) {

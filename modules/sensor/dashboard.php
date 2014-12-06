@@ -1,62 +1,148 @@
 <?php
 
+//
+//SensorHelper::deleteCollaborationStuff( 16 );
+//SensorHelper::deleteCollaborationStuff( 17 );
+//
+//$db = eZDB::instance();
+//$db->begin();
+//$res = $db->arrayQuery( "SELECT id FROM ezcollab_item WHERE data_int1 = 1841" );
+//$db->commit();
+//echo '<pre>';print_r($res);die();
+
+
 $module = $Params['Module'];
 $tpl = eZTemplate::factory();
 
 $offset = !is_numeric( $Params['Offset'] ) ? 0 : $Params['Offset'];
-$sortBy = 'modified';
-$sortOrder = false;
-$isRead = null;
-$isActive = null;
-$status = false;
+$groupId = !is_numeric( $Params['Group'] ) ? false : $Params['Group'];
+$listTypes = array(
+    array( 'identifier' => 'unread', 'name' => ezpI18n::tr( 'openpa_sensor/dashboard', "Da leggere" ) ),
+    array( 'identifier' => 'active', 'name' => ezpI18n::tr( 'openpa_sensor/dashboard', "In corso" ) ),
+    array( 'identifier' => 'unactive', 'name' => ezpI18n::tr( 'openpa_sensor/dashboard', "Chiuse" ) )
+);
 
-$itemCount = 0;
-$itemList = array();
-$itemLimit = 20;
+$selectedList = $Params['List'];
+
+$limit = 30;
+
 $currentUser = eZUser::currentUser();
-
-if ( !$currentUser->isAnonymous() )
+if ( $currentUser->isAnonymous() )
 {
-    $group = SensorHelper::currentUserCollaborationGroup();
-    if ( $group instanceof eZCollaborationGroup )
+    $module->redirectTo( 'sensor/home' );
+    return;
+}
+else
+{
+    $tpl->setVariable( 'current_user', $currentUser );    
+    $tpl->setVariable( 'limit', $limit );
+    $viewParameters = array( 'offset' => $offset );
+    $tpl->setVariable( 'view_parameters', $viewParameters );
+    
+    if ( $groupId )
     {
-        $itemCount = eZFunctionHandler::execute(
-            'collaboration',
-            'item_count',
-            array( 'parent_group_id' => $group->attribute( 'id' ) )
+        $group = eZPersistentObject::fetchObject(
+            eZCollaborationGroup::definition(),
+            null,
+            array( 'user_id' => eZUser::currentUserID(), 'id' => $groupId )
         );
-        if ( $itemCount > 0 )
-        {            
-            $itemParameters = array(
-                'offset' => $offset,
-                'limit' => $itemLimit,
-                'sort_by' => array( $sortBy, $sortOrder ),
-                'is_read' => $isRead,
-                'is_active' => $isActive,
-                'parent_group_id' => $group->attribute( 'id' ),
-                'status' => $status
-            );        
-            $itemList = SensorHelper::fetchListTool( $itemParameters, false );            
+    }
+    else
+    {
+        $group = SensorHelper::currentUserCollaborationGroup();
+    }
+    
+    if ( $group instanceof eZCollaborationGroup )
+    {        
+        $access = $currentUser->hasAccessTo( 'sensor', 'manage' );        
+        if ( $access['accessWord'] == 'no' )
+        {
+            $items = SensorHelper::fetchAllItems( $group, $limit, $offset );
+            $itemsCount = SensorHelper::fetchAllItemsCount( $group );
+            $tpl->setVariable( 'simplified_dashboard', true );
+            $tpl->setVariable( 'all_items', $items );
+            $tpl->setVariable( 'all_items_count', $itemsCount );
+        }
+        else
+        {
+            $currentList = false;
+            foreach( $listTypes as $key => $type )
+            {
+                if ( $type['identifier'] == 'unread' )
+                {
+                    $count = SensorHelper::fetchUnreadItemsCount( $group );
+                    $listTypes[$key]['count'] = $count;
+                    if ( $selectedList == 'unread' || ( !$selectedList && $count > 0 && $currentList == false ) )
+                    {
+                        $currentList = $listTypes[$key];
+                    }                    
+                }
+                elseif ( $type['identifier'] == 'active' )
+                {
+                    $count = SensorHelper::fetchActiveItemsCount( $group );
+                    $listTypes[$key]['count'] = $count;
+                    if ( $selectedList == 'active' || ( !$selectedList && $count > 0 && $currentList == false  ) )
+                    {
+                        $currentList = $listTypes[$key];
+                    }
+                }
+                elseif ( $type['identifier'] == 'unactive' )
+                {
+                    $count = SensorHelper::fetchUnactiveItemsCount( $group );
+                    $listTypes[$key]['count'] = $count;
+                    if ( $selectedList == 'unactive' || ( !$selectedList && $count > 0 && $currentList == false  ) )
+                    {
+                        $currentList = $listTypes[$key];
+                    }
+                }
+            }
+            
+            if ( $currentList == false )
+            {
+                $currentList = $listTypes[0];
+            }
+            
+            if ( $currentList['identifier'] == 'unread' )
+            {
+                $unreadItems = SensorHelper::fetchUnreadItems( $group, $limit, $offset );
+                $tpl->setVariable( 'items', $unreadItems );
+            }
+            elseif ( $currentList['identifier'] == 'active' )            
+            {
+                $activeItems = SensorHelper::fetchActiveItems( $group, $limit, $offset );
+                $tpl->setVariable( 'items', $activeItems );
+            }
+            elseif ( $currentList['identifier'] == 'unactive' )
+            {
+                $unactiveItems = SensorHelper::fetchUnactiveItems( $group, $limit, $offset );
+                $tpl->setVariable( 'items', $unactiveItems );
+            }
+    
+            $tpl->setVariable( 'simplified_dashboard', false );
+            $tpl->setVariable( 'current_list', $currentList );
+            $tpl->setVariable( 'list_types', $listTypes );
+            
         }
     }
+    else
+    {
+        $module->redirectTo( 'sensor/home' );
+        return;
+    }
+    
+    $Result = array();
+    
+    $Result['persistent_variable'] = $tpl->variable( 'persistent_variable' );
+    $Result['pagelayout'] = 'design:sensor/pagelayout.tpl';
+    $Result['content'] = $tpl->fetch( 'design:sensor/dashboard.tpl' );
+    $Result['node_id'] = 0;
+    
+    $contentInfoArray = array( 'url_alias' => 'sensor/home' );
+    $contentInfoArray['persistent_variable'] = false;
+    if ( $tpl->variable( 'persistent_variable' ) !== false )
+    {
+        $contentInfoArray['persistent_variable'] = $tpl->variable( 'persistent_variable' );
+    }
+    $Result['content_info'] = $contentInfoArray;
+    $Result['path'] = array();
 }
-
-$tpl->setVariable( 'item_count', $itemCount );
-$tpl->setVariable( 'item_list', $itemList );
-$tpl->setVariable( 'item_limit', $itemLimit );
-
-$Result = array();
-
-$Result['persistent_variable'] = $tpl->variable( 'persistent_variable' );
-$Result['pagelayout'] = 'design:sensor/pagelayout.tpl';
-$Result['content'] = $tpl->fetch( 'design:sensor/dashboard.tpl' );
-$Result['node_id'] = 0;
-
-$contentInfoArray = array( 'url_alias' => 'sensor/home' );
-$contentInfoArray['persistent_variable'] = false;
-if ( $tpl->variable( 'persistent_variable' ) !== false )
-{
-    $contentInfoArray['persistent_variable'] = $tpl->variable( 'persistent_variable' );
-}
-$Result['content_info'] = $contentInfoArray;
-$Result['path'] = array();

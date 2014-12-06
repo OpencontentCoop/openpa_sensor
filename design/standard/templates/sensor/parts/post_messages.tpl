@@ -4,7 +4,7 @@
      $hasMessage = false()}
 
 {foreach $message_list as $item}
-    {if $item.message_type|eq(1)}
+    {if or( $item.message_type|eq(1), $item.message_type|eq(2) )}
         {set $hasMessage = true()}
         {break}
     {elseif and($item.message_type|ne(1),$item.message_type|ne(0),$current_participant,or( $item.message_type|eq($current_participant.participant_id), $item.participant_id|eq($current_participant.participant_id) ))}
@@ -17,13 +17,20 @@
     <div class="comment">
         <h4{'Commenti'|i18n('openpa_sensor/messages')}</h4>
         {foreach $message_list as $item}
-
             {if $item.message_type|eq(1)}
                 {include uri='design:sensor/parts/post_message/public.tpl'
                         is_read=cond( $current_participant, $current_participant.last_read|gt($item.modified), true())
                         item_link=$item
                         message=$item.simple_message}
+            
+            {elseif $item.message_type|eq(2)}
+                {include uri='design:sensor/parts/post_message/response.tpl'
+                        is_read=cond( $current_participant, $current_participant.last_read|gt($item.modified), true())
+                        item_link=$item
+                        message=$item.simple_message}
+            
             {elseif and(
+                $item.message_type|ne(2),
                 $item.message_type|ne(1),
                 $item.message_type|ne(0),
                 $current_participant,
@@ -33,17 +40,18 @@
                         is_read=cond( $current_participant, $current_participant.last_read|gt($item.modified), true())
                         item_link=$item
                         message=$item.simple_message}
+
             {/if}
         {/foreach}
     </div>
 </div>
 {/if}
-{if fetch( user, current_user ).is_logged_in}
+{if and( fetch( user, current_user ).is_logged_in, $collaboration_item.content.helper.can_comment )}
 <div class="new_comment">
     <h4>{'Aggiungi un commento'|i18n('openpa_sensor/messages')}</h4>
     <div class="row">
         <div class="col-sm-8 col-md-8"><br>
-            <textarea name="Collaboration_OpenPASensorItemComment" class="form-control" placeholder="Commenti" rows="7"></textarea><br />
+            <textarea name="Collaboration_OpenPASensorItemComment" class="form-control" placeholder="{'Commenti'|i18n('openpa_sensor/messages')}" rows="7"></textarea>
         </div>
     </div>
     <div class="row"><br>        
@@ -60,7 +68,23 @@
             {/if}
         </div>
 		<div class="col-sm-8 col-md-8">
-            <input class="btn send btn-primary btn-lg btn-block" type="submit" name="CollaborationAction_Comment" value="{'Aggiungi un commento'|i18n('openpa_sensor/messages')}" />
+            <input class="btn send btn-primary btn-lg btn-block" type="submit" name="CollaborationAction_Comment" value="{'Pubblica il commento'|i18n('openpa_sensor/messages')}" />
+        </div>
+    </div>
+</div>
+{/if}
+{if and( fetch( user, current_user ).is_logged_in, $collaboration_item.content.helper.can_respond )}
+<hr />
+<div class="new_comment">
+    <h4>{'Aggiungi risposta ufficiale'|i18n('openpa_sensor/messages')}</h4>
+    <div class="row">
+        <div class="col-sm-8 col-md-8"><br>
+            <textarea name="Collaboration_OpenPASensorItemResponse" class="form-control" placeholder="{'Risposta ufficiale'|i18n('openpa_sensor/messages')}" rows="7"></textarea>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-8 col-md-8">
+            <input class="btn send btn-success btn-lg btn-block" type="submit" name="CollaborationAction_Respond" value="{'Pubblica la risposta ufficiale'|i18n('openpa_sensor/messages')}" />
         </div>
     </div>
 </div>

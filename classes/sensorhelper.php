@@ -5,10 +5,14 @@ class SensorHelper
     const ANONYMOUS_CAN_COMMENT = false;
 
     const ITEM_STATUS = 'data_int3';
+    
+    const ITEM_LAST_CHANGE = 'data_int2';
 
     const MESSAGE_TYPE_ROBOT = 0;
 
     const MESSAGE_TYPE_PUBLIC = 1;
+    
+    const MESSAGE_TYPE_RESPONSE = 2;
 
     const STATUS_WAITING = 0;
 
@@ -71,12 +75,15 @@ class SensorHelper
             'collaboration_item',
             'can_do_something',
             'current_status',
+            'can_respond',
+            'can_comment',
             'can_assign',
             'can_close',
             'can_fix',
             'can_add_observer',
             'can_send_private_message',
             'participants',
+            'has_owner',
             'owner_id',
             'owner_name',
             'sensor',
@@ -84,7 +91,8 @@ class SensorHelper
             'human_unread_message_count',
             'human_message_count',
             'robot_unread_message_count',
-            'robot_message_count'
+            'robot_message_count',
+            'can_add_category'
         );
     }
 
@@ -110,8 +118,20 @@ class SensorHelper
                 return $this->canAssign() || $this->canAddObserver() || $this->canClose() || $this->canFix();
                 break;
 
+            case 'can_add_category':
+                return $this->userIsA( eZCollaborationItemParticipantLink::ROLE_APPROVER );
+                break;
+            
             case 'can_assign':
                 return $this->canAssign();
+                break;
+            
+            case 'can_respond':
+                return $this->canRespond();
+                break;
+            
+            case 'can_comment':
+                return $this->canComment();
                 break;
 
             case 'can_close':
@@ -140,7 +160,13 @@ class SensorHelper
                 }
                 return $users;
                 break;
-
+            
+            case 'has_owner':
+                {
+                    $ids = $this->participantIds( eZCollaborationItemParticipantLink::ROLE_OWNER );
+                    return count( $ids ) > 0;
+                }
+            
             case 'owner_id':
                 $ids = $this->participantIds( eZCollaborationItemParticipantLink::ROLE_OWNER );
                 if ( count( $ids ) )
@@ -185,7 +211,7 @@ class SensorHelper
                         array(
                             'item_id' => $this->collaborationItem->attribute( 'id' ),
                             'conditions' => array(
-                                'message_type' => array( array( SensorHelper::MESSAGE_TYPE_PUBLIC, eZUser::currentUserID() ) )
+                                'message_type' => array( array( SensorHelper::MESSAGE_TYPE_PUBLIC, SensorHelper::MESSAGE_TYPE_RESPONSE, eZUser::currentUserID() ) )
                             )
                         )
                     );
@@ -204,7 +230,7 @@ class SensorHelper
                         array(
                             'item_id' => $this->collaborationItem->attribute( 'id' ),
                             'conditions' => array(
-                                'message_type' => array( array( SensorHelper::MESSAGE_TYPE_PUBLIC, eZUser::currentUserID() ) ),
+                                'message_type' => array( array( SensorHelper::MESSAGE_TYPE_PUBLIC, SensorHelper::MESSAGE_TYPE_RESPONSE, eZUser::currentUserID() ) ),
                                 'modified' => array( '>', $lastRead )
                             )
                         )
@@ -230,11 +256,11 @@ class SensorHelper
                     $status = $this->collaborationItem->attribute( 'user_status' );
                     if ( $status )
                     {
-                        $lastRead = $this->status->attribute( 'last_read' );
+                        $lastRead = $status->attribute( 'last_read' );
                     }
                     return eZCollaborationItemMessageLink::fetchItemCount(
                         array(
-                            'item_id' => $collaborationItem->attribute( 'id' ),
+                            'item_id' => $this->collaborationItem->attribute( 'id' ),
                             'conditions' => array(
                                 'message_type' => SensorHelper::MESSAGE_TYPE_ROBOT,
                                 'modified' => array( '>', $lastRead )
@@ -277,52 +303,66 @@ class SensorHelper
      */
     public static function createCollaborationItem( $contentObjectID )
     {
-        $object = eZContentObject::fetch( $contentObjectID );
-        if ( !$object instanceof eZContentObject )
+        $db = eZDB::instance();
+        $res = $db->arrayQuery( "SELECT * FROM ezcollab_item WHERE data_int1 = $contentObjectID" );
+        if ( count( $res ) > 0 )
         {
-            throw new Exception( "Object $contentObjectID not found" );
+            $collaborationID = $res[0]['id'];
+            $collaborationItem = eZCollaborationItem::fetch( $collaborationID );
+            $helper = self::instanceFromCollaborationItem( $collaborationItem );
+            $helper->restoreFormTrash();
         }
-        $sensor = OpenPAObjectHandler::instanceFromContentObject( $object )->attribute( 'control_sensor' );
-        $authorID = $sensor->attribute( 'author_id' );
-        $approverIDArray = $sensor->attribute( 'approver_id_array' );
-        if ( empty( $approverIDArray ) )
-        {
-            $admin = eZUser::fetchByName( 'admin' );
-            if ( $admin instanceof eZUser )
+        
+        if ( !$collaborationItem instanceof eZCollaborationItem )
+        {            
+            $object = eZContentObject::fetch( $contentObjectID );
+            if ( !$object instanceof eZContentObject )
             {
-                $approverIDArray[] = $admin->attribute( 'contentobject_id' );
-                eZDebug::writeNotice( "Add admin user as fallback empty participant list", __METHOD__ );
+                throw new Exception( "Object $contentObjectID not found" );
             }
-        }
-        $collaborationItem = eZCollaborationItem::create( OpenPASensorCollaborationHandler::TYPE_STRING, $authorID );
-        $collaborationItem->setAttribute( 'data_int1', $contentObjectID );
-        $collaborationItem->setAttribute( 'data_text1', get_called_class() );
-        $collaborationItem->setAttribute( 'data_int3', false );
-        $collaborationItem->store();
-
-        $handler = self::instanceFromCollaborationItem( $collaborationItem );
-
-        $participantList = array(
-            array(
-                'id' => array( $authorID ),
-                'role' => eZCollaborationItemParticipantLink::ROLE_AUTHOR
-            ),
-            array(
-                'id' => $approverIDArray,
-                'role' => eZCollaborationItemParticipantLink::ROLE_APPROVER
-            )
-        );
-        foreach ( $participantList as $participantItem )
-        {
-            foreach( $participantItem['id'] as $participantID )
+            $sensor = OpenPAObjectHandler::instanceFromContentObject( $object )->attribute( 'control_sensor' );
+            $authorID = $sensor->attribute( 'author_id' );
+            $approverIDArray = $sensor->attribute( 'approver_id_array' );
+            if ( empty( $approverIDArray ) )
             {
-                $participantRole = $participantItem['role'];
-                $handler->addParticipant( $participantID, $participantRole );
+                $admin = eZUser::fetchByName( 'admin' );
+                if ( $admin instanceof eZUser )
+                {
+                    $approverIDArray[] = $admin->attribute( 'contentobject_id' );
+                    eZDebug::writeNotice( "Add admin user as fallback empty participant list", __METHOD__ );
+                }
             }
+            $collaborationItem = eZCollaborationItem::create( OpenPASensorCollaborationHandler::TYPE_STRING, $authorID );
+            $collaborationItem->setAttribute( 'data_int1', $contentObjectID );
+            $collaborationItem->setAttribute( 'data_text1', get_called_class() );
+            $collaborationItem->setAttribute( self::ITEM_STATUS, false );
+            $collaborationItem->setAttribute( self::ITEM_LAST_CHANGE, 0 );
+            $collaborationItem->store();
+    
+            $handler = self::instanceFromCollaborationItem( $collaborationItem );
+    
+            $participantList = array(
+                array(
+                    'id' => array( $authorID ),
+                    'role' => eZCollaborationItemParticipantLink::ROLE_AUTHOR
+                ),
+                array(
+                    'id' => $approverIDArray,
+                    'role' => eZCollaborationItemParticipantLink::ROLE_APPROVER
+                )
+            );
+            foreach ( $participantList as $participantItem )
+            {
+                foreach( $participantItem['id'] as $participantID )
+                {
+                    $participantRole = $participantItem['role'];
+                    $handler->addParticipant( $participantID, $participantRole );
+                }
+            }
+    
+            $handler->setStatus( self::STATUS_WAITING );
+            $collaborationItem->createNotificationEvent();
         }
-
-        $handler->setStatus( self::STATUS_WAITING );
-        $collaborationItem->createNotificationEvent();        
 
         return $collaborationItem;
     }
@@ -350,6 +390,65 @@ class SensorHelper
         }
         return false;
     }
+    
+    public function addCategory( array $categoryList, $autoAssign = false )
+    {
+        if ( empty( $categoryList ) )
+        {
+            return false;
+        }
+        
+        $unique = OpenPAINI::variable( 'SensorConfig', 'CategoryCount', 'unique' ) == 'unique';
+        
+        if ( $unique )
+            $userIds = $this->modifyPostCategories( array_shift( $categoryList ) );
+        else
+            $userIds = $this->modifyPostCategories( implode( '-', $categoryList ) );
+        
+        if ( !empty( $userIds ) && OpenPAINI::variable( 'SensorConfig', 'CategoryAutomaticAssign', 'disabled' ) == 'enabled' )
+        {
+            $this->assignTo( $userIds );
+        }
+    }
+    
+    protected function modifyPostCategories( $categoriesString )
+    {
+        $userIds = array();
+        
+        if ( $categoriesString == '' ) return array();
+        
+        $object = $this->getContentObject();
+        
+        if ( $object instanceof eZContentObject )
+        {
+            $dataMap = $object->attribute( 'data_map' );
+            if ( isset( $dataMap['category'] ) )
+            {
+                $dataMap['category']->fromString( $categoriesString );
+                $dataMap['category']->store();
+                eZContentCacheManager::clearContentCacheIfNeeded( $object->attribute( 'id' ) );
+                eZSearch::addObject( $object, true );
+            }            
+            if ( OpenPAINI::variable( 'SensorConfig', 'CategoryAutomaticAssign', 'disabled' ) == 'enabled' )
+            {
+                $categories = explode( '-', $categoriesString );
+                foreach( $categories as $categoryId )
+                {
+                    $category = eZContentObject::fetch( $categoryId );
+                    if ( $category instanceof eZContentObject )
+                    {
+                        $categoryDataMap = $category->attribute( 'data_map' );
+                        if ( isset( $categoryDataMap['approver'] ) )
+                        {
+                            $userIds = array_merge( $userIds, explode( '-', $categoryDataMap['approver']->toString() ) );
+                        }
+                    }
+                }
+            }
+        }
+        return array_unique( $userIds );
+    }
+    
 
     public function addObserver( $userId )
     {
@@ -366,10 +465,36 @@ class SensorHelper
             }
         }
     }
+    
+    public function canRespond()
+    {
+        return $this->canClose();
+    }
+    
+    public function canComment()
+    {
+        return ! (bool) eZPreferences::value( 'sensor_deny_comment', eZUser::currentUser() );
+    }
+
+    public function addResponse( $text )
+    {
+        if ( trim( $text ) != '' && $this->canRespond() )
+        {
+            $creatorID = eZUser::currentUserID();
+            $message = eZCollaborationSimpleMessage::create( OpenPASensorCollaborationHandler::TYPE_STRING.'_comment', $text, $creatorID );
+            $message->store();
+            $messageLink = eZCollaborationItemMessageLink::addMessage( $this->collaborationItem, $message, self::MESSAGE_TYPE_RESPONSE, $creatorID );
+
+            //l'utente che ha creato il messaggio l'ha già letto
+            $timestamp = $messageLink->attribute( 'modified' ) + 1;
+            $this->collaborationItem->setLastRead( $creatorID, $timestamp );
+            $this->setStatus();
+        }
+    }
 
     public function addComment( $text, $creatorID = false, $type = self::MESSAGE_TYPE_PUBLIC )
     {
-        $userCanComment = true;
+        $userCanComment = $this->canComment();
 
         if ( eZUser::currentUser()->isAnonymous() && !self::ANONYMOUS_CAN_COMMENT )
         {
@@ -395,7 +520,7 @@ class SensorHelper
             $timestamp = $messageLink->attribute( 'modified' ) + 1;
             $this->collaborationItem->setLastRead( $creatorID, $timestamp );
 
-            if ( $this->is( self::STATUS_CLOSED ) && $this->userIsA( eZCollaborationItemParticipantLink::ROLE_AUTHOR ) )
+            if ( $this->is( self::STATUS_CLOSED ) && $this->userIsA( eZCollaborationItemParticipantLink::ROLE_AUTHOR ) && OpenPAINI::variable( 'SensorConfig', 'AuthorCanReopen', 'disabled' ) == 'enabled' )
             {
                 $this->collaborationItem->createNotificationEvent();
                 $this->setStatus( self::STATUS_REOPENED );
@@ -403,8 +528,8 @@ class SensorHelper
             }
             else
             {
-                $this->setStatus(); // touch
-            }
+                $this->setStatus(); // touch to clear cache
+            }            
         }
     }
 
@@ -552,6 +677,29 @@ class SensorHelper
             return $profile->attribute( 'main_group' );
         }
     }
+    
+    protected function collaborationGroupTrash( $participantID )
+    {                
+        return $this->createCollaborationGroup( $participantID, 'Trash' );        
+    }
+    
+    public function moveToTrash()
+    {
+        $participants = $this->participantIds();
+        foreach( $participants as $participantID )
+        {
+            $this->moveItem( $participantID, $this->collaborationGroupTrash( $participantID ) );
+        }
+    }
+    
+    public function restoreFormTrash()
+    {        
+        $participants = $this->participantIds();
+        foreach( $participants as $participantID )
+        {
+            $this->moveItem( $participantID, $this->collaborationGroup( $participantID ) );
+        }
+    }
 
     protected function createCollaborationGroup( $participantID, $groupName )
     {
@@ -584,17 +732,17 @@ class SensorHelper
         return $group;
     }
 
-    public function moveItem( $participantID, $groupName )
+    public function moveItem( $participantID, $newGroup )
     {
-        $newGroup = $this->collaborationGroup( $participantID );
-        if ( $groupName !== $newGroup->attribute( 'title' ) )
-        {
-            $newGroup = $this->createCollaborationGroupChild(
-                $newGroup,
-                $participantID,
-                $groupName
-            );
-        }
+        //$newGroup = $this->collaborationGroup( $participantID );
+        //if ( $groupName !== $newGroup->attribute( 'title' ) )
+        //{
+        //    $newGroup = $this->createCollaborationGroupChild(
+        //        $newGroup,
+        //        $participantID,
+        //        $groupName
+        //    );
+        //}
 
         $db = eZDB::instance();
 
@@ -612,6 +760,10 @@ class SensorHelper
             $newGroupLink = eZCollaborationItemGroupLink::create( $this->collaborationItem->attribute( 'id' ), $newGroup->attribute( 'id' ) , $participantID );
             $newGroupLink->store();
             $db->commit();
+        }
+        else
+        {
+            $db->rollback();
         }
     }
 
@@ -697,7 +849,19 @@ class SensorHelper
         {
             $this->collaborationItem->setAttribute( self::ITEM_STATUS, $status );
             $this->collaborationItem->setAttribute( 'modified', $timestamp );
-            if ( $status == self::STATUS_CLOSED )
+            $this->collaborationItem->setAttribute( self::ITEM_LAST_CHANGE, $timestamp );
+            if ( $status == self::STATUS_READ )
+            {
+                if ( $object instanceof eZContentObject )
+                {
+                    OpenPABase::sudo(
+                        function() use( $object ){
+                            ObjectHandlerServiceControlSensor::setState( $object, 'sensor', 'open' );
+                        }
+                    );                
+                }
+            }
+            elseif ( $status == self::STATUS_CLOSED )
             {
                 $this->collaborationItem->setAttribute( 'status', eZCollaborationItem::STATUS_INACTIVE );
                 foreach( $this->participantIds() as $participantID )
@@ -705,8 +869,12 @@ class SensorHelper
                     $this->collaborationItem->setIsActive( false, $participantID );
                 }
                 if ( $object instanceof eZContentObject )
-                {
-                    ObjectHandlerServiceControlSensor::setState( $object, 'sensor', 'close' );
+                {                    
+                    OpenPABase::sudo(
+                        function() use( $object ){
+                            ObjectHandlerServiceControlSensor::setState( $object, 'sensor', 'close' );
+                        }
+                    );  
                 }
             }
             elseif ( $status == self::STATUS_WAITING )
@@ -728,7 +896,7 @@ class SensorHelper
                 {
                     OpenPABase::sudo(
                         function() use( $object ){
-                            ObjectHandlerServiceControlSensor::setState( $object, 'sensor', 'open' );
+                            ObjectHandlerServiceControlSensor::setState( $object, 'sensor', 'pending' );
                         }
                     );                
                 }
@@ -855,6 +1023,46 @@ class SensorHelper
         return $listMap;
     }
     
+    public function delete()
+    {
+        $itemId = $this->collaborationItem->attribute( 'id' );
+        self::deleteCollaborationStuff( $itemId );
+    }
+    
+    public static function deleteCollaborationStuff( $itemId )
+    {        
+        $db = eZDB::instance();
+        $db->begin();
+        $db->query( "DELETE FROM ezcollab_item WHERE id = $itemId" );
+        $db->query( "DELETE FROM ezcollab_item_group_link WHERE collaboration_id = $itemId" );    
+        $res = $db->arrayQuery( "SELECT message_id FROM ezcollab_item_message_link WHERE collaboration_id = $itemId" );
+        foreach( $res as $r )
+        {
+            $db->query( "DELETE FROM ezcollab_simple_message WHERE id = {$r['message_id']}" );
+        }
+        $db->query( "DELETE FROM ezcollab_item_message_link WHERE collaboration_id = $itemId" );
+        $db->query( "DELETE FROM ezcollab_item_participant_link WHERE collaboration_id = $itemId" );
+        $db->query( "DELETE FROM ezcollab_item_status WHERE collaboration_id = $itemId" );                        
+        $db->commit();
+    }
+    
+    public static function getCollaborationStuff( $itemId )
+    {                
+        $db = eZDB::instance();        
+        $res['ezcollab_item'] = $db->arrayQuery( "SELECT * FROM ezcollab_item WHERE id = $itemId" );
+        $res['ezcollab_item_group_link'] = $db->arrayQuery( "SELECT * FROM ezcollab_item_group_link WHERE collaboration_id = $itemId" );    
+        $tmp = $db->arrayQuery( "SELECT message_id FROM ezcollab_item_message_link WHERE collaboration_id = $itemId" );
+        $res['ezcollab_simple_message'] = array();
+        foreach( $tmp as $r )
+        {
+            $res['ezcollab_simple_message'][] = $db->arrayQuery( "SELECT * FROM ezcollab_simple_message WHERE id = {$r['message_id']}" );
+        }
+        $res['ezcollab_item_message_link'] = $db->arrayQuery( "SELECT * FROM ezcollab_item_message_link WHERE collaboration_id = $itemId" );
+        $res['ezcollab_item_participant_link'] = $db->arrayQuery( "SELECT * FROM ezcollab_item_participant_link WHERE collaboration_id = $itemId" );
+        $res['ezcollab_item_status'] = $db->arrayQuery( "SELECT * FROM ezcollab_item_status WHERE collaboration_id = $itemId" );        
+        return $res;
+    }
+    
     /**
      * @see eZCollaborationItem::fetchListTool
      */
@@ -866,8 +1074,9 @@ class SensorHelper
                                           'limit' => false,
                                           'is_active' => null,
                                           'is_read' => null,
+                                          'last_change' => null,
                                           'status' => false,
-                                          'sort_by' => false ),
+                                          'sort_by' => array( 'modified', false ) ),
                                    $parameters );
         $asObject = $parameters['as_object'];
         $offset = $parameters['offset'];
@@ -951,13 +1160,21 @@ class SensorHelper
             $isActiveValue = $isActive ? 1 : 0;
             $isActiveText = "ezcollab_item_status.is_active = '$isActiveValue' AND";
         }
+        
+        $lastChangeText = '';
+        if ( $lastChangeText !== null )
+        {
+            //@todo
+        }
 
         $userID = eZUser::currentUserID();
 
         $statusText = '';
         if ( $statusTypes === false )
+        {
             $statusTypes = array( eZCollaborationItem::STATUS_ACTIVE,
                                   eZCollaborationItem::STATUS_INACTIVE );
+        }
         $statusText = implode( ', ', $statusTypes );
 
         if ( $asCount )
@@ -973,6 +1190,7 @@ class SensorHelper
                 WHERE  ezcollab_item.status IN ( $statusText ) AND
                        $isReadText
                        $isActiveText
+                       $lastChangeText
                        ezcollab_item.id = ezcollab_item_status.collaboration_id AND
                        ezcollab_item.id = ezcollab_item_group_link.collaboration_id AND
                        $parentGroupText
@@ -1010,5 +1228,104 @@ class SensorHelper
             return $itemCount[0]['count'];
         }
     }
+    
+    public static function fetchAllItems( $group, $limit, $offset = 0, $lastChange = null, $sortBy = 'modified', $sortOrder = false, $status = false )
+    {
+        $itemParameters = array(
+            'offset' => $offset,
+            'limit' => $limit,
+            'sort_by' => array( $sortBy, $sortOrder ),
+            'is_read' => null,
+            'is_active' => null,
+            'last_change' => $lastChange,
+            'parent_group_id' => $group->attribute( 'id' ),
+            'status' => $status
+        );        
+        return SensorHelper::fetchListTool( $itemParameters, false );  
+    }
+    
+    public static function fetchAllItemsCount( $group )
+    {
+        $itemParameters = array(            
+            'is_read' => null,
+            'is_active' => null,            
+            'parent_group_id' => $group->attribute( 'id' )            
+        );        
+        return SensorHelper::fetchListTool( $itemParameters, true ); 
+    }
+    
+    public static function fetchUnreadItems( $group, $limit, $offset = 0, $lastChange = null, $sortBy = 'modified', $sortOrder = false, $status = false )
+    {
+        $itemParameters = array(
+            'offset' => $offset,
+            'limit' => $limit,
+            'sort_by' => array( $sortBy, $sortOrder ),
+            'is_read' => false,
+            'is_active' => null,
+            'last_change' => $lastChange,
+            'parent_group_id' => $group->attribute( 'id' ),
+            'status' => $status
+        );        
+        return SensorHelper::fetchListTool( $itemParameters, false );  
+    }
+    
+    public static function fetchUnreadItemsCount( $group )
+    {
+        $itemParameters = array(            
+            'is_read' => false,
+            'is_active' => null,            
+            'parent_group_id' => $group->attribute( 'id' )       
+        );        
+        return SensorHelper::fetchListTool( $itemParameters, true );  
+    }
+    
+    public static function fetchActiveItems( $group, $limit, $offset = 0, $lastChange = null, $sortBy = 'modified', $sortOrder = false, $status = false )
+    {
+        $itemParameters = array(
+            'offset' => $offset,
+            'limit' => $limit,
+            'sort_by' => array( $sortBy, $sortOrder ),
+            'is_read' => true,
+            'is_active' => true,
+            'last_change' => $lastChange,
+            'parent_group_id' => $group->attribute( 'id' ),
+            'status' => $status
+        );        
+        return SensorHelper::fetchListTool( $itemParameters, false );  
+    }
+    
+    public static function fetchActiveItemsCount( $group )
+    {
+        $itemParameters = array(
+            'is_read' => true,
+            'is_active' => true,
+            'parent_group_id' => $group->attribute( 'id' ),
+        );        
+        return SensorHelper::fetchListTool( $itemParameters, true );  
+    }
 
+    public static function fetchUnactiveItems( $group, $limit, $offset = 0, $lastChange = null, $sortBy = 'modified', $sortOrder = false, $status = false )
+    {
+        $itemParameters = array(
+            'offset' => $offset,
+            'limit' => $limit,
+            'sort_by' => array( $sortBy, $sortOrder ),
+            'is_read' => true,
+            'is_active' => false,
+            'last_change' => $lastChange,
+            'parent_group_id' => $group->attribute( 'id' ),
+            'status' => $status
+        );        
+        return SensorHelper::fetchListTool( $itemParameters, false );  
+    }
+    
+    public static function fetchUnactiveItemsCount( $group )
+    {
+        $itemParameters = array(
+            'is_read' => true,
+            'is_active' => false,
+            'parent_group_id' => $group->attribute( 'id' )
+        );        
+        return SensorHelper::fetchListTool( $itemParameters, true );  
+    }
 }

@@ -7,7 +7,10 @@ class OpenPASensorOperator
         return array(
             'sensor_root_handler',
             'is_current_sensor_page',
-            'sensor_robot_message'
+            'sensor_robot_message',
+            'sensor_postcontainer',
+            'sensor_categorycontainer',
+            'user_settings'
         );
     }
 
@@ -32,6 +35,26 @@ class OpenPASensorOperator
     {
         switch ( $operatorName )
         {
+            case 'user_settings':
+            {
+                $object = $operatorValue;
+                $userId = false;
+                $settings = false;
+                if ( $object instanceof eZContentObject )
+                {
+                    $userId = $object->attribute( 'id' );
+                }
+                elseif ( $object instanceof eZContentObjectTreeNode )
+                {
+                    $userId = $object->attribute( 'contentobject_id' );
+                }
+                if ( $userId )
+                {
+                   $settings = eZUserSetting::fetch( $userId );
+                }
+                return $operatorValue = $settings;
+            } break;
+            
             case 'is_current_sensor_page':
             {
                 $currentModuleParams = $GLOBALS['eZRequestedModuleParams'];
@@ -48,6 +71,16 @@ class OpenPASensorOperator
                 $rootHandler = OpenPAObjectHandler::instanceFromContentObject( $root );
                 return $operatorValue = $rootHandler->attribute( 'control_sensor' );
             } break;
+                        
+            case 'sensor_postcontainer':
+                {
+                    return $operatorValue = ObjectHandlerServiceControlSensor::postContainerNode();
+                } break;
+            
+            case 'sensor_categorycontainer':
+                {
+                    return $operatorValue = ObjectHandlerServiceControlSensor::postCategoriesNode();
+                } break;
             
             case 'sensor_robot_message':
             {

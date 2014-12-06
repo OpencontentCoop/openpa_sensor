@@ -1,12 +1,5 @@
 <?php /* #?ini charset="utf-8"?
 
-
-#[sensor_pagelayout]
-#Source=pagelayout.tpl
-#MatchFile=sensor/pagelayout.tpl
-#Subdir=templates
-#Match[section_identifier]=sensor
-
 [post_edit]
 Source=content/edit.tpl
 MatchFile=sensor/post_edit.tpl
@@ -27,11 +20,11 @@ Subdir=templates
 Match[class_identifier]=sensor_post
 Match[attribute_identifier]=area
 
-[posts]
-Source=node/view/full.tpl
-MatchFile=sensor/posts.tpl
-Subdir=templates
-Match[class_identifier]=folder
-Match[section_identifier]=sensor
+#[posts]
+#Source=node/view/full.tpl
+#MatchFile=sensor/posts.tpl
+#Subdir=templates
+#Match[class_identifier]=folder
+#Match[section_identifier]=sensor
 
  */ ?>

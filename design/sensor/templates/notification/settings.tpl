@@ -20,4 +20,5 @@
     <div>
         <input class="button btn btn-success" type="submit" name="Store" value="{'Store'|i18n('design/standard/notification')}" />
     </div>
+    
 </form>

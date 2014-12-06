@@ -37,6 +37,7 @@ class OpenPASensorCollaborationHandler extends eZCollaborationItemHandler
     {
         return array(
             "content_object_id" => $collaborationItem->attribute( "data_int1" ),
+            "last_change" => $collaborationItem->attribute( SensorHelper::ITEM_LAST_CHANGE ),
             "helper" => self::handler( $collaborationItem ),
             "item_status" => $collaborationItem->attribute( SensorHelper::ITEM_STATUS )
         );
@@ -110,7 +111,7 @@ class OpenPASensorCollaborationHandler extends eZCollaborationItemHandler
             array(
                 'item_id' => $collaborationItem->attribute( 'id' ),
                 'conditions' => array(
-                    'message_type' => array( array( SensorHelper::MESSAGE_TYPE_ROBOT, SensorHelper::MESSAGE_TYPE_PUBLIC, eZUser::currentUserID() ) )
+                    'message_type' => array( array( SensorHelper::MESSAGE_TYPE_ROBOT, SensorHelper::MESSAGE_TYPE_PUBLIC, SensorHelper::MESSAGE_TYPE_RESPONSE, eZUser::currentUserID() ) )
                 )
             )
         );
@@ -133,7 +134,7 @@ class OpenPASensorCollaborationHandler extends eZCollaborationItemHandler
             array(
                 'item_id' => $collaborationItem->attribute( 'id' ),
                 'conditions' => array(
-                    'message_type' => array( array( SensorHelper::MESSAGE_TYPE_ROBOT, SensorHelper::MESSAGE_TYPE_PUBLIC, eZUser::currentUserID() ) ),
+                    'message_type' => array( array( SensorHelper::MESSAGE_TYPE_ROBOT, SensorHelper::MESSAGE_TYPE_PUBLIC, SensorHelper::MESSAGE_TYPE_RESPONSE, eZUser::currentUserID() ) ),
                     'modified' => array( '>', $lastRead )
                 )
             )
@@ -189,6 +190,12 @@ class OpenPASensorCollaborationHandler extends eZCollaborationItemHandler
         {
             $handler->addObserver( $this->customInput( 'OpenPASensorItemAddObserver' ) );
         }
+        
+        if ( $this->isCustomAction( 'AddCategory' ) && $this->hasCustomInput( 'OpenPASensorItemCategory' )
+             && $handler->attribute( 'can_add_category' ) )
+        {
+            $handler->addCategory( $this->customInput( 'OpenPASensorItemCategory' ), $this->hasCustomInput( 'OpenPASensorItemAssignToCategoryApprover' ) ? $this->customInput( 'OpenPASensorItemAssignToCategoryApprover' ) : false );
+        }
 
         if ( $this->hasCustomInput( 'OpenPASensorItemComment' ) || $this->isCustomAction( 'Comment' ) )
         {
@@ -203,6 +210,13 @@ class OpenPASensorCollaborationHandler extends eZCollaborationItemHandler
                 }
             }
             $handler->addComment( $messageText, eZUser::currentUserID(), $privateReceiver );
+        }
+        
+        if ( $this->hasCustomInput( 'OpenPASensorItemResponse' ) || $this->isCustomAction( 'Respond' )
+             && $handler->attribute( 'can_respond' ) )
+        {
+            $messageText = $this->customInput( 'OpenPASensorItemResponse' );            
+            $handler->addResponse( $messageText );
         }
 
 //        $redirectView = 'item';

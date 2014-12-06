@@ -1,4 +1,6 @@
 <div class="collapse navbar-collapse">
+
+
     <ul class="nav pull-right navbar-nav">
         {*<li class="active"><a href="{'sensor/home'|ezurl(no)}">{'SensorCivico'|i18n('openpa_sensor/menu')}</a></li>*}
         {*<li class="dropdown">
@@ -10,6 +12,7 @@
         </li>*}
         
         {def $avail_translation = language_switcher( $site.uri.original_uri)}
+        {if $avail_translation|gt(1)}
         {foreach $avail_translation as $siteaccess => $lang}
           <li>
             <a href={$lang.url|ezurl}>
@@ -21,7 +24,9 @@
             </a>
           </li>
         {/foreach}
+        {/if}
         
+        {if $current_user.is_logged_in|not()}
         <li class="dropdown">
             <a data-toggle="dropdown" class="dropdown-toggle" href="{'sensor/info'|ezurl(no)}">{'Informazioni'|i18n('openpa_sensor/menu')}
                 <span class="caret"></span>
@@ -32,7 +37,6 @@
                 <li><a href="{'sensor/info/terms'|ezurl(no)}">{'Termini di utilizzo'|i18n('openpa_sensor/menu')}</a></li>
             </ul>
         </li>		
-        {if $current_user.is_logged_in|not()}
             <li><a href="{'sensor/posts'|ezurl(no)}">{'Segnalazioni'|i18n('openpa_sensor/menu')}</a></li>
 			<li>
                 <a href="#login">
@@ -42,15 +46,8 @@
                 </a>
             </li>			
         {else}			
-			<li class="dropdown">
-				<a data-toggle="dropdown" class="dropdown-toggle" href="#">{'Segnalazioni'|i18n('openpa_sensor/menu')}
-					<span class="caret"></span>
-				</a>
-				<ul class="dropdown-menu">
-					<li><a href="{'sensor/posts'|ezurl(no)}">{'Tutte le segnalazioni'|i18n('openpa_sensor/menu')}</a></li>
-					<li><a href="{'sensor/dashboard'|ezurl(no)}">{'Le mie segnalazioni'|i18n('openpa_sensor/menu')}</a></li>
-				</ul>
-			</li>			
+			<li><a href="{'sensor/posts'|ezurl(no)}">{'Tutte le segnalazioni'|i18n('openpa_sensor/menu')}</a></li>
+			<li><a href="{'sensor/dashboard'|ezurl(no)}">{'Le mie segnalazioni'|i18n('openpa_sensor/menu')}</a></li>
             <li>
                 <a href="{'sensor/add'|ezurl(no)}">
 				  <span class="label label-primary" style="font-size: 100%">
@@ -69,6 +66,9 @@
 					</li>
                     <li><a href="{'user/edit'|ezurl(no)}">{'Profilo'|i18n('openpa_sensor/menu')}</a></li>
                     <li><a href="{'notification/settings'|ezurl(no)}">{'Notifiche'|i18n('openpa_sensor/menu')}</a></li>
+					{if fetch( 'user', 'has_access_to', hash( 'module', 'sensor', 'function', 'config' ) )}
+					  <li><a href="{'sensor/config'|ezurl(no)}">{'Settings'|i18n('openpa_sensor/menu')}</a></li>
+					{/if}
                     <li><a href="{'user/logout'|ezurl(no)}">{'Esci'|i18n('openpa_sensor/menu')}</a></li>
                 </ul>
             </li>

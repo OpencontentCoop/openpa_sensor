@@ -3,13 +3,8 @@
 {def $sensor = sensor_root_handler()}
 {include uri='design:sensor/parts/head.tpl'}
 <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.7.2/leaflet.css" />
-<!--[if lt IE 9]>
-<link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.ie.css" />
-<![endif]-->
-
 <script src="http://cdn.leafletjs.com/leaflet-0.7.2/leaflet.js"></script>
-<script src="http://techblog.mappy.com/Leaflet-active-area/src/leaflet.activearea.js"></script>
-{ezscript_require(array('ezjsc::jquery', 'Leaflet.MakiMarkers.js','Control.Geocoder.js'))}
+{ezscript_require(array('ezjsc::jquery', 'leaflet.activearea.js', 'Leaflet.MakiMarkers.js','Control.Geocoder.js'))}
 
 {literal}
 <style>
@@ -25,9 +20,9 @@
 	  }
 	  #edit{
 		  position: fixed;
-		  right: 30px;		  	
+		  right: 10px;		  	
 		  z-index: 1000000;        
-		  bottom: 30px;
+		  bottom: 10px;
 	  }
 	}
     @media (min-width:768px){
@@ -65,48 +60,39 @@
 	  if ( PointsOfInterest.length > 0 ) {
         var CenterMap = new L.latLng(PointsOfInterest[0].coords[0],PointsOfInterest[0].coords[1]);
 
-		//var geocoder = new L.Control.Geocoder.Bing('Ahmnz1XxcrJXgiVWzx6W8ewWeqLGztZRIB1hysjaoHI5nV38WXxywjh6vj0lyl4u');
-		var geocoder = new L.Control.Geocoder.Google('AIzaSyDVnxoH2lLysFsPPQcwxZ0ROYNVCBkmQZk');		  
-		var map = new L.Map('sensor_full_map').setActiveArea('viewport').setView(CenterMap, 13);
+		var control = new L.Control.Geocoder({ geocoder: null });
+    if (window.XDomainRequest) {
+      control.options.geocoder = L.Control.Geocoder.bing('Ahmnz1XxcrJXgiVWzx6W8ewWeqLGztZRIB1hysjaoHI5nV38WXxywjh6vj0lyl4u'); 
+    }else{
+      control.options.geocoder = L.Control.Geocoder.google('AIzaSyDVnxoH2lLysFsPPQcwxZ0ROYNVCBkmQZk'); 
+    }    
+		var map = new L.Map('sensor_full_map').setActiveArea('viewport');
 		map.scrollWheelZoom.disable();
 
 		var markers = L.featureGroup();
-        var userMarker;
-        var setUserMarker = function(latlng) {
-          if( typeof( userMarker ) === 'undefined' ){
-              var customIcon = L.MakiMarkers.icon({icon: "star", color: "#f00", size: "l"});
-              userMarker = new L.marker(latlng,{icon:customIcon});
-              userMarker.addTo(map);
-              markers.addLayer(userMarker);
-          }else{
-              userMarker.setLatLng(latlng);
-          }
-          setContent(latlng);
+    var userMarker;
+    var setUserMarker = function(latlng) {
+      if( typeof( userMarker ) === 'undefined' ){
+          var customIcon = L.MakiMarkers.icon({icon: "star", color: "#f00", size: "l"});
+          userMarker = new L.marker(latlng,{icon:customIcon});
+          userMarker.addTo(map);
+          markers.addLayer(userMarker);
+      }else{
+          userMarker.setLatLng(latlng);
+      }
+      setContent(latlng);            
+    };
+    var setContent = function(latlng) {
+      $('input#latitude').val( latlng.lat );
+      $('input#longitude').val( latlng.lng );
+      control.options.geocoder.reverse( latlng, 0, function(result) {
+          $container = $('#input-results');
+          $container.empty();
+          $('input#input-address').val(result[0].name);
           map.setView(latlng, 17);
-        };
-        var setContent = function(latlng) {
-          $('input#latitude').val( latlng.lat );
-          $('input#longitude').val( latlng.lng );
-          console.log(latlng);
-          geocoder.reverse( latlng, 0, function(result) {
-              $container = $('#input-results');
-              $container.empty();
-              $('input#input-address').val(result[0].name);
-              //if (result.length > 1) {
-              //  $.each(result,function(i,o){
-              //	var item = $('<li><span class="name hide">'+o.name+'</span>'+o.name+'</li>');
-              //	item.on( 'click', function(e){
-              //	  var name = $(e.target).find('.name').text();
-              //	  $('input#input-address').val(name)
-              //	});
-              //	item.appendTo($container);
-              //  });
-              //}else{
-              //  $('input#input-address').val(o.name);
-              //}
-          }, this );
-        };
-        setUserMarker(CenterMap);
+      }, this );
+    };
+    setUserMarker(CenterMap);
 		/*if ( typeof PointsOfInterest != 'undefined' ) {
 		  $.each(PointsOfInterest, function (i,element) {			  
 			  var customIcon = L.MakiMarkers.icon({icon: "heart", color: "#b0b", size: "m"});
@@ -151,10 +137,18 @@
 		  setUserMarker(e.latlng);
 		});
 		
+    $('#input-address').on( 'click', function(e){
+      $(this).select();
+    }).on( 'keypress', function(e){
+      if(e.which == 13) {
+        $('#input-address-button').trigger('click');
+        e.preventDefault();
+      }
+    });
 		$('#input-address-button').on( 'click', function(e){
 		  $query = $('#input-address').val();		  
-		  console.log($query);		  
-		  geocoder.geocode( $query, function(result) {			
+		  //console.log($query);		  
+		  control.options.geocoder.geocode( $query, function(result) {			
 			if (result.length > 0){
 			  $container = $('#input-results');
 			  $container.empty();
@@ -162,17 +156,15 @@
 				$.each(result,function(i,o){				  
 				  var item = $('<li><span class="latitude hide">'+o.center.lat+'</span><span class="longitude hide">'+o.center.lng+'</span>'+o.name+'</li>');				  
 				  item.on( 'click', function(e){															
-					var lat = $(e.target).find('.latitude').text();
-					var lng = $(e.target).find('.longitude').text();					
-					setUserMarker( new L.latLng(lat,lng) );
-					map.setView([lat,lng], 17);
+            var lat = $(e.target).find('.latitude').text();
+            var lng = $(e.target).find('.longitude').text();            
+            setUserMarker( new L.latLng(lat,lng) );            
 				  });
 				  item.appendTo($container);
 				});
 			  }else{
-				var latlng = new L.latLng(result[0].center.lat,result[0].center.lng);
-				setUserMarker( latlng );
-				map.setView(latlng, 17);
+          var latlng = new L.latLng(result[0].center.lat,result[0].center.lng);
+          setUserMarker( latlng );				
 			  }
 			}
 		  }, this );
