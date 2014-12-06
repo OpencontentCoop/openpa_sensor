@@ -526,7 +526,7 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase
                 'section_id' => $section->attribute( 'id' ),
                 'class_identifier' => 'sensor_operator',
                 'attributes' => array(
-                    'name' => 'Esempio'
+                    'name' => 'Responsabile URP'
                 )
             );
             /** @var eZContentObject $categoryObject */
@@ -543,7 +543,8 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase
                 'section_id' => $section->attribute( 'id' ),
                 'class_identifier' => 'sensor_area',
                 'attributes' => array(
-                    'name' => eZINI::instance()->variable( 'SiteSettings', 'SiteName' )
+                    'name' => eZINI::instance()->variable( 'SiteSettings', 'SiteName' ),
+                    'approver' => $operatorObject->attribute( 'id' )
                 )
             );
             /** @var eZContentObject $areaObject */
