@@ -435,10 +435,12 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase
         $classes = array(
             "sensor_root",
             "sensor_area",
+            "sensor_category",
             "sensor_operator",
             "sensor_post"
         );
 
+        OpenPALog::warning( "Controllo classi" );
         foreach( $classes as $identifier )
         {
             //OpenPALog::warning( 'Controllo class ' . $identifier );
@@ -464,35 +466,259 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase
                 );
             }
 
+            // root
+            OpenPALog::warning( "Install root" );
             $params = array(
                 'parent_node_id' => $parentNodeId,
                 'section_id' => $section->attribute( 'id' ),
                 'remote_id' => self::sensorRootRemoteId(),
                 'class_identifier' => 'sensor_root',
                 'attributes' => array(
-                    'name' => 'Sensor'
+                    'name' => 'SensorCivico'
                 )
             );
-
-            /** @var eZContentObject $contentObject */
-            $contentObject = eZContentFunctions::createAndPublishObject( $params );
-            if( !$contentObject instanceof eZContentObject )
+            /** @var eZContentObject $rootObject */
+            $rootObject = eZContentFunctions::createAndPublishObject( $params );
+            if( !$rootObject instanceof eZContentObject )
             {
-                throw new Exception( 'Failed creating Apps root node' );
+                throw new Exception( 'Failed creating Sensor root node' );
             }
 
+            // Post container
+            OpenPALog::warning( "Install container" );
             $params = array(
-                'parent_node_id' => $contentObject->attribute( 'main_node_id' ),
+                'parent_node_id' => $rootObject->attribute( 'main_node_id' ),
                 'section_id' => $section->attribute( 'id' ),
                 'remote_id' => self::sensorRootRemoteId() . '_postcontainer',
                 'class_identifier' => 'folder',
                 'attributes' => array(
-                    'name' => 'Posts'
+                    'name' => 'Segnalazioni'
+                )
+            );
+            /** @var eZContentObject $containerObject */
+            $containerObject = eZContentFunctions::createAndPublishObject( $params );
+            if( !$containerObject instanceof eZContentObject )
+            {
+                throw new Exception( 'Failed creating Sensor container node' );
+            }
+
+            // Operator group
+            OpenPALog::warning( "Install group" );
+            $params = array(
+                'parent_node_id' => $rootObject->attribute( 'main_node_id' ),
+                'section_id' => $section->attribute( 'id' ),
+                'remote_id' => self::sensorRootRemoteId() . '_operators',
+                'class_identifier' => 'user_group',
+                'attributes' => array(
+                    'name' => 'Operatori'
+                )
+            );
+            /** @var eZContentObject $groupObject */
+            $groupObject = eZContentFunctions::createAndPublishObject( $params );
+            if( !$groupObject instanceof eZContentObject )
+            {
+                throw new Exception( 'Failed creating Sensor group node' );
+            }
+
+            // Operator sample
+            $params = array(
+                'parent_node_id' => $groupObject->attribute( 'main_node_id' ),
+                'section_id' => $section->attribute( 'id' ),
+                'class_identifier' => 'sensor_operator',
+                'attributes' => array(
+                    'name' => 'Esempio'
+                )
+            );
+            /** @var eZContentObject $categoryObject */
+            $operatorObject = eZContentFunctions::createAndPublishObject( $params );
+            if( !$operatorObject instanceof eZContentObject )
+            {
+                throw new Exception( 'Failed creating Sensor operator node' );
+            }
+
+            // Area container
+            OpenPALog::warning( "Install area" );
+            $params = array(
+                'parent_node_id' => $rootObject->attribute( 'main_node_id' ),
+                'section_id' => $section->attribute( 'id' ),
+                'class_identifier' => 'sensor_area',
+                'attributes' => array(
+                    'name' => eZINI::instance()->variable( 'SiteSettings', 'SiteName' )
+                )
+            );
+            /** @var eZContentObject $areaObject */
+            $areaObject = eZContentFunctions::createAndPublishObject( $params );
+            if( !$areaObject instanceof eZContentObject )
+            {
+                throw new Exception( 'Failed creating Sensor area node' );
+            }
+
+            // Categories container
+            OpenPALog::warning( "Install category" );
+            $params = array(
+                'parent_node_id' => $rootObject->attribute( 'main_node_id' ),
+                'section_id' => $section->attribute( 'id' ),
+                'remote_id' => self::sensorRootRemoteId() . '_postcategories',
+                'class_identifier' => 'folder',
+                'attributes' => array(
+                    'name' => 'Categorie'
+                )
+            );
+            /** @var eZContentObject $categoriesObject */
+            $categoriesObject = eZContentFunctions::createAndPublishObject( $params );
+            if( !$categoriesObject instanceof eZContentObject )
+            {
+                throw new Exception( 'Failed creating Sensor categories node' );
+            }
+
+            // Category sample
+            $params = array(
+                'parent_node_id' => $categoriesObject->attribute( 'main_node_id' ),
+                'section_id' => $section->attribute( 'id' ),
+                'class_identifier' => 'sensor_category',
+                'attributes' => array(
+                    'name' => 'Esempio'
+                )
+            );
+            /** @var eZContentObject $categoryObject */
+            $categoryObject = eZContentFunctions::createAndPublishObject( $params );
+            if( !$categoryObject instanceof eZContentObject )
+            {
+                throw new Exception( 'Failed creating Sensor category node' );
+            }
+
+            $roles = array(
+
+                "Sensor Admin" => array(
+
+                    array( 'ModuleName' => 'apps',
+                           'FunctionName' => '*' ),
+
+                    array( 'ModuleName' => 'openpa',
+                           'FunctionName' => '*' ),
+
+                    array( 'ModuleName' => 'sensor',
+                           'FunctionName' => '*' ),
+
+                    array( 'ModuleName' => 'user',
+                           'FunctionName' => 'login' ),
+
+                    array( 'ModuleName' => 'websitetoolbar',
+                           'FunctionName' => '*' ),
+
+                    array( 'ModuleName' => 'content',
+                           'FunctionName' => 'edit',
+                           'Limitation' => array( 'Section' => $section->attribute( 'id' ) ) ),
+
+                    array( 'ModuleName' => 'content',
+                           'FunctionName' => 'read' ),
+
+                    array( 'ModuleName' => 'content',
+                           'FunctionName' => 'remove',
+                           'Limitation' => array( 'Class' => eZContentClass::classIDByIdentifier( 'sensor_post' ),
+                                                  'Section' => $section->attribute( 'id' ) ) )
+                ),
+
+                "Sensor Operators" => array(
+
+                    array( 'ModuleName' => 'content',
+                           'FunctionName' => 'read',
+                           'Limitation' => array( 'Class' => array( eZContentClass::classIDByIdentifier( 'sensor_area' ),
+                                                                    eZContentClass::classIDByIdentifier( 'sensor_operator' ) ),
+                                                  'Section' => $section->attribute( 'id' ) ) ),
+
+                    array( 'ModuleName' => 'notification',
+                           'FunctionName' => '*' ),
+
+                    array( 'ModuleName' => 'sensor',
+                           'FunctionName' => 'manage' ),
+
+                ),
+
+                "Sensor Reporter" => array(
+
+                    array( 'ModuleName' => 'content',
+                           'FunctionName' => 'create',
+                           'Limitation' => array( 'Class' => eZContentClass::classIDByIdentifier( 'sensor_post' ),
+                                                  'ParentClass' => eZContentClass::classIDByIdentifier( 'folder' ),
+                                                  'Section' => $section->attribute( 'id' ) ) ),
+
+                    array( 'ModuleName' => 'notification',
+                           'FunctionName' => '*' ),
+
+                    array( 'ModuleName' => 'user',
+                           'FunctionName' => 'login' ), //@todo siteaccess
+
+                ),
+
+                "Sensor Anonymous" => array(
+
+                    array( 'ModuleName' => 'content',
+                           'FunctionName' => 'read',
+                           'Limitation' => array( 'Class' => eZContentClass::classIDByIdentifier( 'sensor_post' ),
+                                                  'Owner' => 1,
+                                                  'Section' => $section->attribute( 'id' ),
+                                                  'StateGroup_privacy' => 'PRIVATO'/*@todo*/ )  ),
+
+                    array( 'ModuleName' => 'content',
+                           'FunctionName' => 'read',
+                           'Limitation' => array( 'Class' => eZContentClass::classIDByIdentifier( 'sensor_post' ),
+                                                  'Section' => $section->attribute( 'id' ),
+                                                  'StateGroup_privacy' => 'PUBBLCO'/*@todo*/ )  ),
+
+                    array( 'ModuleName' => 'content',
+                           'FunctionName' => 'read',
+                           'Limitation' => array( 'Class' => array( eZContentClass::classIDByIdentifier( 'sensor_area' ),
+                                                                    eZContentClass::classIDByIdentifier( 'folder' ) ),
+                                                  'Section' => $section->attribute( 'id' ) ) ),
+
+                    array( 'ModuleName' => 'sensor',
+                           'FunctionName' => 'use' ),
+
+                    array( 'ModuleName' => 'collaboration',
+                           'FunctionName' => '*' ),
+
+                    array( 'ModuleName' => 'user',
+                           'FunctionName' => 'login' ), //@todo siteaccess
+
                 )
             );
 
-            /** @var eZContentObject $contentObject */
-            $contentObject = eZContentFunctions::createAndPublishObject( $params );
+            OpenPALog::warning( "Install roles" );
+            foreach( $roles as $roleName => $policies )
+            {
+                OpenPABase::initRole( $roleName, $policies );
+            }
+
+            $anonymousUserId = eZINI::instance()->variable( 'UserSettings', 'AnonymousUserID' );
+            /** @var eZRole $anonymousRole */
+            $anonymousRole = eZRole::fetchByName( "Sensor Anonymous" );
+            if ( !$anonymousRole instanceof eZRole )
+            {
+                throw new Exception( "Error: problem with roles" );
+            }
+            $anonymousRole->assignToUser( $anonymousUserId );
+
+            $memberNodeId = eZINI::instance()->variable( 'UserSettings', 'DefaultUserPlacement' );
+            $members = eZContentObject::fetchByNodeID( $memberNodeId );
+            if ( $members instanceof eZContentObject )
+            {
+                /** @var eZRole $reporterRole */
+                $reporterRole = eZRole::fetchByName( "Sensor Reporter" );
+                if ( !$reporterRole instanceof eZRole )
+                {
+                    throw new Exception( "Error: problem with roles" );
+                }
+                $reporterRole->assignToUser( $members->attribute( 'id' ) );
+            }
+
+            /** @var eZRole $operatorRole */
+            $operatorRole = eZRole::fetchByName( "Sensor Operators" );
+            if ( !$operatorRole instanceof eZRole )
+            {
+                throw new Exception( "Error: problem with roles" );
+            }
+            $operatorRole->assignToUser( $groupObject->attribute( 'id' ) );
 
         }
     }
