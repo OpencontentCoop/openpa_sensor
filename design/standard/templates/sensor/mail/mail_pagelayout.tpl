@@ -93,7 +93,7 @@
                 <table border='0' cellpadding='20' cellspacing='0' style='margin-left: auto;margin-right: auto;width:600px;text-align:center;' width='600'>
                     <tr>
                         <td align='center' valign='top'>
-                          <img src="http://{ezini( 'SiteSettings', 'SiteURL' )}/{$sensor.logo|ezroot(no)}" alt="{$sensor.site_title}" height="90" width="90" style="outline:none; text-decoration:none;border:none,display:block;">
+                          <img src="http://{ezini( 'SiteSettings', 'SiteURL' )|explode('sensorcivico')|implode('')}/{$sensor.logo|ezroot(no)}" alt="{$sensor.site_title}" height="90" width="90" style="outline:none; text-decoration:none;border:none,display:block;">
                           <p>{$sensor.logo_title}</p>                          
                         </td>
                     </tr>
