@@ -11,9 +11,9 @@
             </ul>
         </li>*}
         
-        {def $avail_translation = language_switcher( $site.uri.original_uri)}
-        {if $avail_translation|gt(1)}
-        {foreach $avail_translation as $siteaccess => $lang}
+        {def $avail_translation = language_switcher( $site.uri.original_uri)}        
+		{if $avail_translation|count()|gt(1)}        
+		{foreach $avail_translation as $siteaccess => $lang}
           <li>
             <a href={$lang.url|ezurl}>
               {if $siteaccess|eq($access_type.name)}
