@@ -39,7 +39,7 @@ if ( $test == 'registration' )
 }
 elseif ( $test == 'post' )
 {
-    $objectId = 1869;
+    $objectId = 2557;
     $participantRole = eZCollaborationItemParticipantLink::ROLE_AUTHOR;
     
     $helper = SensorHelper::instanceFromContentObjectId( $objectId );

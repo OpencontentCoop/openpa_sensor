@@ -76,9 +76,33 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase
         $this->data['areas'] = self::postAreas();
         $this->data['categories'] = self::postCategories();
         $this->data['operators'] = self::operators();
+        
+        $this->fnData['sensor_url'] = 'getSensorSiteaccessUrl';
+        $this->fnData['sensor_asset_url'] = 'getAssetUrl';
 
     }
 
+    protected function getAssetUrl()
+    {
+        $sitaccessIdentifier = OpenPABase::getFrontendSiteaccessName();
+        $path = "settings/siteaccess/{$sitaccessIdentifier}/";
+        $ini = new eZINI( 'site.ini.append', $path, null, null, null, true, true );        
+        return rtrim( $ini->variable( 'SiteSettings', 'SiteURL' ), '/' );
+    }
+    
+    protected function getSensorSiteaccessUrl()
+    {
+        $sitaccessIdentifier = OpenPABase::getCurrentSiteaccessIdentifier() . '_sensor';
+        $path = "settings/siteaccess/{$sitaccessIdentifier}/";
+        $ini = new eZINI( 'site.ini.append', $path, null, null, null, true, true );        
+        if ( $ini->hasVariable( 'SiteSettings', 'SiteURL' ) )
+            return rtrim( $ini->variable( 'SiteSettings', 'SiteURL' ), '/' );
+        else
+        {
+            return $this->getAssetUrl();
+        }
+    }
+    
     protected function getPrivacy()
     {
         $node = self::rootNode();
