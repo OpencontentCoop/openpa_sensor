@@ -93,8 +93,8 @@
                 <table border='0' cellpadding='20' cellspacing='0' style='margin-left: auto;margin-right: auto;width:600px;text-align:center;' width='600'>
                     <tr>
                         <td align='center' valign='top'>
-                          <img src="http://{ezini( 'SiteSettings', 'SiteURL' )|explode('sensorcivico')|implode('')}/{$sensor.logo|ezroot(no)}" alt="{$sensor.site_title}" height="90" width="90" style="outline:none; text-decoration:none;border:none,display:block;">
-                          <p>{$sensor.logo_title}: {$sensor.logo_subtitle}</p>                          
+                          <img src="http://{$sensor.sensor_asset_url}{$sensor.logo|ezroot(no)}" alt="{$sensor.site_title}" height="90" width="90" style="outline:none; text-decoration:none;border:none,display:block;">
+                          <p>{$sensor.logo_title} - {$sensor.logo_subtitle}</p>                          
                         </td>
                     </tr>
                 </table>
@@ -116,8 +116,8 @@
                         <td align='center' valign='top'>
                           <small>
                             &copy; {currentdate()|datetime('custom', '%Y')} {$sensor.logo_title} - 
-                            {'%privacy_link_start%Informazioni sulla privacy%privacy_link_end%'|i18n('openpa_sensor/mail/registration',, hash( '%privacy_link_start%', concat( '<a href=http://', ezini( 'SiteSettings', 'SiteURL' ), '/sensor/info/privacy/>' ), '%privacy_link_end%', '</a>' ))} -
-                            {'%terms_link_start%Termini di utilizzo%terms_link_end%'|i18n('openpa_sensor/mail/registration',, hash( '%terms_link_start%', concat( '<a href=http://', ezini( 'SiteSettings', 'SiteURL' ), '/sensor/info/terms/>' ), '%terms_link_end%', '</a>' ))}
+                            {'%privacy_link_start%Informazioni sulla privacy%privacy_link_end%'|i18n('openpa_sensor/mail/registration',, hash( '%privacy_link_start%', concat( '<a href=http://', $sensor.sensor_url, '/sensor/info/privacy/>' ), '%privacy_link_end%', '</a>' ))} -
+                            {'%terms_link_start%Termini di utilizzo%terms_link_end%'|i18n('openpa_sensor/mail/registration',, hash( '%terms_link_start%', concat( '<a href=http://', $sensor.sensor_url, '/sensor/info/terms/>' ), '%terms_link_end%', '</a>' ))}
                           </small>
                         </td>
                     </tr>

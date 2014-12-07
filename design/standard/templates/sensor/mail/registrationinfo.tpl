@@ -28,14 +28,14 @@
                 </tr>
                 <tr>
                     <td align='center' bgcolor='#f90f00' valign='top'>
-                        <h3><a href="http://{ezini( 'SiteSettings', 'SiteURL' )}/sensor/add" style="color: #ffffff !important">{'Invia la tua prima segnalazione'|i18n('openpa_sensor/mail/registration')}</a></h3>
+                        <h3><a href="http://{$sensor.sensor_url}/sensor/add" style="color: #ffffff !important">{'Invia la tua prima segnalazione'|i18n('openpa_sensor/mail/registration')}</a></h3>
                     </td>
                 </tr>
                 <tr>
                     <td align='center' valign='top'>
                         <p>                            
-                            {'Se desideri cambiare le impostazioni del tuo profilo clicca %profile_link_start%qui%profile_link_end%'|i18n('openpa_sensor/mail/registration',, hash( '%profile_link_start%', concat( '<a href=http://', ezini( 'SiteSettings', 'SiteURL' ), '/user/edit/>' ), '%profile_link_end%', '</a>' ))}<br />
-                            {'Per abilitare o disabilitare le notifiche email clicca %notification_link_start%qui%notification_link_end%'|i18n('openpa_sensor/mail/registration',, hash( '%notification_link_start%', concat( '<a href=http://', ezini( 'SiteSettings', 'SiteURL' ), '/notification/settings/>' ), '%notification_link_end%', '</a>' ))}
+                            {'Se desideri cambiare le impostazioni del tuo profilo clicca %profile_link_start%qui%profile_link_end%'|i18n('openpa_sensor/mail/registration',, hash( '%profile_link_start%', concat( '<a href=http://', $sensor.sensor_url, '/user/edit/>' ), '%profile_link_end%', '</a>' ))}<br />
+                            {'Per abilitare o disabilitare le notifiche email clicca %notification_link_start%qui%notification_link_end%'|i18n('openpa_sensor/mail/registration',, hash( '%notification_link_start%', concat( '<a href=http://', $sensor.sensor_url, '/notification/settings/>' ), '%notification_link_end%', '</a>' ))}
                         </p>
                     </td>
                 </tr>
