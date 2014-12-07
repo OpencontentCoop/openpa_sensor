@@ -6,6 +6,13 @@ MatchFile=sensor/post_edit.tpl
 Subdir=templates
 Match[class_identifier]=sensor_post
 
+[post_edit_image]
+Source=content/datatype/edit/ezimage.tpl
+MatchFile=sensor/post_edit_image.tpl
+Subdir=templates
+Match[class_identifier]=sensor_post
+Match[attribute_identifier]=image
+
 [post_edit_geo]
 Source=content/datatype/edit/ezgmaplocation.tpl
 MatchFile=sensor/post_edit_geo.tpl

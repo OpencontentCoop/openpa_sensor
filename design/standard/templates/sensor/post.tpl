@@ -35,7 +35,10 @@ $(document).ready(function(){
       
       <p>{attribute_view_gui attribute=$object|attribute('description')}</p>
       {if $object|has_attribute('attachment')}
-          <p>{attribute_view_gui attribute=$object|attribute('attachment')}</p>
+        <p>{attribute_view_gui attribute=$object|attribute('attachment')}</p>
+      {/if}
+	  {if $object|has_attribute('image')}
+        <figure>{attribute_view_gui attribute=$object|attribute('image') image_class='large' alignment=center}</figure>
       {/if}
       <ul class="list-inline">
         <li><small><i class="fa fa-clock-o"></i> {'Pubblicata il'|i18n('openpa_sensor/post')} {$object.published|l10n(shortdatetime)}</small></li>
