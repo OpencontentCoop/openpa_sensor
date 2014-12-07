@@ -11,7 +11,7 @@
                 </tr>
                 <tr>
                     <td align='center' valign='top'>
-                        <h4 style='color: #f90f00 !important'>{'Ecco le informazione del tuo account Sensor'|i18n('openpa_sensor/mail/registration')}</h4>
+                        <h4 style='color: #f90f00 !important'>{'Ecco le informazione del tuo account SensorCivico'|i18n('openpa_sensor/mail/registration')}</h4>
                     </td>
                 </tr>
                 <tr>

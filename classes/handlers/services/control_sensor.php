@@ -624,6 +624,10 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase
 
                     array( 'ModuleName' => 'content',
                            'FunctionName' => 'read',
+                           'Limitation' => array( 'Class' => eZContentClass::classIDByIdentifier( 'dipendente' ) ) ),
+                    
+                    array( 'ModuleName' => 'content',
+                           'FunctionName' => 'read',
                            'Limitation' => array( 'Class' => array( eZContentClass::classIDByIdentifier( 'sensor_area' ),
                                                                     eZContentClass::classIDByIdentifier( 'sensor_operator' ) ),
                                                   'Section' => $section->attribute( 'id' ) ) ),
@@ -659,13 +663,13 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase
                            'Limitation' => array( 'Class' => eZContentClass::classIDByIdentifier( 'sensor_post' ),
                                                   'Owner' => 1,
                                                   'Section' => $section->attribute( 'id' ),
-                                                  'StateGroup_privacy' => 'PRIVATO'/*@todo*/ )  ),
+                                                  'StateGroup_privacy' => ''/*@todo PRIVATO*/ )  ),
 
                     array( 'ModuleName' => 'content',
                            'FunctionName' => 'read',
                            'Limitation' => array( 'Class' => eZContentClass::classIDByIdentifier( 'sensor_post' ),
                                                   'Section' => $section->attribute( 'id' ),
-                                                  'StateGroup_privacy' => 'PUBBLCO'/*@todo*/ )  ),
+                                                  'StateGroup_privacy' => ''/*@todo PUBBLCO*/ )  ),
 
                     array( 'ModuleName' => 'content',
                            'FunctionName' => 'read',
@@ -792,7 +796,7 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase
     {
         return self::rootNode()->subTree( array(
             'ClassFilterType' => 'include',
-            'ClassFilterArray' => array( 'user', 'sensor_operator' ),
+            'ClassFilterArray' => array( 'user', 'sensor_operator', 'dipendente' ),
             'SortBy' => array( 'name', true )
         ) );
     }
