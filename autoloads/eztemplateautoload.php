@@ -8,6 +8,7 @@ $eZTemplateOperatorArray[] = array(
         'sensor_robot_message',
         'sensor_postcontainer',
         'sensor_categorycontainer',
-        'user_settings'
+        'user_settings',
+        'objectstate_by_id'
     )
 );

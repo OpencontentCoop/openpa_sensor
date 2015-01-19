@@ -6,7 +6,7 @@
   {set $dimensions = concat( $dimensions, 'width="', $width, '" ' )}
 {/if}
 
-{if $object.data_map.image.has_content}
+{if and( is_set( $object.data_map.image ), $object.data_map.image.has_content )}
     <img src={"user_placeholder.jpg"|ezimage()} class="img-circle" {$dimensions} />
 {else}
     <img src={"user_placeholder.jpg"|ezimage()} class="img-circle" {$dimensions} />

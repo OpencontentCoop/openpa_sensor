@@ -82,6 +82,8 @@ class SensorHelper
             'can_fix',
             'can_add_observer',
             'can_send_private_message',
+            'can_add_category',
+            'can_change_privacy',
             'participants',
             'has_owner',
             'owner_id',
@@ -91,8 +93,7 @@ class SensorHelper
             'human_unread_message_count',
             'human_message_count',
             'robot_unread_message_count',
-            'robot_message_count',
-            'can_add_category'
+            'robot_message_count'            
         );
     }
 
@@ -134,6 +135,10 @@ class SensorHelper
                 return $this->canComment();
                 break;
 
+            case 'can_change_privacy':
+                return $this->canChangePrivacy();
+                break;
+            
             case 'can_close':
                 return $this->canClose();
                 break;
@@ -556,6 +561,25 @@ class SensorHelper
         return $this->userIsA( eZCollaborationItemParticipantLink::ROLE_OWNER ) && $this->is( self::STATUS_ASSIGNED );
     }
 
+    public function canChangePrivacy()
+    {
+        return $this->userIsA( eZCollaborationItemParticipantLink::ROLE_APPROVER );
+    }
+    
+    public function makePrivate()
+    {
+        $object = $this->getContentObject();
+        if ( $object instanceof eZContentObject )
+        {                    
+            OpenPABase::sudo(
+                function() use( $object ){
+                    ObjectHandlerServiceControlSensor::setState( $object, 'privacy', 'private' );
+                }
+            );  
+        }
+        
+    }
+    
     public function canClose()
     {
         return $this->userIsA( eZCollaborationItemParticipantLink::ROLE_APPROVER )

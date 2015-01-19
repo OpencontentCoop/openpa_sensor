@@ -10,7 +10,8 @@ class OpenPASensorOperator
             'sensor_robot_message',
             'sensor_postcontainer',
             'sensor_categorycontainer',
-            'user_settings'
+            'user_settings',
+            'objectstate_by_id'
         );
     }
 
@@ -35,6 +36,16 @@ class OpenPASensorOperator
     {
         switch ( $operatorName )
         {
+            case 'objectstate_by_id';
+            {
+                $id = $operatorValue;
+                $state = eZContentObjectState::fetchById( $id );
+                if ( $state instanceof eZContentObjectState )
+                {
+                    $operatorValue = $state;
+                }
+            } break;
+            
             case 'user_settings':
             {
                 $object = $operatorValue;

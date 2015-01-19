@@ -1,84 +1,82 @@
 {ezpagedata_set('left_menu',false())}
-{def $page_limit = 10
-    $posts = fetch( content, list, hash( parent_node_id, sensor_root_handler().post_container_node.node_id,
-    limit, $page_limit,
-    offset, $view_parameters.offset,
-    sort_by, array( 'published', false()))
+{def $page_limit = 10}
+{def $data = facet_navigation(  
+  hash(
+	'subtree_array', array( sensor_root_handler().post_container_node.node_id ),  
+	'class_id', array( 'sensor_post' ),  
+	'offset', $view_parameters.offset,  
+	'sort_by', hash( 'published', 'desc' ),
+	'facet', array(
+		hash( 'field', 'subattr_area___name____s', 'name', 'Zona', 'limit', 500, 'sort', 'alpha' ),
+		hash( 'field', 'attr_type_s', 'name', 'Tipo', 'limit', 500, 'sort', 'alpha' ),	
+		hash( 'field', 'subattr_category___name____s', 'name', 'Area tematica', 'limit', 500, 'sort', 'alpha' ),
+		hash( 'field', 'meta_object_states_si', 'name', 'Stato', 'limit', 500, 'sort', 'alpha' )		
+	 ),	
+	'limit', $page_limit
+  ),
+  $view_parameters,
+  $node.url_alias,
 )}
+
+{*
+ezscript_require(array('ezjsc::jquery', 'plugins/chosen.jquery.js'))}
+{ezcss_require('plugins/chosen.css')}
+<script>{literal}$(document).ready(function(){$("select.chosen").chosen({width:'100%'});});{/literal}</script>
+*}
+
 <section class="service_teasers">
-    {foreach $posts as $item}
-    {def $post = object_handler($item).control_sensor}
-      <div class="row">
-		<div class="col-md-12">
-		  <section class="hgroup">
-			<h2 class="section_header skincolored" style="margin-bottom: 0;border: none">
-			<a href={concat('sensor/posts/',$item.contentobject_id)|ezurl()}>{$item.name|wash()}</a>
-			<small>{$item.object.owner.name|wash()}</small>
-			</h2>
-			<ul class="breadcrumb pull-right">
-			<li>
-			  <span class="label label-{$post.type.css_class}">{$post.type.name}</span>
-			  <span class="label label-{$post.current_status.css_class}">{$post.current_status.name}</span>
-			  {if $post.current_privacy_status.identifier|eq('private')}
-				<span class="label label-{$post.current_privacy_status.css_class}">{$post.current_privacy_status.name}</span>
-			  {/if}
-			  </li>
-			</ul>
-		  </section>
-		</div>
-	  </div>
-	  <div class="row service_teaser" style="margin-bottom: 10px;">          
-		  {if $item|has_attribute('image')}
-		  <div class="service_photo col-sm-4 col-md-4">
-			<figure style="background-image:url({$item|attribute('image').content.large.full_path|ezroot(no)})"></figure>
-		  </div>
-		  {/if}
-		  <div class="service_details {if $item|has_attribute('image')}col-sm-8 col-md-8{else}col-sm-12 col-md-12{/if}">            
-            <div class="clearfix">
-                <p class="pull-left">
-                    {if $item|has_attribute('geo')}
-                        <i class="fa fa-map-marker"></i> {$item|attribute('geo').content.address}
-                    {elseif $item|has_attribute('area')}
-                        {attribute_view_gui attribute=$item|attribute('area')}
-                    {/if}
-                </p>
-                {*<p class="pull-right">
-                    <span class="label label-{$post.type.css_class}">{$post.type.name}</span>
-                    <span class="label label-{$post.current_status.css_class}">{$post.current_status.name}</span>
-                    {if $post.current_privacy_status.identifier|eq('private')}
-                        <span class="label label-{$post.current_privacy_status.css_class}">{$post.current_privacy_status.name}</span>
-                    {/if}
-                </p>*}
-            </div>
-			<p>
-              {attribute_view_gui attribute=$item|attribute('description')}
-            </p>
-            {if $item|has_attribute('attachment')}
-                <p>{attribute_view_gui attribute=$item|attribute('attachment')}</p>
-            {/if}
-            <ul class="list-inline">
-                <li><small><i class="fa fa-clock-o"></i> Pubblicata il {$item.object.published|l10n(shortdatetime)}</small></li>
-                {if $item.object.modified|gt($item.object.published)}
-                    <li><small><i class="fa fa-clock-o"></i> Ultima modifica del {$item.object.modified|l10n(shortdatetime)}</small></li>
-                {/if}
-                {if $post.current_owner}<li><small><i class="fa fa-user"></i> In carico a {$post.current_owner}</small></li>{/if}
-                {if $post.comment_count|gt(0)}<li><small><i class="fa fa-comments"></i> {$post.comment_count} {'commenti'|i18n('openpa_sensor/post')}</small></li>{/if}
-                {if $post.response_count|gt(0)}<li><small><i class="fa fa-comment"></i> {$post.response_count} {'risposte ufficiali'|i18n('openpa_sensor/post')}</small></li>{/if}
-                {if $item.data_map.category.has_content}
-                  <li><small><i class="fa fa-tags"></i> {attribute_view_gui attribute=$item.data_map.category}</small></li>
-                {/if}
-            </ul>
-            <p><a href={concat('sensor/posts/',$item.object.id)|ezurl()} class="btn btn-info btn-sm">{"Dettagli"|i18n('openpa_sensor/dashboard')}</a></p>
-        </div>
-      </div>
-    {undef $post}
+
+    {foreach $data.contents as $item}
+	  {include name=posts_item uri='design:sensor/parts/posts_item.tpl' node=$item}    
     {/foreach}
 
 {include name=navigator
     uri='design:navigator/google.tpl'
     page_uri=$node.url_alias
-    item_count=sensor_root_handler().post_container_node.children_count
+    item_count=$data.count
     view_parameters=$view_parameters
     item_limit=$page_limit}
 
 </section>
+
+{if fetch( 'user', 'has_access_to', hash( 'module', 'sensor', 'function', 'config' ) )}
+<div id="posts_search">
+  <div class="container">
+  <form class="form-horizontal" role="search" action={concat('facet/proxy/', $node.node_id)|ezurl()}>		  
+	<div class="col-md-2">
+	  <input id="searchfacet" data-content="Premi invio per cercare" type="text" class="form-control" placeholder="Cerca" name="query" value="{$data.query|wash()}">
+	</div>
+	{if $data.navigation|count}
+	{foreach $data.navigation as $name => $items}
+	  <div class="col-md-2">
+	  <select class="facet-select form-control chosen" data-placeholder="{$name|wash()}" name="{$name|wash()}">
+		<option value="">{$name|wash()}</option>
+		{foreach $items as $item}
+		  {if $name|eq('Stato')}
+			{def $state = $item.name|objectstate_by_id()}
+			{if array( 'sensor', 'privacy' )|contains( $state.group.identifier )}
+			  <option {if $item.active}selected="selected"{/if} value="{$item.query|wash()}">
+				{$state.group.current_translation.name|wash()}/{$state.current_translation.name|wash()}
+				{if $item.count|gt(0)}({$item.count}){/if}
+			  </option>
+			{/if}
+			{undef $state}
+		  {else}
+			<option {if $item.active}selected="selected"{/if} value="{$item.query|wash()}">
+			  {$item.name|wash()}
+			  {if $item.count|gt(0)}({$item.count}){/if}
+			</option>
+		  {/if}
+		{/foreach}
+	  </select>
+	  </div>
+	{/foreach}
+	{/if}
+	<div class="col-md-2">
+	  <button type="submit" class="btn btn-info"><span class="fa fa-search"></span></button>	  
+	  <a href={$node.url_alias|ezurl()} title="Reset" class="btn btn-danger"><span class="fa fa-close"></span></a>	  
+	</div>
+  </form>
+  </div>
+</div>
+{/if}
