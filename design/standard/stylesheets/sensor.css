@@ -212,3 +212,14 @@ span.classattribute-description{
 #sidebar .chosen-container-single .chosen-single div b {
     background-position: 0 6px;
 }
+
+#posts_search{
+    bottom: 0px;
+    width: 100%;
+    position: fixed;
+    left: 0px;
+    background:#eee;
+    border-top: 1px solid #ccc;
+    padding: 10px 0;
+    z-index: 100
+}

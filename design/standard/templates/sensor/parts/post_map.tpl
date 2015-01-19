@@ -5,7 +5,6 @@
 <![endif]-->
 
 <script src="http://cdn.leafletjs.com/leaflet-0.7.2/leaflet.js"></script>
-<script src="http://techblog.mappy.com/Leaflet-active-area/src/leaflet.activearea.js"></script>
 <script src="{'javascript/Leaflet.MakiMarkers.js'|ezdesign(no)}"></script>
 
 <div id="map" style="width: 100%; height: 200px;"></div>

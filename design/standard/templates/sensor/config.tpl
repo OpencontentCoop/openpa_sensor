@@ -73,8 +73,10 @@ $(document).ready(function(){
               {if $userSetting.is_enabled|not()}</span>{/if}
             </td>
             <td width="1">
-              {*include name=edit uri='design:parts/toolbar/node_edit.tpl' current_node=$operator*}
-              <a href="{concat('sensor/user/',$operator.contentobject_id)|ezurl(no)}"><i class="fa fa-edit"></i></a>
+              <a href="{concat('sensor/user/',$operator.contentobject_id)|ezurl(no)}"><i class="fa fa-user"></i></a>
+            </td>
+            <td width="1">
+              {include name=edit uri='design:parts/toolbar/node_edit.tpl' current_node=$operator}
             </td>
             {*<td width="1">
               {if fetch( 'user', 'has_access_to', hash( 'module', 'user', 'function', 'setting' ))}
@@ -113,7 +115,7 @@ $(document).ready(function(){
             </td>
             <td width="1">
               {*include name=edit uri='design:parts/toolbar/node_edit.tpl' current_node=$user*}
-              <a href="{concat('sensor/user/',$user.contentobject_id)|ezurl(no)}"><i class="fa fa-edit"></i></a>
+              <a href="{concat('sensor/user/',$user.contentobject_id)|ezurl(no)}"><i class="fa fa-user"></i></a>
             </td>
             {*<td width="1">
               {if fetch( 'user', 'has_access_to', hash( 'module', 'user', 'function', 'setting' ))}

@@ -24,7 +24,10 @@
   </td>
   <td>    
     <ul class="list-inline">
-      <li>
+      {if fetch( 'user', 'has_access_to', hash( 'module', 'sensor', 'function', 'config' ) )}
+		<li><strong>{$item.content.helper.object.id}</strong></li>
+	  {/if}
+	  <li>
       {if $post.current_privacy_status.identifier|eq('private')}
         <span class="label label-{$post.current_privacy_status.css_class}">{$post.current_privacy_status.name}</span>
       {/if}      
@@ -34,8 +37,8 @@
       <li><small><strong>{"Creata"|i18n('openpa_sensor/dashboard')}</strong> {$item.created|l10n(shortdatetime)}</small></li>
       {if $item.modified|ne($item.created)}<li><small><strong>{"Modificata"|i18n('openpa_sensor/dashboard')}</strong> {$item.modified|l10n(shortdatetime)}</small></li>{/if}
     </ul>
-    <p>
-      {$item.content.helper.object.name|wash()}
+    <p>      
+	  {$item.content.helper.object.name|wash()}
     </p>
     <p>
       <small>

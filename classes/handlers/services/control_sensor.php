@@ -837,7 +837,7 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase
                     'DepthOperator' => 'eq',
                     'ClassFilterArray' => array( 'sensor_area' ),
                     'Limitation' => array(),
-                    'SortBy' => array( 'depth', true )
+                    'SortBy' => array( 'name', true )
                 ) );
 
             foreach( $treeAreas as $node )
@@ -867,7 +867,7 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase
                     'DepthOperator' => 'eq',
                     'ClassFilterArray' => array( 'sensor_category' ),
                     'Limitation' => array(),
-                    'SortBy' => array( 'depth', true )
+                    'SortBy' => array( 'name', true )
                 ) );
 
             foreach( $treeCategories as $node )
@@ -956,7 +956,9 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase
                 {
                     if ( $dataMap['privacy']->attribute( 'data_int' ) == 0 )
                     {
-                        self::setState( $object, 'privacy', 'private' );
+                        OpenPABase::sudo( function() use( $object ){
+                            ObjectHandlerServiceControlSensor::setState( $object, 'privacy', 'private' );
+                        });
                     }
                 }
             }
@@ -1024,7 +1026,8 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase
             'ExtendedAttributeFilter' => array()
         );        
         $solrSearch = new eZSolr();
-        $solrResult = $solrSearch->search( '', $solrFetchParams );
+        eZINI::instance( 'ezfind.ini' )->setVariable( 'LanguageSearch', 'SearchMainLanguageOnly', 'disabled' );
+        $solrResult = $solrSearch->search( '', $solrFetchParams );        
         return $solrResult;
     }
     

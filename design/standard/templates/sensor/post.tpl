@@ -1,10 +1,6 @@
 {ezscript_require(array('ezjsc::jquery', 'plugins/chosen.jquery.js'))}
 {ezcss_require('plugins/chosen.css')}
-<script>{literal}
-$(document).ready(function(){    
-  $("select.chosen").chosen({width:'100%'});
-});
-{/literal}</script>
+<script>{literal}$(document).ready(function(){$("select.chosen").chosen({width:'100%'});});{/literal}</script>
 
 {if is_set( $error )}
   <div class="alert alert-danger">{$error}</div>
@@ -59,7 +55,15 @@ $(document).ready(function(){
 
     </div>
     <div class="col-md-4" id="sidebar">
-              
+      
+      {if and( $post.current_privacy_status.identifier|ne('private'), $helper.can_change_privacy )}
+      <aside class="widget">
+        <div class="form-group">
+          <input class="btn btn-danger btn-lg btn-block" type="submit" name="CollaborationAction_MakePrivate" value="{'Rendi la segnalazione privata'|i18n('openpa_sensor/post')}" />
+        </div>
+      </aside>
+      {/if}
+      
       <aside class="widget">
         <h4>Luogo</h4>
         {include uri='design:sensor/parts/post_map.tpl'}

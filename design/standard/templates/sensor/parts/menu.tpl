@@ -26,7 +26,6 @@
         {/foreach}
         {/if}
         
-        {if $current_user.is_logged_in|not()}
         <li class="dropdown">
             <a data-toggle="dropdown" class="dropdown-toggle" href="{'sensor/info'|ezurl(no)}">{'Informazioni'|i18n('openpa_sensor/menu')}
                 <span class="caret"></span>
@@ -37,6 +36,7 @@
                 <li><a href="{'sensor/info/terms'|ezurl(no)}">{'Termini di utilizzo'|i18n('openpa_sensor/menu')}</a></li>
             </ul>
         </li>		
+        {if $current_user.is_logged_in|not()}
             <li><a href="{'sensor/posts'|ezurl(no)}">{'Segnalazioni'|i18n('openpa_sensor/menu')}</a></li>
 			<li>
                 <a href="#login">

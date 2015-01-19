@@ -184,6 +184,12 @@ class OpenPASensorCollaborationHandler extends eZCollaborationItemHandler
         {
             $handler->close();
         }
+        
+        if ( $this->isCustomAction( 'MakePrivate' )
+             && $handler->canChangePrivacy() )
+        {
+            $handler->makePrivate();
+        }
 
         if ( $this->isCustomAction( 'AddObserver' ) && $this->hasCustomInput( 'OpenPASensorItemAddObserver' )
              && $handler->canAddObserver() )
@@ -204,7 +210,7 @@ class OpenPASensorCollaborationHandler extends eZCollaborationItemHandler
             if ( $this->hasCustomInput( 'OpenPASensorItemCommentPrivateReceiver' ) )
             {
                 $privateReceiverPost = $this->customInput( 'OpenPASensorItemCommentPrivateReceiver' );
-                if ( $privateReceiverPost > 0 )
+                if ( $privateReceiverPost > 2 )
                 {
                     $privateReceiver = $privateReceiverPost;
                 }
@@ -257,8 +263,8 @@ class OpenPASensorCollaborationHandler extends eZCollaborationItemHandler
         $participantMap = array();
         foreach ( $participantList as $participant )
         {
-            $userIDList[] = $participant['participant_id'];
-            $participantMap[$participant['participant_id']] = $participant;
+            $userIDList[] = $participant->attribute( 'participant_id' );
+            $participantMap[$participant->attribute('participant_id' )] = $participant;
         }
 
         $collaborationIdentifier = $event->attribute( 'data_text1' );
@@ -289,7 +295,7 @@ class OpenPASensorCollaborationHandler extends eZCollaborationItemHandler
         {
             $contentObjectID = $subscriber['contentobject_id'];
             $participant = $participantMap[$contentObjectID];
-            $participantRole = $participant['participant_role'];
+            $participantRole = $participant->attribute( 'participant_role' );
             $userItem = array( 'participant' => $participant,
                                'email' => $subscriber['email'] );
             if ( !isset( $userCollection[$participantRole] ) )
