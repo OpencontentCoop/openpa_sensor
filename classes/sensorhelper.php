@@ -83,6 +83,7 @@ class SensorHelper
             'can_add_observer',
             'can_send_private_message',
             'can_add_category',
+            'can_add_area',
             'can_change_privacy',
             'participants',
             'has_owner',
@@ -116,10 +117,19 @@ class SensorHelper
                 break;
 
             case 'can_do_something':
-                return $this->canAssign() || $this->canAddObserver() || $this->canClose() || $this->canFix();
+                return $this->canAssign()
+                       || $this->canAddObserver()
+                       || $this->canClose()
+                       || $this->canFix()
+                       || $this->attribute( 'can_add_category' )
+                       || $this->attribute( 'can_add_area' );
                 break;
 
             case 'can_add_category':
+                return $this->userIsA( eZCollaborationItemParticipantLink::ROLE_APPROVER );
+                break;
+            
+            case 'can_add_area':
                 return $this->userIsA( eZCollaborationItemParticipantLink::ROLE_APPROVER );
                 break;
             
@@ -414,6 +424,32 @@ class SensorHelper
         {
             $this->assignTo( $userIds );
         }
+    }
+    
+    public function addArea( array $areaList )
+    {        
+        if ( empty( $areaList ) )
+        {
+            return false;
+        }
+        
+        $areasString = implode( '-', $areaList );
+        
+        $object = $this->getContentObject();
+        
+        if ( $object instanceof eZContentObject )
+        {
+            $dataMap = $object->attribute( 'data_map' );
+            if ( isset( $dataMap['area'] ) )
+            {
+                $dataMap['area']->fromString( $areasString );
+                $dataMap['area']->store();
+                eZContentCacheManager::clearContentCacheIfNeeded( $object->attribute( 'id' ) );
+                eZSearch::addObject( $object, true );
+            }
+        }
+        return true;
+        
     }
     
     protected function modifyPostCategories( $categoriesString )

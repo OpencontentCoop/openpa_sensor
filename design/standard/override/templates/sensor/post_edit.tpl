@@ -191,6 +191,11 @@
 		{/section}
 	{/section}
 
+	  <p class="text-center">
+		<small>		  
+		  {'I testi e le immagini inserite dovranno rispettare le policy stabilite per la <a target="_blank" href="%privacy_link">privacy</a>'|i18n('openpa_sensor/add',,hash('%privacy_link', '/sensor/redirect/info:privacy'|ezurl(no,full) ) )}
+		</small>
+	  </p>
 	
 	  <div class="buttonblock">
 		<input class="btn btn-lg btn-success pull-right" type="submit" name="PublishButton" value="Salva" />
