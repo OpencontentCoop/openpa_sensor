@@ -200,7 +200,14 @@ class OpenPASensorCollaborationHandler extends eZCollaborationItemHandler
         if ( $this->isCustomAction( 'AddCategory' ) && $this->hasCustomInput( 'OpenPASensorItemCategory' )
              && $handler->attribute( 'can_add_category' ) )
         {
-            $handler->addCategory( $this->customInput( 'OpenPASensorItemCategory' ), $this->hasCustomInput( 'OpenPASensorItemAssignToCategoryApprover' ) ? $this->customInput( 'OpenPASensorItemAssignToCategoryApprover' ) : false );
+            $handler->addCategory( $this->customInput( 'OpenPASensorItemCategory' ),
+                                   $this->hasCustomInput( 'OpenPASensorItemAssignToCategoryApprover' ) ? $this->customInput( 'OpenPASensorItemAssignToCategoryApprover' ) : false );
+        }
+        
+        if ( $this->isCustomAction( 'AddArea' ) && $this->hasCustomInput( 'OpenPASensorItemArea' )
+             && $handler->attribute( 'can_add_area' ) )
+        {
+            $handler->addArea( $this->customInput( 'OpenPASensorItemArea' ) );
         }
 
         if ( $this->hasCustomInput( 'OpenPASensorItemComment' ) || $this->isCustomAction( 'Comment' ) )

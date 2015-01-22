@@ -1,3 +1,4 @@
+{*
 <script src="http://code.highcharts.com/highcharts.js"></script>
 
 <section class="hgroup">  
@@ -146,3 +147,4 @@ $(function () {
 });
 {/literal}
 </script>
+*}
