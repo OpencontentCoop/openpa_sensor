@@ -117,12 +117,12 @@ class SensorHelper
                 break;
 
             case 'can_do_something':
-                return $this->canAssign()
+                return ( $this->canAssign()
                        || $this->canAddObserver()
                        || $this->canClose()
                        || $this->canFix()
                        || $this->attribute( 'can_add_category' )
-                       || $this->attribute( 'can_add_area' );
+                       || $this->attribute( 'can_add_area' ) );
                 break;
 
             case 'can_add_category':
@@ -668,16 +668,19 @@ class SensorHelper
             {
                 foreach ( $listByOwner as $id )
                 {
-                    $this->changeParticipantRole(
-                        $id,
-                        eZCollaborationItemParticipantLink::ROLE_OBSERVER
-                    );
+                    if ( !in_array( $id, $userIds ) ) // in caso di riassegnazione allo stesso utente non gli viene cambiato il ruolo
+                    {
+                        $this->changeParticipantRole(
+                            $id,
+                            eZCollaborationItemParticipantLink::ROLE_OBSERVER
+                        );
+                    }
                 }
             }
 
             foreach ( $userIds as $userId )
             {
-                if ( !in_array( $userId, $listByOwner ) )
+                if ( !in_array( $userId, $listByOwner ) ) // in caso di riassegnazione allo stesso utente il ticket non viene riasseganto
                 {
                     if ( !in_array( $userId, $list ) )
                     {
