@@ -11,7 +11,15 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase
      * @var eZContentObjectTreeNode
      */
     protected static $rootNode;
+
+    // sensor/post
+    /**
+     * @var eZContentObjectTreeNode
+     */
     protected static $postContainerNode;
+    /**
+     * @var eZContentObjectTreeNode
+     */
     protected static $postCategoriesNode;
     protected static $postContentClass;
     protected static $postAreas;
@@ -30,22 +38,18 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase
         'private' => "Privato",
     );
 
+    // sensor/forum
+    /**
+     * @var eZContentObjectTreeNode
+     */
+    protected static $forumContainerNode;
+    protected static $forums;
+
+
+
     function run()
     {
-        $this->fnData['helper'] = 'getHelper';
-
-        $this->fnData['author_id'] = 'getAuthorId';
-        $this->fnData['approver_id_array'] = 'getApproverIdArray';
-
-        $this->fnData['geo_js_array'] = 'getGeoJsArray';
-
-        $this->fnData['type'] = 'getType';
-        $this->fnData['current_status'] = 'getCurrentStatus';
-        $this->fnData['current_privacy_status'] = 'getCurrentPrivacyStatus';
-        $this->fnData['current_owner'] = 'getCurrentOwner';
-        $this->fnData['comment_count'] = 'getCommentCount';
-        $this->fnData['response_count'] = 'getResponseCount';
-
+        // general
         $this->fnData['site_title'] = 'getSiteTitle';
         $this->data['site_images'] = array(
             "apple-touch-icon-114x114-precomposed" => null,
@@ -62,12 +66,34 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase
         $this->fnData['banner_title'] = 'getBannerTitle';
         $this->fnData['banner_subtitle'] = 'getBannerSubTitle';
 
-        $this->fnData['footer'] = 'getFooter';        
+        $this->fnData['footer'] = 'getFooter';
         $this->fnData['contacts'] = 'getContacts';
 
         $this->fnData['privacy'] = 'getPrivacy';
         $this->fnData['faq'] = 'getFaq';
         $this->fnData['terms'] = 'getTerms';
+
+        $this->fnData['sensor_url'] = 'getSensorSiteaccessUrl';
+        $this->fnData['sensor_asset_url'] = 'getAssetUrl';
+
+        $this->data['post_is_enabled'] = self::PostIsEnable();
+        $this->data['forum_is_enabled'] = self::ForumIsEnable();
+        $this->data['survey_is_enabled'] = self::SurveyIsEnabled();
+
+        // post
+        $this->fnData['helper'] = 'getHelper';
+
+        $this->fnData['author_id'] = 'getAuthorId';
+        $this->fnData['approver_id_array'] = 'getApproverIdArray';
+
+        $this->fnData['geo_js_array'] = 'getGeoJsArray';
+
+        $this->fnData['type'] = 'getType';
+        $this->fnData['current_status'] = 'getCurrentStatus';
+        $this->fnData['current_privacy_status'] = 'getCurrentPrivacyStatus';
+        $this->fnData['current_owner'] = 'getCurrentOwner';
+        $this->fnData['comment_count'] = 'getCommentCount';
+        $this->fnData['response_count'] = 'getResponseCount';
 
         $this->data['post_container_node'] = self::postContainerNode();
         $this->data['post_categories_container_node'] = self::postCategoriesNode();
@@ -76,10 +102,30 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase
         $this->data['areas'] = self::postAreas();
         $this->data['categories'] = self::postCategories();
         $this->data['operators'] = self::operators();
-        
-        $this->fnData['sensor_url'] = 'getSensorSiteaccessUrl';
-        $this->fnData['sensor_asset_url'] = 'getAssetUrl';
 
+        // forum
+        $this->data['forum_container_node'] = self::forumContainerNode();
+    }
+
+    public static function PostIsEnable()
+    {
+        $node = self::rootNode();
+        $dataMap = $node->attribute( 'data_map' );
+        return isset( $dataMap['post_enabled'] ) && $dataMap['post_enabled']->attribute( 'data_int' ) == 1;
+    }
+
+    public static function ForumIsEnable()
+    {
+        $node = self::rootNode();
+        $dataMap = $node->attribute( 'data_map' );
+        return isset( $dataMap['forum_enabled'] ) && $dataMap['forum_enabled']->attribute( 'data_int' ) == 1;
+    }
+
+    public static function SurveyIsEnabled()
+    {
+        $node = self::rootNode();
+        $dataMap = $node->attribute( 'data_map' );
+        return isset( $dataMap['survey_enabled'] ) && $dataMap['survey_enabled']->attribute( 'data_int' ) == 1;
     }
 
     protected function getAssetUrl()
@@ -266,7 +312,6 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase
 
     }
 
-
     protected function getCurrentPrivacyStatus()
     {
         if ( $this->container->getContentObject() instanceof eZContentObject )
@@ -390,6 +435,10 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase
                 $content = $attribute->content()->attribute( 'original' );
                 $data = $content['full_path'];
             }
+            else
+            {
+                $data = '/extension/openpa_sensor/design/standard/images/logo_sensor.png';
+            }
         }
         return $data;
     }
@@ -417,14 +466,13 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase
             $attribute = $this->container->attribute( $identifier )->attribute( 'contentobject_attribute' );
             if ( $attribute instanceof eZContentObjectAttribute )
             {
-                $data = $this->replaceBracket( $attribute->toString() );
+                $data = self::replaceBracket( $attribute->toString() );
             }
         }
         return $data;
     }
 
-
-    protected function replaceBracket( $string )
+    public static function replaceBracket( $string )
     {
         $string = str_replace( '[', '<strong>', $string );
         $string = str_replace( ']', '</strong>', $string );
@@ -752,13 +800,25 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase
             $reporterRole->assignToUser( $groupObject->attribute( 'id' ) );
             $operatorRole->assignToUser( $groupObject->attribute( 'id' ) );
 
+            OpenPALog::warning( 'Salvo configurazioni' );
+            $backend = OpenPABase::getBackendSiteaccessName();
+            $path = "settings/siteaccess/{$backend}/";
+            $iniFile = "contentstructuremenu.ini";
+            $ini = new eZINI( $iniFile . '.append', $path, null, null, null, true, true );
+            $value = array_unique( array_merge( (array) $ini->variable( 'TreeMenu', 'ShowClasses' ), array( 'sensor_root' ) ) );
+            $ini->setVariable( 'TreeMenu', 'ShowClasses', $value );
+            if ( !$ini->save() ) throw new Exception( "Non riesco a salvare contentstructuremenu.ini" );
+
+
+            eZCache::clearById( 'global_ini' );
+            eZCache::clearById( 'template' );
+
         }
     }
     public static function sensorRootRemoteId()
     {
         return OpenPABase::getCurrentSiteaccessIdentifier() . '_openpa_sensor';
     }
-
 
     public static function rootNode()
     {
@@ -789,7 +849,20 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase
         }
         return self::$postCategoriesNode;
     }
-    
+
+    public static function forumContainerNode()
+    {
+        if ( self::$forumContainerNode == null )
+        {
+            $root = eZContentObject::fetchByRemoteID( self::sensorRootRemoteId() . '_dimmi' );
+            if ( $root instanceof eZContentObject )
+            {
+                self::$forumContainerNode = $root->attribute( 'main_node' );
+            }
+        }
+        return self::$forumContainerNode;
+    }
+
     public static function postContainerNode()
     {
         if ( self::$postContainerNode == null )
@@ -860,7 +933,7 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase
         {
             $data = array();
             $false = false;
-            /** @var eZContentObjectTreeNode[] $treeAreas */
+            /** @var eZContentObjectTreeNode[] $treeCategories */
             $treeCategories = self::postCategoriesNode()->subTree( array(
                     'ClassFilterType' => 'include',
                     'Depth' => 1,
@@ -883,20 +956,66 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase
         return self::$postCategories;
     }
 
-    protected static function walkSubtree( eZContentObjectTreeNode $node, &$coords )
+    public static function forums()
+    {
+        if ( self::$forums == null )
+        {
+            $data = array();
+            $false = false;
+            $includeClasses = array( 'dimmi_forum', 'dimmi_forum_topic' );
+            /** @var eZContentObjectTreeNode[] $treeCategories */
+            $tree = self::forumContainerNode()->subTree( array(
+                'ClassFilterType' => 'include',
+                'Depth' => 1,
+                'DepthOperator' => 'eq',
+                'ClassFilterArray' => $includeClasses,
+                'Limitation' => array(),
+                'SortBy' => array( 'name', true )
+            ) );
+
+            foreach( $tree as $node )
+            {
+                $data[] = array(
+                    'node' => $node,
+                    'children' => self::walkSubtree( $node, $false, $includeClasses )
+                );
+            }
+
+            self::$forums = array( 'tree' => $data );
+        }
+        return self::$forums;
+    }
+
+
+    protected static function walkSubtree( eZContentObjectTreeNode $node, &$coords, $includeClasses = array() )
     {
         $data = array();
         if ( $node->childrenCount() > 0 )
         {
-            foreach( $node->children() as $subNode )
+            if ( empty( $includeClasses ) )
+            {
+                $children = $node->children();
+            }
+            else
+            {
+                $children = $node->subTree( array(
+                    'ClassFilterType' => 'include',
+                    'Depth' => 1,
+                    'DepthOperator' => 'eq',
+                    'ClassFilterArray' => $includeClasses,
+                    'Limitation' => array(),
+                    'SortBy' => $node->attribute( 'sort_array' )
+                ) );
+            }
+            foreach( $children as $subNode )
             {
                 if ( is_array( $coords ) )
                 {
-                    self::findAreaCoords( $subNode->attribute( 'object' ), $coords );
+                    self::findAreaCoords( $subNode->attribute( 'object' ), $coords, $includeClasses );
                 }
                 $data[] = array(
                     'node' => $subNode,
-                    'children' => self::walkSubtree( $subNode, $coords )
+                    'children' => self::walkSubtree( $subNode, $coords, $includeClasses )
                 );
             }
         }
@@ -1031,7 +1150,7 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase
         return $solrResult;
     }
     
-    function fetchSensorGeoJsonFeatureCollection()
+    public static function fetchSensorGeoJsonFeatureCollection()
     {
         $data = new SensorGeoJsonFeatureCollection();
         $items = self::fetchPosts( false );

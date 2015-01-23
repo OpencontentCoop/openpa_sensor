@@ -202,7 +202,7 @@
 		<input class="btn btn-lg btn-danger" type="submit" name="DiscardButton" value="{'Discard'|i18n('design/standard/content/edit')}" />
 		<input type="hidden" name="DiscardConfirm" value="0" />
 		<input type="hidden" name="RedirectIfDiscarded" value="/sensor/redirect/home" />
-		<input type="hidden" name="RedirectURIAfterPublish" value="/sensor/redirect/posts:{$object.id}" />
+		<input type="hidden" name="RedirectURIAfterPublish" value="/sensor/redirect/posts,{$object.id}" />
 	  </div>
   </div>
 </div>

@@ -18,13 +18,13 @@
         <h4{'Commenti'|i18n('openpa_sensor/messages')}</h4>
         {foreach $message_list as $item}
             {if $item.message_type|eq(1)}
-                {include uri='design:sensor/parts/post_message/public.tpl'
+                {include uri='design:sensor/parts/post/post_message/public.tpl'
                         is_read=cond( $current_participant, $current_participant.last_read|gt($item.modified), true())
                         item_link=$item
                         message=$item.simple_message}
             
             {elseif $item.message_type|eq(2)}
-                {include uri='design:sensor/parts/post_message/response.tpl'
+                {include uri='design:sensor/parts/post/post_message/response.tpl'
                         is_read=cond( $current_participant, $current_participant.last_read|gt($item.modified), true())
                         item_link=$item
                         message=$item.simple_message}
@@ -36,7 +36,7 @@
                 $current_participant,
                 or( $item.message_type|eq($current_participant.participant_id), $item.participant_id|eq($current_participant.participant_id) )
             )}
-                {include uri='design:sensor/parts/post_message/private.tpl'
+                {include uri='design:sensor/parts/post/post_message/private.tpl'
                         is_read=cond( $current_participant, $current_participant.last_read|gt($item.modified), true())
                         item_link=$item
                         message=$item.simple_message}

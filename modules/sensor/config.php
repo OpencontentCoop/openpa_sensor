@@ -44,6 +44,12 @@ foreach( $otherFolders as $folder )
     }
 }
 
+if ( ObjectHandlerServiceControlSensor::ForumIsEnable() && $Part == 'dimmi' )
+{
+    $forums = ObjectHandlerServiceControlSensor::forums();
+    $tpl->setVariable( 'forums', $forums['tree'] );
+}
+
 $tpl->setVariable( 'view_parameters', $viewParameters );
 $tpl->setVariable( 'current_part', $Part );
 $tpl->setVariable( 'data', $data );

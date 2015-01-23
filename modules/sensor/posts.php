@@ -77,7 +77,7 @@ else
     $Result = array();
     $Result['persistent_variable'] = $tpl->variable( 'persistent_variable' );
     $Result['pagelayout'] = 'design:sensor/pagelayout.tpl';
-    $Result['content'] = $tpl->fetch( 'design:sensor/post.tpl' );
+    $Result['content'] = $tpl->fetch( 'design:sensor/parts/post/full.tpl' );
     $Result['node_id'] = 0;
 
     $contentInfoArray = array( 'url_alias' => 'sensor/post/' . $postId );

@@ -21,7 +21,7 @@
 {if $simplified_dashboard}
 
   {if $all_items|count()|gt(0)}    
-    {include uri="design:sensor/parts/table_items.tpl" item_list=$all_items name=all_items}
+    {include uri="design:sensor/parts/post/table_items.tpl" item_list=$all_items name=all_items}
     {include name=navigator
             uri='design:navigator/google.tpl'
             page_uri='sensor/dashboard'
@@ -43,7 +43,7 @@
     {/foreach}    
   </ul> 
   <div class="tab-pane active">    
-    {include uri="design:sensor/parts/table_items.tpl" item_list=$items name=items}
+    {include uri="design:sensor/parts/post/table_items.tpl" item_list=$items name=items}
     {include name=navigator
               uri='design:navigator/google.tpl'
               page_uri=concat('sensor/dashboard/(list)/',$current_list.identifier)

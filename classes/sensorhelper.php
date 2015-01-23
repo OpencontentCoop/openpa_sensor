@@ -319,6 +319,7 @@ class SensorHelper
     public static function createCollaborationItem( $contentObjectID )
     {
         $db = eZDB::instance();
+        $collaborationItem = false;
         $res = $db->arrayQuery( "SELECT * FROM ezcollab_item WHERE data_int1 = $contentObjectID" );
         if ( count( $res ) > 0 )
         {

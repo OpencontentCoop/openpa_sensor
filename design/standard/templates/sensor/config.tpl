@@ -1,3 +1,4 @@
+{def $sensor = sensor_root_handler()}
 {ezscript_require( array( 'ezjsc::jquery', 'jquery.quicksearch.min.js' ) )}
 {literal}
 <script type="text/javascript">
@@ -16,7 +17,14 @@ $(document).ready(function(){
 	<h2>
 	  {'Impostazioni'|i18n('openpa_sensor/config')}
 	</h2>
-	{'Modifica impostazioni generali'|i18n('openpa_sensor/config')} {include name=edit uri='design:parts/toolbar/node_edit.tpl' current_node=$root}
+
+  <ul class="list-unstyled">
+    <li>{'Modifica impostazioni generali'|i18n('openpa_sensor/config')} {include name=edit uri='design:parts/toolbar/node_edit.tpl' current_node=$root}</li>
+
+    {if $sensor.forum_is_enabled}
+      <li>{'Modifica informazioni Dimmi'|i18n('openpa_sensor/config')} {include name=edit uri='design:parts/toolbar/node_edit.tpl' current_node=$sensor.forum_container_node}</li>
+    {/if}
+  </ul>
 		
 	<hr />
 		
@@ -27,7 +35,8 @@ $(document).ready(function(){
         <li role="presentation" {if $current_part|eq('users')}class="active"{/if}><a href="{'sensor/config/users'|ezurl(no)}">{'Utenti'|i18n('openpa_sensor/config')}</a></li>
         <li role="presentation" {if $current_part|eq('operators')}class="active"{/if}><a href="{'sensor/config/operators'|ezurl(no)}">{'Operatori'|i18n('openpa_sensor/config')}</a></li>
         <li role="presentation" {if $current_part|eq('categories')}class="active"{/if}><a href="{'sensor/config/categories'|ezurl(no)}">{'Aree tematiche'|i18n('openpa_sensor/config')}</a></li>        
-        <li role="presentation" {if $current_part|eq('areas')}class="active"{/if}><a href="{'sensor/config/areas'|ezurl(no)}">{'Punti sulla mappa'|i18n('openpa_sensor/config')}</a></li>        
+        <li role="presentation" {if $current_part|eq('areas')}class="active"{/if}><a href="{'sensor/config/areas'|ezurl(no)}">{'Punti sulla mappa'|i18n('openpa_sensor/config')}</a></li>
+        <li role="presentation" {if $current_part|eq('dimmi')}class="active"{/if}><a href="{'sensor/config/dimmi'|ezurl(no)}">{'Discussioni Dimmi'|i18n('openpa_sensor/config')}</a></li>
         {if $data|count()|gt(0)}
           {foreach $data as $item}
             <li role="presentation" {if $current_part|eq(concat('data-',$item.contentobject_id))}class="active"{/if}><a href="{concat('sensor/config/data-',$item.contentobject_id)|ezurl(no)}">{$item.name|wash()}</a></li>
@@ -151,17 +160,33 @@ $(document).ready(function(){
         </form>
         <table class="table table-hover">
           {foreach $areas as $area}
-          {include name=areatree uri='design:sensor/parts/walk_item_table.tpl' item=$area recursion=0}		
+          {include name=areatree uri='design:sensor/parts/walk_item_table.tpl' item=$area recursion=0}
           {/foreach}
         </table>
         <div class="pull-right"><a class="btn btn-danger" href="{concat('openpa/add/', $areas[0].node.class_identifier, '/?parent=',$areas[0].node.parent_node_id)|ezurl(no)}"><i class="fa fa-plus"></i> {'Aggiungi punto sulla mappa'|i18n('openpa_sensor/config')}</a></div>
       </div>
       {/if}
+
+      {if $current_part|eq('dimmi')}
+        <div class="tab-pane active" id="dimmi">
+          <form action="#">
+            <fieldset>
+              <input type="text" name="search" value="" class="quick_search form-control" placeholder="{'Cerca'|i18n('openpa_sensor/config')}" autofocus />
+            </fieldset>
+          </form>
+          <table class="table table-hover">
+            {foreach $forums as $forum}
+              {include name=forumtree uri='design:sensor/parts/walk_item_table.tpl' item=$forum recursion=0 insert_child_class=true()}
+            {/foreach}
+          </table>
+          <div class="pull-right"><a class="btn btn-danger" href="{concat('openpa/add/', $forums[0].node.class_identifier, '/?parent=',$forums[0].node.parent_node_id)|ezurl(no)}"><i class="fa fa-plus"></i> {'Aggiungi discussione'|i18n('openpa_sensor/config')}</a></div>
+        </div>
+      {/if}
       
       {if $data|count()|gt(0)}
         {foreach $data as $item}
           {if $current_part|eq(concat('data-',$item.contentobject_id))}
-          <div class="tab-pane active" id="{$item.name|slugize()}">            
+          <div class="tab-pane active" id="{$item.name|slugize()}">
             {if $item.children_count|gt(0)}
             <form action="#">
               <fieldset>

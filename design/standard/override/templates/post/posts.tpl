@@ -27,7 +27,7 @@ ezscript_require(array('ezjsc::jquery', 'plugins/chosen.jquery.js'))}
 <section class="service_teasers">
 
     {foreach $data.contents as $item}
-	  {include name=posts_item uri='design:sensor/parts/posts_item.tpl' node=$item}    
+	  {include name=posts_item uri='design:sensor/parts/post/list_item.tpl' node=$item}
     {/foreach}
 
 {include name=navigator

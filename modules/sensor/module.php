@@ -66,6 +66,12 @@ $ViewList['user'] = array(
     'functions' => array( 'config' )
 );
 
+$ViewList['dimmi'] = array(
+    'script' =>	'dimmi.php',
+    'params' => array(),
+    'functions' => array( 'use' )
+);
+
 $FunctionList = array();
 $FunctionList['use'] = array();
 $FunctionList['debug'] = array();

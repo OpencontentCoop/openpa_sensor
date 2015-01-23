@@ -27,7 +27,7 @@
 {/cache-block}
             
 {cache-block ignore_content_expiry keys=$current_user.contentobject_id}
-            {include uri='design:sensor/parts/menu.tpl'}
+    {include uri='design:sensor/parts/menu.tpl'}
 {/cache-block}
             
 
@@ -36,14 +36,20 @@
 </header>
 <img alt="SensorCivico" src={"sensor_border.png"|ezimage()} style="position: absolute; top: 0; right: 0; border: 0;">
 
-
+{if is_set( $sensor )|not()}{def $sensor = sensor_root_handler()}{/if}
 
 {if is_set( $sensor_home )}
     {include uri='design:sensor/parts/home_image.tpl'}
 {/if}
 
-{if and( is_set( $module_result.node_id ), $module_result.node_id|eq( sensor_postcontainer().node_id ) )}
-  {include uri='design:sensor/parts/map.tpl'}
+{if and( is_set( $module_result.node_id ), $module_result.node_id|eq( $sensor.post_container_node.node_id ) )}
+  {include uri='design:sensor/parts/post/posts_map.tpl'}
+{/if}
+
+{if and( is_set( $module_result.node_id ), $module_result.node_id|eq( $sensor.forum_container_node.node_id ) )}
+  {cache-block expiry=86400 keys=array( $sensor.forum_container_node.object.modified )}
+    {include uri='design:sensor/parts/forum/slideshow.tpl'}
+  {/cache-block}
 {/if}
 
 <div class="main">
