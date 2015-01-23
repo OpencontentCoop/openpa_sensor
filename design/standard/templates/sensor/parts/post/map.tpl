@@ -4,7 +4,7 @@
 <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.ie.css" />
 <![endif]-->
 
-<script src="http://cdn.leafletjs.com/leaflet-0.7.2/leaflet.js"></script>
+<script src="{'javascript/leaflet.0.7.2.js'|ezdesign(no)}"></script>
 <script src="{'javascript/Leaflet.MakiMarkers.js'|ezdesign(no)}"></script>
 
 <div id="map" style="width: 100%; height: 200px;"></div>

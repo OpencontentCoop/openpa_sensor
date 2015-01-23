@@ -51,14 +51,14 @@
         {/if}
       </ul>
 
-      {include uri='design:sensor/parts/post_messages.tpl'}
+      {include uri='design:sensor/parts/post/post_messages.tpl'}
 
     </div>
     <div class="col-md-4" id="sidebar">
       
       <aside class="widget">
         <h4>Luogo</h4>
-        {include uri='design:sensor/parts/post_map.tpl'}
+        {include uri='design:sensor/parts/post/map.tpl'}
       </aside>
         
       <aside class="widget">

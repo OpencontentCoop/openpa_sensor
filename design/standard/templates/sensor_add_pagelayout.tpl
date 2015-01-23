@@ -2,9 +2,8 @@
 <html class="no-js" lang="en">
 {def $sensor = sensor_root_handler()}
 {include uri='design:sensor/parts/head.tpl'}
-<link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.7.2/leaflet.css" />
-<script src="http://cdn.leafletjs.com/leaflet-0.7.2/leaflet.js"></script>
-{ezscript_require(array('ezjsc::jquery', 'leaflet.activearea.js', 'Leaflet.MakiMarkers.js','Control.Geocoder.js'))}
+{ezcss_require(array('leaflet.0.7.2.css'))}
+{ezscript_require(array('leaflet.0.7.2.js', 'ezjsc::jquery', 'leaflet.activearea.js', 'Leaflet.MakiMarkers.js','Control.Geocoder.js'))}
 
 {literal}
 <style>

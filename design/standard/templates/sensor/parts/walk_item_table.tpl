@@ -10,11 +10,24 @@
   </td>
   <td width="1">{include name=edit uri='design:parts/toolbar/node_edit.tpl' current_node=$item.node}</td>
   <td width="1">{include name=trash uri='design:parts/toolbar/node_trash.tpl' current_node=$item.node}</td>
-  <td width="1"><a href="{concat('openpa/add/', $item.node.class_identifier, '/?parent=',$item.node.node_id)|ezurl(no)}"><i class="fa fa-plus"></i></a></td>  
+  <td width="1">
+    {if $item.children|count()|gt(0)}
+      <a href={concat("/websitetoolbar/sort/",$item.node.node_id)|ezurl()}><i class="fa fa-sort-alpha-asc "></i>
+    {/if}
+  </td>
+
+  <td width="1">
+    {if and( $item.children|count()|gt(0), is_set( $insert_child_class ) )}
+      <a title="Aggiungi {$item.children[0].node.class_name} in {$item.node.name|wash()}" href="{concat('openpa/add/', $item.children[0].node.class_identifier, '/?parent=',$item.node.node_id)|ezurl(no)}"><i class="fa fa-plus"></i></a>
+    {elseif is_set( $insert_child_class )|not()}
+      <a title="Aggiungi {$item.node.class_name} in {$item.node.name|wash()}" href="{concat('openpa/add/', $item.node.class_identifier, '/?parent=',$item.node.node_id)|ezurl(no)}"><i class="fa fa-plus"></i></a>
+    {/if}
+  </td>
+
 </tr>
 {if $item.children|count()|gt(0)}
   {set $recursion = $recursion|inc()}
   {foreach $item.children as $item_child}
-  {include name=itemtree uri='design:sensor/parts/walk_item_table.tpl' item=$item_child recursion=$recursion}
+  {include name=itemtree uri='design:sensor/parts/walk_item_table.tpl' item=$item_child recursion=$recursion insert_child_class=is_set( $insert_child_class )}
   {/foreach}
 {/if}
