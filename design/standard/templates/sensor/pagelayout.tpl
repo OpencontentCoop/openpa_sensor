@@ -47,7 +47,7 @@
 {/if}
 
 {if and( is_set( $module_result.node_id ), $module_result.node_id|eq( $sensor.forum_container_node.node_id ) )}
-  {cache-block expiry=86400 keys=array( $sensor.forum_container_node.object.modified )}
+  {cache-block keys=array( $sensor.forum_container_node.object.modified, cond( $sensor.forum_container_node.children_count|gt(1), 1, 2 ) )}
     {include uri='design:sensor/parts/forum/slideshow.tpl'}
   {/cache-block}
 {/if}
