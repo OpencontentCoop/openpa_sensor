@@ -22,11 +22,11 @@
   {if $all_items|count()|gt(0)}
     {include uri="design:sensor/parts/post/table_items.tpl" item_list=$all_items name=all_items}
     {include name=navigator
-    uri='design:navigator/google.tpl'
-    page_uri='sensor/dashboard'
-    item_count=$all_items_count
-    view_parameters=$view_parameters
-    item_limit=$limit}
+            uri='design:navigator/google.tpl'
+            page_uri='sensor/dashboard'
+            item_count=$all_items_count
+            view_parameters=$view_parameters
+            item_limit=$limit}
   {/if}
 
 {else}
@@ -44,11 +44,11 @@
   <div class="tab-pane active">
     {include uri="design:sensor/parts/post/table_items.tpl" item_list=$items name=items}
     {include name=navigator
-    uri='design:navigator/google.tpl'
-    page_uri=concat('sensor/dashboard/(list)/',$current_list.identifier)
-    item_count=$current_list.count
-    view_parameters=$view_parameters
-    item_limit=$limit}
+            uri='design:navigator/google.tpl'
+            page_uri=concat('sensor/dashboard/(list)/',$current_list.identifier)
+            item_count=$current_list.count
+            view_parameters=$view_parameters
+            item_limit=$limit}
   </div>
 
 {/if}
