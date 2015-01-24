@@ -31,6 +31,12 @@ $ViewList['add'] = array(
     'functions' => array( 'use' )
 );
 
+$ViewList['comment'] = array(
+    'script' =>	'comment.php',
+    'params' => array( 'ForumID', 'ForumReplyID' ),
+    'functions' => array( 'use' )
+);
+
 $ViewList['dashboard'] = array(
     'script' =>	'dashboard.php',
     'params' => array( "Group" ),

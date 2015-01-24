@@ -27,5 +27,11 @@ Subdir=templates
 Match[class_identifier]=sensor_post
 Match[attribute_identifier]=area
 
+[comment_edit]
+Source=content/edit.tpl
+MatchFile=forum/reply_edit.tpl
+Subdir=templates
+Match[class_identifier]=dimmi_forum_reply
+
 
  */ ?>
