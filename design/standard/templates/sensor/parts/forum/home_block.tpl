@@ -13,7 +13,7 @@
     {if $topic.children_count|eq(1)}
       {attribute_view_gui attribute=$topic.object.data_map.short_description}
       {if $topic|has_attribute( 'description' )}
-        <p class="text-right"><a href="{concat($topic.url_alias,'/(more)')|ezurl(no)}">Per saperne di pi&ugrave;</a></p>
+        <p class="text-right"><a href="{concat($topic.url_alias,'/(more)/1')|ezurl(no)}">Per saperne di pi&ugrave;</a></p>
       {/if}
       <a href="{$topic.url_alias|ezurl(no)}" class="btn btn-primary btn-lg btn-block">Partecipa alla discussione</a>
     {else}

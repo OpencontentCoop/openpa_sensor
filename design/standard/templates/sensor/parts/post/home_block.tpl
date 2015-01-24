@@ -1,6 +1,17 @@
 <script src="http://code.highcharts.com/highcharts.js"></script>
 
-<div id="sensorgraph" style="width: 100%; height: 500px; margin: 0 auto; padding: 10px;"></div>
+<div class="service_teaser vertical">  
+  <div class="service_photo">
+    <figure style="background-image:url({'banner_placeholder.jpg'|ezimage(no)})"></figure>
+  </div>  
+  <div class="service_details">
+    <h2 class="section_header skincolored">
+      Il comune in ascolto @todo
+      <small>Questo testo è hardcoded!</small>
+    </h2>
+    <div id="sensorgraph" style="width: 100%; height: 500px; margin: 0 auto; padding: 10px;"></div>
+  </div>
+</div>
 
 <script>
   {literal}

@@ -32,6 +32,8 @@ class OpenPASensorInstaller
 
         eZCache::clearById( 'global_ini' );
         eZCache::clearById( 'template' );
+        
+        OpenPALog::error( "@todo Impostare i workflow di PostPublish e di PreDelete" );
 
     }
 
@@ -139,8 +141,8 @@ class OpenPASensorInstaller
 
     protected static function installAppRoot( $parentNodeId, eZSection $section )
     {
-        $root = eZContentObject::fetchByRemoteID( ObjectHandlerServiceControlSensor::sensorRootRemoteId() );
-        if ( !$root instanceof eZContentObject )
+        $rootObject = eZContentObject::fetchByRemoteID( ObjectHandlerServiceControlSensor::sensorRootRemoteId() );
+        if ( !$rootObject instanceof eZContentObject )
         {
             // root
             $params = array(
@@ -159,7 +161,7 @@ class OpenPASensorInstaller
                 throw new Exception( 'Failed creating Sensor root node' );
             }
         }
-        return $root;
+        return $rootObject;
     }
 
     protected static function installSensorPostStuff( eZContentObject $rootObject, eZSection $section, $installDemoContent = true )
@@ -499,14 +501,19 @@ class OpenPASensorInstaller
     }
 
     protected static function installIniParams()
-    {
+    {        
         $backend = OpenPABase::getBackendSiteaccessName();
         $path = "settings/siteaccess/{$backend}/";
         $iniFile = "contentstructuremenu.ini";
         $ini = new eZINI( $iniFile . '.append', $path, null, null, null, true, true );
-        $value = array_unique( array_merge( (array) $ini->variable( 'TreeMenu', 'ShowClasses' ), array( 'sensor_root' ) ) );
+        $value = array_unique( array_merge( (array) $ini->variable( 'TreeMenu', 'ShowClasses' ), array( 'sensor_root', 'dimmi_root' ) ) );
         $ini->setVariable( 'TreeMenu', 'ShowClasses', $value );
         if ( !$ini->save() ) throw new Exception( "Non riesco a salvare contentstructuremenu.ini" );
+        
+        OpenPALog::error( "@todo Creare cartella di steaccess " . OpenPABase::getCustomSiteaccessName( 'sensor' ) );
+        OpenPALog::error( "@todo Aggiungere siteaccess in override/site.ini" );
+        OpenPALog::error( "@todo Aggiungere ActiveAccessExtensions[]=openpa_booking in " . OpenPABase::getBackendSiteaccessName() . "/site.ini.append.php" );
+        OpenPALog::error( "@todo Aggiungere RelatedSiteAccessList[]=" . OpenPABase::getCustomSiteaccessName( 'sensor' ) . " in " . OpenPABase::getBackendSiteaccessName() . "/site.ini.append.php" );
     }
 
 
