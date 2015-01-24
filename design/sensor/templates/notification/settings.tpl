@@ -10,11 +10,12 @@
 
         <p>
             {section name=Handlers loop=$handlers}
-            {if $Handlers:item.id_string|eq('ezcollaboration')}
+            {if array( 'ezsubtree', 'ezcollaboration' )|contains( $Handlers:item.id_string )}
                 {include handler=$Handlers:item uri=concat( "design:notification/handler/",$Handlers:item.id_string,"/settings/edit.tpl")}
             {/if}
             {/section}
         </p>
+
     {/let}
 
     <div>

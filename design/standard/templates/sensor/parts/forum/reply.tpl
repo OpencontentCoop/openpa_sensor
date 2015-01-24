@@ -1,5 +1,5 @@
 {def $owner = $reply.object.owner}
-<div class="row">
+<div class="row{if and( is_set( $current_reply ), $current_reply.contentobject_id|eq($reply.contentobject_id) )} alert alert-warning{/if}">
 
   <figure class="col-sm-1 col-md-1 col-md-offset-{$recursion}">
     {include uri='design:sensor/parts/user_image.tpl' object=$owner}
@@ -11,13 +11,15 @@
       {$owner.name|wash}
 
 
+      {if $comment_form|not()}
       <div class="pull-right">
         {if and( $recursion|eq(0), $reply.object.can_create )}
-          <a href="{concat('openpa/add/',$reply.class_identifier, '/?parent=',$reply.node_id)|ezurl(no)}" class="reply btn btn-xs btn-primary">Rispondi</a>
+          <a href={concat("sensor/comment/",$reply.parent_node_id,"/",$reply.node_id)|ezurl()} class="reply btn btn-xs btn-primary">Rispondi</a>
         {/if}
         {include name=edit uri='design:parts/toolbar/node_edit.tpl' current_node=$reply}
         {include name=trash uri='design:parts/toolbar/node_trash.tpl' current_node=$reply}
       </div>
+      {/if}
 
       {foreach $reply.object.author_array as $author}
         {if ne( $reply.object.owner_id, $author.contentobject_id )}
@@ -66,6 +68,6 @@
 
 {if and( $recursion|eq(0), $reply.children_count|gt(0) )}
   {foreach $reply.children as $child}
-    {include name=forum_reply uri='design:sensor/parts/forum/reply.tpl' reply=$child recursion=1}
+    {include name=forum_reply uri='design:sensor/parts/forum/reply.tpl' reply=$child recursion=1 comment_form=$comment_form current_reply=$current_reply}
   {/foreach}
 {/if}
