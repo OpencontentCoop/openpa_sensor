@@ -39,7 +39,7 @@ $ViewList['comment'] = array(
 
 $ViewList['dashboard'] = array(
     'script' =>	'dashboard.php',
-    'params' => array( "Group" ),
+    'params' => array( "Part", "Group" ),
     'unordered_params' => array(
         "list" => "List",
         "offset" => "Offset" ),
