@@ -6,8 +6,8 @@
   </div>  
   <div class="service_details">
     <h2 class="section_header skincolored">
-      Il comune in ascolto @todo
-      <small>Questo testo è hardcoded!</small>
+      Il comune in ascolto
+      <small>Attraverso la piattaforma SensorCivico i cittadini possono formulare suggerimenti, segnalazioni e reclami su mappa per il miglioramento della qualità dei servizi offerti dall´Amministrazione e per migliorare la vivibilità della Città.</small>
     </h2>
     <div id="sensorgraph" style="width: 100%; height: 500px; margin: 0 auto; padding: 10px;"></div>
   </div>

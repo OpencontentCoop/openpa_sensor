@@ -1,5 +1,5 @@
 {def $owner = $reply.object.owner}
-<div class="row{if and( is_set( $current_reply ), $current_reply.contentobject_id|eq($reply.contentobject_id) )} alert alert-warning{/if}">
+<div class="row{if and( is_set( $current_reply.contentobject_id ), $current_reply.contentobject_id|eq($reply.contentobject_id) )} alert alert-warning{/if}">
 
   <figure class="col-sm-1 col-md-1 col-md-offset-{$recursion}">
     {include uri='design:sensor/parts/user_image.tpl' object=$owner}
