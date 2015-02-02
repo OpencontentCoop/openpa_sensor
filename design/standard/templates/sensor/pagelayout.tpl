@@ -30,7 +30,6 @@
     {include uri='design:sensor/parts/menu.tpl'}
 {/cache-block}
             
-
         </div>
     </div>
 </header>
@@ -46,11 +45,14 @@
   {include uri='design:sensor/parts/post/posts_map.tpl'}
 {/if}
 
-{if and( is_set( $module_result.node_id ), $module_result.node_id|eq( $sensor.forum_container_node.node_id ) )}
-  {cache-block keys=array( $sensor.forum_container_node.object.modified, cond( $sensor.forum_container_node.children_count|gt(1), 1, 2 ) )}
-    {include uri='design:sensor/parts/forum/slideshow.tpl'}
-  {/cache-block}
+{if and( is_set( $module_result.node_id ), $module_result.node_id|eq( $sensor.forum_container_node.node_id ) )}  
+  {include uri='design:sensor/parts/forum/root_slideshow.tpl'}  
 {/if}
+
+{if and( is_set( $module_result.content_info.class_identifier ), $module_result.content_info.class_identifier|eq( 'dimmi_forum' ) )}  
+  {include uri='design:sensor/parts/forum/forum_slideshow.tpl' node_id=$module_result.node_id}  
+{/if}
+
 
 <div class="main">
     <div class="container">

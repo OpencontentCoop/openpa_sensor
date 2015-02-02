@@ -39,11 +39,11 @@
 
   <div class="row">
     <div class="col-md-6 text-center">
-      <h4><span class="label label-info">Come valuti la chiarezza di questa proposta?</span></h4>
+      <h4><span>Come valuti la chiarezza di questa proposta?</span></h4>
       {include uri='design:sensor/parts/forum/rating.tpl' attribute=$node.data_map.star_rating}
     </div>
     <div class="col-md-6 people_rating text-center">
-      <h4><span class="label label-info">Come valuti l'importanza di questa proposta?</span></h4>
+      <h4><span>Come valuti l'importanza di questa proposta?</span></h4>
       {include uri='design:sensor/parts/forum/rating.tpl' attribute=$node.data_map.usefull_rating}
     </div>
   </div>
