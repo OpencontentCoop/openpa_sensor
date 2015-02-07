@@ -1,6 +1,7 @@
 {if is_set($sensor)|not()}
 {def $sensor = sensor_root_handler()}
 {/if}
+{if $sensor.post_container_node|has_attribute( 'short_description' )}
 <div class="service_teaser vertical">  
   {if $sensor.post_container_node|has_attribute( 'image' )}
     <div class="service_photo">
@@ -161,3 +162,4 @@
   {/literal}
 </script>
 *}
+{/if}
