@@ -1,6 +1,6 @@
 <head>
 
-    <link href="http://fonts.googleapis.com/css?family=Open+Sans:400,300,400italic,600,600italic,700,700italic,300italic" rel="stylesheet" type="text/css">
+    <link href="//fonts.googleapis.com/css?family=Open+Sans:400,300,400italic,600,600italic,700,700italic,300italic" rel="stylesheet" type="text/css">
 
     <meta charset="utf-8">
 
@@ -34,7 +34,7 @@
     ))}
     
     <!--[if lt IE 9]>
-    <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>    
+    <script src="//html5shim.googlecode.com/svn/trunk/html5.js"></script>    
     <script src="{'javascript/respond.min.js'|ezdesign(no)}"></script>
     <![endif]-->
 
