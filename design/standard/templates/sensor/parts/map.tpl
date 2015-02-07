@@ -1,10 +1,10 @@
-<link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.7.2/leaflet.css" />
+<link rel="stylesheet" href="{'stylesheets/leaflet.css'|ezdesign(no)}" />
 <link rel="stylesheet" href="{'stylesheets/MarkerCluster.css'|ezdesign(no)}" />
 <link rel="stylesheet" href="{'stylesheets/MarkerCluster.Default.css'|ezdesign(no)}" />
-<script src="http://cdn.leafletjs.com/leaflet-0.7.2/leaflet.js"></script>
-<script src="{'javascript/Leaflet.MakiMarkers.js'|ezdesign(no)}"></script>
-<script src="{'javascript/leaflet.markercluster.js'|ezdesign(no)}"></script>
 {ezscript_require(array('ezjsc::jquery'))}
+<script src="{'javascript/leaflet.js'|ezdesign(no)}"></script>
+<script src="{'javascript/leaflet.markercluster.js'|ezdesign(no)}"></script>
+<script src="{'javascript/Leaflet.MakiMarkers.js'|ezdesign(no)}"></script>
 
 <div class="hidden-xs">
 <div class="full_page_photo"><div id="map"></div></div>
@@ -12,7 +12,7 @@
 
 {literal}
   <script type="text/javascript">	  		
-		var tiles = L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {maxZoom: 18,attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'});
+		var tiles = L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {maxZoom: 18,attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'});
 		var map = L.map('map').addLayer(tiles);
     map.scrollWheelZoom.disable();
 		var markers = L.markerClusterGroup();     
