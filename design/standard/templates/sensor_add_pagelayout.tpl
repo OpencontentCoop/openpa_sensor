@@ -2,9 +2,8 @@
 <html class="no-js" lang="en">
 {def $sensor = sensor_root_handler()}
 {include uri='design:sensor/parts/head.tpl'}
-<link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.7.2/leaflet.css" />
-<script src="http://cdn.leafletjs.com/leaflet-0.7.2/leaflet.js"></script>
-{ezscript_require(array('ezjsc::jquery', 'leaflet.activearea.js', 'Leaflet.MakiMarkers.js','Control.Geocoder.js'))}
+{ezcss_require('leaflet.css')}
+{ezscript_require(array('ezjsc::jquery', 'leaflet.js','leaflet.activearea.js', 'Leaflet.MakiMarkers.js','Control.Geocoder.js'))}
 
 {literal}
 <style>
@@ -102,7 +101,7 @@
 		markers.addTo(map);
 		map.setView(CenterMap, 13);*/
 
-		L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
+		L.tileLayer('//{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
 			attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
 		}).addTo(map);
 
