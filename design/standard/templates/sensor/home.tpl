@@ -1,5 +1,5 @@
 {*
-<script src="http://code.highcharts.com/highcharts.js"></script>
+<script src="//code.highcharts.com/highcharts.js"></script>
 
 <section class="hgroup">  
   <div class="row">
