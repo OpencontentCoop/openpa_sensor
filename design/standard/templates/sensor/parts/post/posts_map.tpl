@@ -2,7 +2,7 @@
 <link rel="stylesheet" href="{'stylesheets/MarkerCluster.css'|ezdesign(no)}" />
 <link rel="stylesheet" href="{'stylesheets/MarkerCluster.Default.css'|ezdesign(no)}" />
 {ezscript_require(array('ezjsc::jquery'))}
-<script src="{'javascript/leaflet.js'|ezdesign(no)}"></script>
+<script src="{'javascript/leaflet.0.7.2.js'|ezdesign(no)}"></script>
 <script src="{'javascript/leaflet.markercluster.js'|ezdesign(no)}"></script>
 <script src="{'javascript/Leaflet.MakiMarkers.js'|ezdesign(no)}"></script>
 
