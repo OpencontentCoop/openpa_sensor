@@ -1,5 +1,5 @@
 {if is_set( $sensor )|not()}{def $sensor = sensor_root_handler()}{/if}
-
+{if $sensor.forum_container_node|has_attribute( 'image' )}
 <section id="slider_wrapper" class="slider_wrapper full_page_photo hidden-xs hidden-sm">
   <div id="main_flexslider" class="flexslider">
     <ul class="slides list-unstyled">
@@ -13,3 +13,4 @@
     </ul>
   </div>
 </section>
+{/if}

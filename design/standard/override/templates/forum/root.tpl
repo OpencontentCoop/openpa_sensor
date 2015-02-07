@@ -6,7 +6,7 @@
 </section>
 *}
 
-<section class="hgroup hidden-lg hidden-md">
+<section class="hgroup{if $node|has_attribute( 'image' )} hidden-lg hidden-md{/if}">
   <h1>
     {attribute_view_gui attribute=$node.data_map.title}
     <small>{attribute_view_gui attribute=$node.data_map.subtitle}</small>

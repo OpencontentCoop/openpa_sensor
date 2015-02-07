@@ -4,6 +4,13 @@
 {def $login_window_type = ezini( 'ngconnect', 'LoginWindowType', 'ngconnect.ini' )|trim}
 
 <section class="hgroup" id="login">
+	<div class="row">
+	  <div class="col-sm-12 col-md-12 text-center">
+		<h1 style="margin-bottom: 1em">
+		  Per partecipare devi iscriverti!
+		</h1>
+	  </div>
+	</div>  
     <div class="row">
         <div class="col-sm-6 col-md-6">
             {include uri='design:sensor/parts/signin.tpl'}
