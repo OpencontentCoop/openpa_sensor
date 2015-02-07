@@ -49,9 +49,9 @@
   {include uri='design:sensor/parts/forum/root_slideshow.tpl'}  
 {/if}
 
-{if and( is_set( $module_result.content_info.class_identifier ), $module_result.content_info.class_identifier|eq( 'dimmi_forum' ) )}  
+{*if and( is_set( $module_result.content_info.class_identifier ), $module_result.content_info.class_identifier|eq( 'dimmi_forum' ) )}  
   {include uri='design:sensor/parts/forum/forum_slideshow.tpl' node_id=$module_result.node_id}  
-{/if}
+{/if*}
 
 
 <div class="main">

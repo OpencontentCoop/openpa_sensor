@@ -512,7 +512,7 @@ class OpenPASensorInstaller
         
         OpenPALog::error( "@todo Creare cartella di steaccess " . OpenPABase::getCustomSiteaccessName( 'sensor' ) );
         OpenPALog::error( "@todo Aggiungere siteaccess in override/site.ini" );
-        OpenPALog::error( "@todo Aggiungere ActiveAccessExtensions[]=openpa_booking in " . OpenPABase::getBackendSiteaccessName() . "/site.ini.append.php" );
+        OpenPALog::error( "@todo Aggiungere ActiveAccessExtensions[]=openpa_sensor in " . OpenPABase::getBackendSiteaccessName() . "/site.ini.append.php" );
         OpenPALog::error( "@todo Aggiungere RelatedSiteAccessList[]=" . OpenPABase::getCustomSiteaccessName( 'sensor' ) . " in " . OpenPABase::getBackendSiteaccessName() . "/site.ini.append.php" );
     }
 

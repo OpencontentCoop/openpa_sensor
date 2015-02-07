@@ -1,4 +1,4 @@
-<section class="hgroup hidden-lg hidden-md">
+<section class="hgroup">
   <h1>{$node.name|wash()|bracket_to_strong}</h1>
 </section>
 
@@ -14,4 +14,6 @@
   {attribute_view_gui attribute=$node.data_map.description}
 </section>
 
+<div id="partecipa">
 {include uri='design:sensor/parts/forum/topic_list.tpl' node=$node}
+</div>

@@ -44,7 +44,10 @@
     <p class="sign_title">{'Accedi con il tuo account SensorCivico'|i18n('openpa_sensor/signin')}</p>
 	*}
 	
-	<h3>{'Accedi con il tuo account SensorCivico'|i18n('openpa_sensor/signin')}</h3>
+	<h3>
+	  {'Sei già iscritto?'|i18n('openpa_sensor/signin')}<br />
+	  <strong>{'Accedi subito!'|i18n('openpa_sensor/signin')}</strong>
+	</h3>
 	</div>
 	<hr />
     <div class="row">

@@ -2,7 +2,10 @@
     <form name="signupform" method="post" action={'/sensor/signup/'|ezurl}>
         <fieldset>
             <div class="social_sign">
-                <h3>{'Non hai un account?'|i18n('openpa_sensor/signup')}</h3>
+                <h3>
+				  <strong>{'Non sei ancora iscritto?'|i18n('openpa_sensor/signup')}<br /></strong>
+                  {'Bastano 5 secondi per registrarsi!'|i18n('openpa_sensor/signup')}
+				</h3>				
             </div>
             {*<p class="sign_title">{'Crealo subito: &egrave facile e gratuito!'|i18n('openpa_sensor/signup')}</p>*}
             <div class="row">                

@@ -17,6 +17,6 @@
         {attribute_view_gui attribute=$topic.object.data_map.call_to_action}
       </div>
     {/if}
-    <a href="{$topic.url_alias|ezurl(no)}" class="btn btn-primary btn-lg btn-block">Partecipa alla discussione</a>    
+    <a href="{concat( $topic.url_alias, '#partecipa' )|ezurl(no)}" class="btn btn-primary btn-lg btn-block">Partecipa alla discussione</a>    
   </div>
 </div>
