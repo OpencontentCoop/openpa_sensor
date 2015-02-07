@@ -1,4 +1,4 @@
-<link rel="stylesheet" href="{'stylesheets/leaflet.css'|ezdesign(no)}" />
+<link rel="stylesheet" href="{'stylesheets/leaflet.0.7.2.css'|ezdesign(no)}" />
 <link rel="stylesheet" href="{'stylesheets/MarkerCluster.css'|ezdesign(no)}" />
 <link rel="stylesheet" href="{'stylesheets/MarkerCluster.Default.css'|ezdesign(no)}" />
 {ezscript_require(array('ezjsc::jquery'))}

@@ -1,5 +1,5 @@
 {if $post_geo_array_js}
-<link rel="stylesheet" href="{'stylesheets/leaflet.css'|ezdesign(no)}" />
+<link rel="stylesheet" href="{'stylesheets/leaflet.0.7.2.css'|ezdesign(no)}" />
 
 <script src="{'javascript/leaflet.js'|ezdesign(no)}"></script>
 <script src="{'javascript/leaflet.0.7.2.js'|ezdesign(no)}"></script>
