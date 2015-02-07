@@ -1,18 +1,27 @@
-<script src="http://code.highcharts.com/highcharts.js"></script>
-
+{if is_set($sensor)|not()}
+{def $sensor = sensor_root_handler()}
+{/if}
 <div class="service_teaser vertical">  
-  <div class="service_photo">
-    <figure style="background-image:url({'banner_placeholder.jpg'|ezimage(no)})"></figure>
-  </div>  
+  {if $sensor.post_container_node|has_attribute( 'image' )}
+    <div class="service_photo">
+      <figure style="background-image:url({$sensor.post_container_node|attribute( 'image' ).content.original.full_path|ezroot(no)})"></figure>
+    </div>
+  {/if}  
   <div class="service_details">
     <h2 class="section_header skincolored">
-      Il comune in ascolto
-      <small>Attraverso la piattaforma SensorCivico i cittadini possono formulare suggerimenti, segnalazioni e reclami su mappa per il miglioramento della qualità dei servizi offerti dall´Amministrazione e per migliorare la vivibilità della Città.</small>
+      {$sensor.post_container_node.data_map.name.content|wash()}
+      <small>{attribute_view_gui attribute=$sensor.post_container_node.data_map.short_description}</small>
     </h2>
-    <div id="sensorgraph" style="width: 100%; height: 500px; margin: 0 auto; padding: 10px;"></div>
+    {*<div id="sensorgraph" style="width: 100%; height: 500px; margin: 0 auto; padding: 10px;"></div>*}
+    {if $current_user.is_logged_in|not()}
+      <a href="#login" class="btn btn-primary btn-lg btn-block">{'Accedi'|i18n('openpa_sensor/menu')}</a>
+    {else}
+      <a href="{'sensor/add'|ezurl(no)}" class="btn btn-primary btn-lg btn-block">{'Segnala'|i18n('openpa_sensor/menu')}</a>
+    {/if}
   </div>
 </div>
-
+{*
+<script src="http://code.highcharts.com/highcharts.js"></script>
 <script>
   {literal}
   $(function () {
@@ -151,3 +160,4 @@
   });
   {/literal}
 </script>
+*}
