@@ -24,7 +24,7 @@ class DataHandlerSensor implements OpenPADataHandlerInterface
             {
                 $tpl = eZTemplate::factory();
                 $tpl->setVariable( 'object', $object );
-                $result = $tpl->fetch( 'design:sensor/marker_popup.tpl' );
+                $result = $tpl->fetch( 'design:sensor/parts/post/marker_popup.tpl' );
                 $data = array( 'content' => $result );
             }
             else
