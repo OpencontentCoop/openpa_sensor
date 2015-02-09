@@ -53,9 +53,9 @@
 		  <p>{attribute_view_gui attribute=$node|attribute('attachment')}</p>
 	  {/if}
 	  <ul class="list-inline">
-		  <li><small><i class="fa fa-clock-o"></i> Pubblicata il {$node.object.published|l10n(shortdatetime)}</small></li>
+		  <li><small><i class="fa fa-clock-o"></i> {'Pubblicata il'|i18n('openpa_sensor/post')} {$node.object.published|l10n(shortdatetime)}</small></li>
 		  {if $node.object.modified|gt($node.object.published)}
-			  <li><small><i class="fa fa-clock-o"></i> Ultima modifica del {$node.object.modified|l10n(shortdatetime)}</small></li>
+			  <li><small><i class="fa fa-clock-o"></i> {'Ultima modifica del'|i18n('openpa_sensor/post')} {$node.object.modified|l10n(shortdatetime)}</small></li>
 		  {/if}
 		  {if $post.current_owner}<li><small><i class="fa fa-user"></i> In carico a {$post.current_owner}</small></li>{/if}
 		  {if $post.comment_count|gt(0)}<li><small><i class="fa fa-comments"></i> {$post.comment_count} {'commenti'|i18n('openpa_sensor/post')}</small></li>{/if}

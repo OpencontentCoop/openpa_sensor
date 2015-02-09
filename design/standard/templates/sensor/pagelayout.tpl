@@ -86,7 +86,9 @@
       <section class="copyright">
           <div class="container">
               <div class="row">
-                  <div class="col-sm-12 col-md-12"> ©2014 Sensorcivico - progetto di riuso del Consorzio dei Comuni Trentini - realizzato da Opencontent con ComunWeb</div>
+                  <div class="col-sm-12 col-md-12">
+                      &copy; {currentdate()|datetime('custom', '%Y')} {'Sensorcivico - progetto di riuso del Consorzio dei Comuni Trentini - realizzato da Opencontent con ComunWeb'|i18n('openpa_sensor')}
+                  </div>
               </div>
           </div>
       </section>
