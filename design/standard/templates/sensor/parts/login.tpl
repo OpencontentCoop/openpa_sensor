@@ -7,7 +7,7 @@
 	<div class="row">
 	  <div class="col-sm-12 col-md-12 text-center">
 		<h1 style="margin-bottom: 1em">
-		  Per partecipare devi iscriverti!
+		  {'Per partecipare devi iscriverti!'|i18n('openpa_sensor/signin')}      
 		</h1>
 	  </div>
 	</div>  
