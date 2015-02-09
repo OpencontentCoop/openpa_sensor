@@ -62,7 +62,7 @@ $(document).ready(function(){
           {include name=cattree uri='design:sensor/parts/walk_item_table.tpl' item=$category recursion=0}		
           {/foreach}
         </table>
-        <div class="pull-right"><a class="btn btn-danger" href="{concat('openpa/add/', $categories[0].node.class_identifier, '/?parent=',$categories[0].node.parent_node_id)|ezurl(no)}"><i class="fa fa-plus"></i> {'Aggiungi area tematica'|i18n('openpa_sensor/config')}</a></div>
+        <div class="pull-right"><a class="btn btn-danger" href="{concat('openpa/add/sensor_category/?parent=',$categories[0].node.parent_node_id)|ezurl(no)}"><i class="fa fa-plus"></i> {'Aggiungi area tematica'|i18n('openpa_sensor/config')}</a></div>
         {/if}
       </div>
       {/if}
@@ -106,7 +106,7 @@ $(document).ready(function(){
           {undef $userSetting}
           {/foreach}          
         </table>
-        <div class="pull-right"><a class="btn btn-danger" href="{concat('openpa/add/', $operators[0].class_identifier, '/?parent=',$operators[0].parent_node_id)|ezurl(no)}"><i class="fa fa-plus"></i> {'Aggiungi operatore'|i18n('openpa_sensor/config')}</a></div>
+        <div class="pull-right"><a class="btn btn-danger" href="{concat('openpa/add/sensor_operator/?parent=',$operators[0].parent_node_id)|ezurl(no)}"><i class="fa fa-plus"></i> {'Aggiungi operatore'|i18n('openpa_sensor/config')}</a></div>
       </div>
       {/if}
       
@@ -170,7 +170,7 @@ $(document).ready(function(){
           {include name=areatree uri='design:sensor/parts/walk_item_table.tpl' item=$area recursion=0}
           {/foreach}
         </table>
-        <div class="pull-right"><a class="btn btn-danger" href="{concat('openpa/add/', $areas[0].node.class_identifier, '/?parent=',$areas[0].node.parent_node_id)|ezurl(no)}"><i class="fa fa-plus"></i> {'Aggiungi punto sulla mappa'|i18n('openpa_sensor/config')}</a></div>
+        <div class="pull-right"><a class="btn btn-danger" href="{concat('openpa/add/sensor_area/?parent=',$areas[0].node.parent_node_id)|ezurl(no)}"><i class="fa fa-plus"></i> {'Aggiungi punto sulla mappa'|i18n('openpa_sensor/config')}</a></div>
       </div>
       {/if}
 
@@ -186,7 +186,7 @@ $(document).ready(function(){
               {include name=forumtree uri='design:sensor/parts/walk_item_table.tpl' item=$forum recursion=0 insert_child_class=true()}
             {/foreach}
           </table>
-          <div class="pull-right"><a class="btn btn-danger" href="{concat('openpa/add/', $forums[0].node.class_identifier, '/?parent=',$forums[0].node.parent_node_id)|ezurl(no)}"><i class="fa fa-plus"></i> {'Aggiungi discussione'|i18n('openpa_sensor/config')}</a></div>
+          <div class="pull-right"><a class="btn btn-danger" href="{concat('openpa/add/dimmi_forum/?parent=',$forums[0].node.parent_node_id)|ezurl(no)}"><i class="fa fa-plus"></i> {'Aggiungi discussione'|i18n('openpa_sensor/config')}</a></div>
         </div>
       {/if}
       
