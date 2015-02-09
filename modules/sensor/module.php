@@ -83,4 +83,5 @@ $FunctionList['use'] = array();
 $FunctionList['debug'] = array();
 $FunctionList['config'] = array();
 $FunctionList['manage'] = array();
+$FunctionList['behalf'] = array();
 

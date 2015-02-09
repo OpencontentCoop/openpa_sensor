@@ -9,8 +9,8 @@
 
 <div class="clearfix">
     <input class="form-control" size="20" type="text" id="input-address" name="{$attribute_base}_data_gmaplocation_address_{$attribute.id}" value="{$attribute.content.address}"/>
-    <input class="btn-sm btn pull-left" type="button" id="mylocation-button" value="{'My current location'|i18n('extension/ezgmaplocation/datatype')}" title="{'Gets your current position if your browser support GeoLocation and you grant this website access to it! Most accurate if you have a built in gps in your Internet device! Also note that you might still have to type in address manually!'|i18n('extension/ezgmaplocation/datatype')}" />
-	<input class="btn btn-sm pull-right" type="button" id="input-address-button" value="{'Find address'|i18n('extension/ezgmaplocation/datatype')}"/>    
+    <input class="btn-sm btn pull-left hidden-xs" type="button" id="mylocation-button" value="{'My current location'|i18n('extension/ezgmaplocation/datatype')}" title="{'Gets your current position if your browser support GeoLocation and you grant this website access to it! Most accurate if you have a built in gps in your Internet device! Also note that you might still have to type in address manually!'|i18n('extension/ezgmaplocation/datatype')}" />
+	<input class="btn btn-sm pull-right hidden-xs" type="button" id="input-address-button" value="{'Find address'|i18n('extension/ezgmaplocation/datatype')}"/>    
 </div>
 <ul class="list-unstyled" id="input-results" style="max-height: 50px;overflow-y: auto;"></ul>
 

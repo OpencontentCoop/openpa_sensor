@@ -51,15 +51,26 @@
 	  </ul>
 	{/if}
 
+  {def $content_attributes_extra = hash()}
+  {if fetch( 'user', 'has_access_to', hash( 'module', 'sensor', 'function', 'behalf' ) )}
+    {def $behalf = $content_attributes_grouped_data_map['hidden']['on_behalf_of']}    
+    {set $content_attributes_extra = hash( 'on_behalf_of', $behalf )}
+  {/if}
+  
 	<div class="tab-content">
 	  {set $count = 0}
 	  {foreach $content_attributes_grouped_data_map as $attribute_group => $content_attributes_grouped}
-		<div class="clearfix attribute-edit tab-pane{if $count|eq(0)} active{/if}" id="attribute-group-{$attribute_group}">
+		
+    {if $attribute_group|eq('hidden')}{skip}{/if}
+    
+    {if $attribute_group|eq('content')}{set $content_attributes_grouped = $content_attributes_grouped|merge($content_attributes_extra)}{/if}
+    
+    <div class="clearfix attribute-edit tab-pane{if $count|eq(0)} active{/if}" id="attribute-group-{$attribute_group}">
 			{set $count = $count|inc()}
 			{foreach $content_attributes_grouped as $attribute_identifier => $attribute}
-				{def $contentclass_attribute = $attribute.contentclass_attribute}
-				<div class="row edit-row ezcca-edit-datatype-{$attribute.data_type_string} ezcca-edit-{$attribute_identifier}">
-					{* Show view GUI if we can't edit, otherwise: show edit GUI. *}
+				{def $contentclass_attribute = $attribute.contentclass_attribute}				
+        <div class="row edit-row ezcca-edit-datatype-{$attribute.data_type_string} ezcca-edit-{$attribute_identifier}">
+					
 					{if and( eq( $attribute.can_translate, 0 ), ne( $object.initial_language_code, $attribute.language_code ) )}
 						<div class="col-md-3">
 							<label>{first_set( $contentclass_attribute.nameList[$content_language], $contentclass_attribute.name )|wash}

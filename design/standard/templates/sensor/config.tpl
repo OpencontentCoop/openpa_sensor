@@ -36,7 +36,9 @@ $(document).ready(function(){
         <li role="presentation" {if $current_part|eq('operators')}class="active"{/if}><a href="{'sensor/config/operators'|ezurl(no)}">{'Operatori'|i18n('openpa_sensor/config')}</a></li>
         <li role="presentation" {if $current_part|eq('categories')}class="active"{/if}><a href="{'sensor/config/categories'|ezurl(no)}">{'Aree tematiche'|i18n('openpa_sensor/config')}</a></li>        
         <li role="presentation" {if $current_part|eq('areas')}class="active"{/if}><a href="{'sensor/config/areas'|ezurl(no)}">{'Punti sulla mappa'|i18n('openpa_sensor/config')}</a></li>
-        <li role="presentation" {if $current_part|eq('dimmi')}class="active"{/if}><a href="{'sensor/config/dimmi'|ezurl(no)}">{'Discussioni Dimmi'|i18n('openpa_sensor/config')}</a></li>
+        {if $sensor.forum_is_enabled}
+          <li role="presentation" {if $current_part|eq('dimmi')}class="active"{/if}><a href="{'sensor/config/dimmi'|ezurl(no)}">{'Discussioni Dimmi'|i18n('openpa_sensor/config')}</a></li>
+        {/if}
         {if $data|count()|gt(0)}
           {foreach $data as $item}
             <li role="presentation" {if $current_part|eq(concat('data-',$item.contentobject_id))}class="active"{/if}><a href="{concat('sensor/config/data-',$item.contentobject_id)|ezurl(no)}">{$item.name|wash()}</a></li>
@@ -84,9 +86,8 @@ $(document).ready(function(){
             <td width="1">
               <a href="{concat('sensor/user/',$operator.contentobject_id)|ezurl(no)}"><i class="fa fa-user"></i></a>
             </td>
-            <td width="1">
-              {include name=edit uri='design:parts/toolbar/node_edit.tpl' current_node=$operator}
-            </td>
+            <td width="1">{include name=edit uri='design:parts/toolbar/node_edit.tpl' current_node=$operator}</td>
+            <td width="1">{include name=trash uri='design:parts/toolbar/node_trash.tpl' current_node=$operator}</td>
             {*<td width="1">
               {if fetch( 'user', 'has_access_to', hash( 'module', 'user', 'function', 'setting' ))}
                 <form name="Setting" method="post" action={concat( 'user/setting/', $operator.contentobject_id )|ezurl}>                  
@@ -126,6 +127,7 @@ $(document).ready(function(){
               {*include name=edit uri='design:parts/toolbar/node_edit.tpl' current_node=$user*}
               <a href="{concat('sensor/user/',$user.contentobject_id)|ezurl(no)}"><i class="fa fa-user"></i></a>
             </td>
+            <td width="1">{include name=trash uri='design:parts/toolbar/node_trash.tpl' current_node=$user}</td>
             {*<td width="1">
               {if fetch( 'user', 'has_access_to', hash( 'module', 'user', 'function', 'setting' ))}
                 <form name="Setting" method="post" action={concat( 'user/setting/', $operator.contentobject_id )|ezurl}>                  
@@ -167,7 +169,7 @@ $(document).ready(function(){
       </div>
       {/if}
 
-      {if $current_part|eq('dimmi')}
+      {if and( $current_part|eq('dimmi'), $sensor.forum_is_enabled )}
         <div class="tab-pane active" id="dimmi">
           <form action="#">
             <fieldset>

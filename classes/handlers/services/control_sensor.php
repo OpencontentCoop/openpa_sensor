@@ -302,10 +302,14 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase
 
     protected function getCurrentOwner()
     {
-        $object = eZContentObject::fetch( $this->getHelper()->attribute( 'owner_id' ) );
-        if ( $object instanceof eZContentObject )
+        $objectId = $this->getHelper()->attribute( 'owner_id' );
+        if ( $objectId !== null )
         {
-            return $object->attribute( 'name' );
+            $object = eZContentObject::fetch( $objectId );
+            if ( $object instanceof eZContentObject )
+            {
+                return $object->attribute( 'name' );
+            }
         }
         return false;
 
