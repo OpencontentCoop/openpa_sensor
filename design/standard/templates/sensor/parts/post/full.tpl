@@ -10,7 +10,7 @@
 
   <section class="hgroup">
     <h1>
-      {$object.name|wash()} <small>{$object.owner.name|wash()}</small>
+      {$object.name|wash()} <small>{$object.owner.name|wash()} {if $object|has_attribute('on_behalf_of')}[{$object|attribute('on_behalf_of').contentclass_attribute_name|wash()} {$object|attribute('on_behalf_of').content|wash()}]{/if}</small>
     </h1>
       <ul class="breadcrumb pull-right">
         <li>
@@ -28,47 +28,59 @@
 
   <div class="row">
     <div class="col-md-8">
+    
+      <div class="row">
+        <div class="col-md-4">
+          <aside class="widget">            
+            {include uri='design:sensor/parts/post/map.tpl'}
+          </aside>
+        </div>
+        <div class="col-md-8">
+          <p>{attribute_view_gui attribute=$object|attribute('description')}</p>
+          {if $object|has_attribute('attachment')}
+            <p>{attribute_view_gui attribute=$object|attribute('attachment')}</p>
+          {/if}
+          {if $object|has_attribute('image')}
+            <figure>{attribute_view_gui attribute=$object|attribute('image') image_class='large' alignment=center}</figure>
+          {/if}
+          <ul class="list-inline">
+            <li><small><i class="fa fa-clock-o"></i> {'Pubblicata il'|i18n('openpa_sensor/post')} {$object.published|l10n(shortdatetime)}</small></li>
+            {if $object.modified|gt($object.published)}
+                <li><small><i class="fa fa-clock-o"></i> {'Ultima modifica del'|i18n('openpa_sensor/post')} {$object.modified|l10n(shortdatetime)}</small></li>
+            {/if}
+          </ul>
+          <ul class="list-inline">
+            <li><small><i class="fa fa-user"></i> {'In carico a'|i18n('openpa_sensor/post')} {$post.current_owner}</small></li>
+            <li><small><i class="fa fa-comments"></i> {$post.comment_count} {'commenti'|i18n('openpa_sensor/post')}</small></li>
+            <li><small><i class="fa fa-comment"></i> {$post.response_count} {'risposte ufficiali'|i18n('openpa_sensor/post')}</small></li>
+            {if $object.data_map.category.has_content}
+              <li><small><i class="fa fa-tags"></i> {attribute_view_gui attribute=$object.data_map.category}</small></li>
+            {/if}
+          </ul>              
+        </div>        
+      </div>
       
-      <p>{attribute_view_gui attribute=$object|attribute('description')}</p>
-      {if $object|has_attribute('attachment')}
-        <p>{attribute_view_gui attribute=$object|attribute('attachment')}</p>
-      {/if}
-	  {if $object|has_attribute('image')}
-        <figure>{attribute_view_gui attribute=$object|attribute('image') image_class='large' alignment=center}</figure>
-      {/if}
-      <ul class="list-inline">
-        <li><small><i class="fa fa-clock-o"></i> {'Pubblicata il'|i18n('openpa_sensor/post')} {$object.published|l10n(shortdatetime)}</small></li>
-        {if $object.modified|gt($object.published)}
-            <li><small><i class="fa fa-clock-o"></i> {'Ultima modifica del'|i18n('openpa_sensor/post')} {$object.modified|l10n(shortdatetime)}</small></li>
-        {/if}
-      </ul>
-      <ul class="list-inline">
-        <li><small><i class="fa fa-user"></i> {'In carico a'|i18n('openpa_sensor/post')} {$post.current_owner}</small></li>
-        <li><small><i class="fa fa-comments"></i> {$post.comment_count} {'commenti'|i18n('openpa_sensor/post')}</small></li>
-        <li><small><i class="fa fa-comment"></i> {$post.response_count} {'risposte ufficiali'|i18n('openpa_sensor/post')}</small></li>
-        {if $object.data_map.category.has_content}
-          <li><small><i class="fa fa-tags"></i> {attribute_view_gui attribute=$object.data_map.category}</small></li>
-        {/if}
-      </ul>
-
-      {include uri='design:sensor/parts/post/post_messages.tpl'}
+      <div class="row">
+        <div class="col-md-12">
+          {include uri='design:sensor/parts/post/post_messages.tpl'}
+        </div>
+      </div>
 
     </div>
     <div class="col-md-4" id="sidebar">
-      
-      <aside class="widget">
-        <h4>Luogo</h4>
-        {include uri='design:sensor/parts/post/map.tpl'}
-      </aside>
         
       <aside class="widget">
         <h4>{'Soggetti coinvolti'|i18n('openpa_sensor/post')}</h4>
-        <dl class="dl-horizontal">
+        <dl class="dl">
           {foreach $participant_list as $item}
             <dt>{$item.name|wash}:</dt>
             <dd><ul class="list-unstyled">
             {foreach $item.items as $p}
-                <li><small>{$p.participant.contentobject.name|wash()}</small></li>
+                {if is_set( $p.participant.contentobject )}
+                  <li><small>{$p.participant.contentobject.name|wash()}</small></li>
+                {else}
+                  <li>?</li>
+                {/if}
             {/foreach}
             </ul></dd>
           {/foreach}

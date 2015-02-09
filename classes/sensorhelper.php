@@ -188,14 +188,15 @@ class SensorHelper
                 {
                     return array_shift( $ids );
                 }
-                elseif ( !$this->is( self::STATUS_WAITING ) )
-                {
-                    $ids = $this->participantIds( eZCollaborationItemParticipantLink::ROLE_APPROVER );
-                    if ( count( $ids ) )
-                    {
-                        return array_shift( $ids );
-                    }
-                }
+                //elseif ( !$this->is( self::STATUS_WAITING ) )
+                //{
+                //    $ids = $this->participantIds( eZCollaborationItemParticipantLink::ROLE_APPROVER );
+                //    if ( count( $ids ) )
+                //    {
+                //        return array_shift( $ids );
+                //    }
+                //}
+                return null;
                 break;
             
             case 'owner_name':
@@ -1047,8 +1048,8 @@ class SensorHelper
                 $GLOBALS['SensorParticipantRoleNameMap'] =
                     array( eZCollaborationItemParticipantLink::ROLE_STANDARD => ezpI18n::tr( 'openpa_sensor/role_name', 'Standard' ),
                            eZCollaborationItemParticipantLink::ROLE_OBSERVER => ezpI18n::tr( 'openpa_sensor/role_name', 'Osservatore' ),
-                           eZCollaborationItemParticipantLink::ROLE_OWNER => ezpI18n::tr( 'openpa_sensor/role_name', 'Assegnatario' ),
-                           eZCollaborationItemParticipantLink::ROLE_APPROVER => ezpI18n::tr( 'openpa_sensor/role_name', 'Responsabile' ),
+                           eZCollaborationItemParticipantLink::ROLE_OWNER => ezpI18n::tr( 'openpa_sensor/role_name', 'In carico a' ),
+                           eZCollaborationItemParticipantLink::ROLE_APPROVER => ezpI18n::tr( 'openpa_sensor/role_name', 'Riferimento per il cittadino' ),
                            eZCollaborationItemParticipantLink::ROLE_AUTHOR => ezpI18n::tr( 'openpa_sensor/role_name', 'Autore' ) );
             }
             $roleNameMap = $GLOBALS['SensorParticipantRoleNameMap'];
@@ -1063,27 +1064,39 @@ class SensorHelper
         return $item->handler()->roleName( $collaborationID, $roleID );
     }
     
+    private function participantRoleSortKey( $roleID )
+    {
+        $sorter = array(
+            eZCollaborationItemParticipantLink::ROLE_STANDARD => 1000,
+            eZCollaborationItemParticipantLink::ROLE_OBSERVER => 4,
+            eZCollaborationItemParticipantLink::ROLE_OWNER => 3,
+            eZCollaborationItemParticipantLink::ROLE_APPROVER => 2,
+            eZCollaborationItemParticipantLink::ROLE_AUTHOR => 1
+        );
+        return isset( $sorter[$roleID] ) ? $sorter[$roleID] : 1000;
+    }
+    
     public function fetchParticipantMap()
     {        
         $itemID = $this->collaborationItem->attribute( 'id' );        
-        $list = eZCollaborationItemParticipantLink::fetchParticipantList( array( 'item_id' => $this->collaborationItem->attribute( 'id' ) ) );
+        $list = eZCollaborationItemParticipantLink::fetchParticipantList( array( 'item_id' => $this->collaborationItem->attribute( 'id' ), 'limit' => 100  ) );
         if ( $list === null )
         {            
             return null;
         }
-
         $listMap = array();
         foreach ( $list as $listItem )
         {
-            $sortKey = $listItem->attribute( 'participant_role' );
+            $sortKey = $this->participantRoleSortKey( $listItem->attribute( 'participant_role' ) );
             if ( !isset( $listMap[$sortKey] ) )
             {
-                $sortName = self::roleName( $itemID, $sortKey );
+                $sortName = self::roleName( $itemID, $listItem->attribute( 'participant_role' ) );
                 $listMap[$sortKey] = array( 'name' => $sortName,
                                             'items' => array() );
             }
             $listMap[$sortKey]['items'][] = $listItem;
         }
+        ksort( $listMap );
         return $listMap;
     }
     
