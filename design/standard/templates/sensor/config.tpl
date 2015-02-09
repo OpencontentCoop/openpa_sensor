@@ -81,7 +81,12 @@ $(document).ready(function(){
             <td>
               {if $userSetting.is_enabled|not()}<span style="text-decoration: line-through">{/if}
               {*<a href="{$operator.url_alias|ezurl(no)}">{$operator.name|wash()}</a>*}{$operator.name|wash()}
-              {if $userSetting.is_enabled|not()}</span>{/if}
+              {if $userSetting.is_enabled|not()}</span>{/if}              
+            </td>
+            <td width="1">
+              {if fetch( 'user', 'has_access_to', hash( 'module', 'sensor', 'function', 'behalf', 'user_id', $operator.contentobject_id ) )}
+                <span title="{"L'utente può inserire segnalazioni per conto di altri"|i18n('openpa_sensor/config')}"><i class="fa fa-life-ring"></i></span>
+              {/if}
             </td>
             <td width="1">
               <a href="{concat('sensor/user/',$operator.contentobject_id)|ezurl(no)}"><i class="fa fa-user"></i></a>
@@ -120,7 +125,7 @@ $(document).ready(function(){
           <tr>
             <td>
               {if $userSetting.is_enabled|not()}<span style="text-decoration: line-through">{/if}
-              {*<a href="{$user.url_alias|ezurl(no)}">{$user.name|wash()}</a>*}{$user.name|wash()}
+              {*<a href="{$user.url_alias|ezurl(no)}">{$user.name|wash()}</a>*}{$user.name|wash()} <small><em>{$user.data_map.user_account.content.email|wash()}</em></small>
               {if $userSetting.is_enabled|not()}</span>{/if}
             </td>
             <td width="1">

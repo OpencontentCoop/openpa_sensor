@@ -73,11 +73,18 @@
         <h4>{'Soggetti coinvolti'|i18n('openpa_sensor/post')}</h4>
         <dl class="dl">
           {foreach $participant_list as $item}
-            <dt>{$item.name|wash}:</dt>
+            <dt>{$item.name|wash}:</dt>            
             <dd><ul class="list-unstyled">
             {foreach $item.items as $p}
                 {if is_set( $p.participant.contentobject )}
-                  <li><small>{$p.participant.contentobject.name|wash()}</small></li>
+                  <li>
+                    <small>
+                      {$p.participant.contentobject.name|wash()}
+                      {if and( $item.role_id|eq(5), $object|has_attribute('on_behalf_of') )}
+                        [{$object|attribute('on_behalf_of').contentclass_attribute_name|wash()} {$object|attribute('on_behalf_of').content|wash()}]
+                      {/if}
+                    </small>
+                  </li>
                 {else}
                   <li>?</li>
                 {/if}

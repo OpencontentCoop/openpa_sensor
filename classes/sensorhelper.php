@@ -1092,6 +1092,7 @@ class SensorHelper
             {
                 $sortName = self::roleName( $itemID, $listItem->attribute( 'participant_role' ) );
                 $listMap[$sortKey] = array( 'name' => $sortName,
+                                            'role_id' => $listItem->attribute( 'participant_role' ),
                                             'items' => array() );
             }
             $listMap[$sortKey]['items'][] = $listItem;

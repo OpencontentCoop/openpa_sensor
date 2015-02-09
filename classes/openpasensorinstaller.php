@@ -418,6 +418,13 @@ class OpenPASensorInstaller
                     'FunctionName' => '*'
                 ),
             ),
+            
+            "Sensor Assistant" => array(
+                array(
+                    'ModuleName' => 'sensor',
+                    'FunctionName' => 'behalf'
+                )
+            ),
 
             "Sensor Anonymous" => array(
                 array(

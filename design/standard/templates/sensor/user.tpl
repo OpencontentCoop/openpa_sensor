@@ -20,6 +20,12 @@
     </label>
   </div>
   
+  <div class="checkbox">
+    <label class="check">{"Permetti all'utente di inserire segnalazioni per conto di altri"|i18n( 'sensor/user/setting' )}
+      <input type="checkbox" name="sensor_can_behalf_of" {if $user_can_behalf_of}checked="checked"{/if} />
+    </label>
+  </div>
+  
   
   <input class="btn btn-primary" type="submit" name="UpdateSettingButton" value="{'Salva'|i18n( 'sensor/user/setting' )}" />
   <input class="btn bt-default" type="submit" name="CancelSettingButton" value="{'Annulla'|i18n( 'sensor/user/setting' )}" />
