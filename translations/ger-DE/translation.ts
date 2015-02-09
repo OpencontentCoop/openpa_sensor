@@ -31,6 +31,10 @@
         <source>Prosegui</source>
         <translation>Weiter</translation>
     </message>
+    <message>
+        <source>Sensorcivico - progetto di riuso del Consorzio dei Comuni Trentini - realizzato da Opencontent con ComunWeb</source>
+        <translation>StadtSensor (SensorCivico) in Zusammenarbeit mit dem Gemeindenverband des Trentino. Technische Umsetzung: Opencontent mit ComunWeb</translation>
+    </message>
 </context>
 <context>
     <name>openpa_sensor/collaboration</name>
@@ -296,7 +300,7 @@
     </message>
     <message>
         <source>Ultima modifica del</source>
-        <translation>Letzte Änderung</translation>
+        <translation>Letzte Änderung vom</translation>
     </message>
     <message>
         <source>In carico a</source>
@@ -325,6 +329,10 @@
     <message>
         <source>Chiudi</source>
         <translation>Abmelden</translation>
+    </message>
+    <message>
+        <source>Cronologia</source>
+        <translation>Verlauf</translation>
     </message>
 </context>
 <context>
@@ -471,7 +479,7 @@
     </message>
     <message>
         <source>Cliccando sul bottone Iscriviti accetti &lt;a href=%term_url&gt;le condizioni di utilizzo&lt;/a&gt; e confermi di aver letto la nostra &lt;a href=%privacy_url&gt;Normativa sull&apos;utilizzo dei dati&lt;/a&gt;.</source>
-        <translation>Klicke auf Registrieren und Bestätige die &lt;a href=%term_url>die Nutzungsbestimmungen&lt;/a&gt; bestätige die Datenschutzbestimmungen gelesen zu haben &lt;a href=%privacy_url>Privacy_URL&lt;/a&gt;.</translation>
+        <translation>Klicke auf "Registrieren" und bestätige die &lt;a href=%term_url>Nutzungsbestimmungen&lt;/a&gt;. Bestätige die Datenschutzbestimmungen gelesen zu haben &lt;a href=%privacy_url>Privacy_URL&lt;/a&gt;.</translation>
     </message>
     <message>
         <source>Iscriviti</source>
