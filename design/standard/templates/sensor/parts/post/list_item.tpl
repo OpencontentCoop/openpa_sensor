@@ -9,7 +9,7 @@
 		{/if}
 		{$node.name|wash()}
 	  </a>
-	  <small>{$node.object.owner.name|wash()}</small>
+	  <small>{$node.object.owner.name|wash()} {if $node.object|has_attribute('on_behalf_of')}[{$node.object|attribute('on_behalf_of').contentclass_attribute_name|wash()} {$node.object|attribute('on_behalf_of').content|wash()}]{/if}</small>
 	  </h2>
 	  <ul class="breadcrumb pull-right">
 	  <li>
