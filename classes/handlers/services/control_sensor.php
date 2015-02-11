@@ -749,7 +749,47 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase
     public static function executeWorkflow( $parameters, $process, $event )
     {
         $trigger = $parameters['trigger_name'];
-        if ( $trigger == 'post_publish' )
+        if ( $trigger == 'pre_read' )
+        {
+            $redirectUrl = $redirectUrlAlias = false;
+            $currentSiteaccess = eZSiteAccess::current();
+            if ( OpenPABase::getCustomSiteaccessName( 'sensor' ) != $currentSiteaccess['name']
+                 && OpenPABase::getBackendSiteaccessName() != $currentSiteaccess['name'] )
+            {
+                $nodeId = $parameters['node_id'];
+                $node = eZContentObjectTreeNode::fetch( $nodeId );
+                if ( $node instanceof eZContentObjectTreeNode )
+                {
+                    if ( in_array( $node->attribute( 'class_identifier' ), OpenPASensorInstaller::sensorClassIdentifiers() ) )
+                    {
+                        if ( $node->attribute( 'class_identifier' ) == 'dimmi_forum_reply' )
+                        {
+                            $redirectUrlAlias = $node->attribute( 'parent' )->attribute( 'url_alias' );                            
+                        }
+                        else
+                        {
+                            $redirectUrlAlias = $node->attribute( 'url_alias' );
+                        }
+                    }
+                    
+                    if ( $redirectUrlAlias )
+                    {
+                        $sensorSA = OpenPABase::getCustomSiteaccessName( 'sensor' );
+                        $path = "settings/siteaccess/{$sensorSA}/";
+                        $iniFile = "site.ini";
+                        $ini = new eZINI( $iniFile . '.append', $path, null, null, null, true, true );  
+                        $redirectUrl = 'http://' . $ini->variable( 'SiteSettings', 'SiteURL' ) . '/' . $redirectUrlAlias;
+                    }
+                }
+            }
+            
+            if ( $redirectUrl )
+            {
+                eZDebug::writeNotice($redirectUrl);
+                header( 'Location: ' . $redirectUrl );
+            }
+        }
+        elseif ( $trigger == 'post_publish' )
         {
             $id = $parameters['object_id'];
             $object = eZContentObject::fetch( $id );

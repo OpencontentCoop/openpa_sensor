@@ -203,8 +203,8 @@
     </div>
 
     <div class="buttonblock">
-      <input class="btn btn-lg btn-success pull-right" type="submit" name="PublishButton" value="Salva" />
-      <input class="btn btn-lg btn-danger" type="submit" name="DiscardButton" value="{'Discard'|i18n('design/standard/content/edit')}" />
+      <input class="btn btn-lg btn-danger pull-right" type="submit" name="PublishButton" value="Pubblica il commento" />
+      <input class="btn btn-lg btn-warning" type="submit" name="DiscardButton" value="{'Discard'|i18n('design/standard/content/edit')}" />
       <input type="hidden" name="DiscardConfirm" value="0" />
       <input type="hidden" name="RedirectIfDiscarded" value="{if is_set( $forum )}{$forum.url_alias}{else}/sensor/dimmi{/if}" />
       <input type="hidden" name="RedirectURIAfterPublish" value="{if is_set( $forum )}{$forum.url_alias}{else}/sensor/dimmi{/if}" />

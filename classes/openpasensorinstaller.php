@@ -123,9 +123,9 @@ class OpenPASensorInstaller
         return $section;
     }
 
-    protected static function installClasses()
+    public static function sensorClassIdentifiers()
     {
-        OpenPAClassTools::installClasses( array(
+        return array(
             "sensor_root",
             "sensor_area",
             "sensor_category",
@@ -136,7 +136,12 @@ class OpenPASensorInstaller
             "dimmi_forum",
             "dimmi_root",
             "dimmi_forum_topic",
-        ) );
+        );
+    }
+    
+    protected static function installClasses()
+    {
+        OpenPAClassTools::installClasses( OpenPASensorInstaller::sensorClassIdentifiers() );
     }
 
     protected static function installAppRoot( $parentNodeId, eZSection $section )
