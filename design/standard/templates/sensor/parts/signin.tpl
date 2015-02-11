@@ -54,8 +54,8 @@
         <div class="col-lg-2"></div>
         <div class="form col-lg-8">
             <form name="loginform" method="post" action={'/user/login/'|ezurl}>
-                <input placeholder="{'Indirizzo Email'|i18n('openpa_sensor/signin')}" class="form-control" type="text" name="Login">
-                <input placeholder="{'Password'|i18n('openpa_sensor/signin')}" class="form-control" type="password" name="Password">
+                <input autocomplete="off" placeholder="{'Indirizzo Email'|i18n('openpa_sensor/signin')}" class="form-control" type="text" name="Login">
+                <input autocomplete="off" placeholder="{'Password'|i18n('openpa_sensor/signin')}" class="form-control" type="password" name="Password">
                 <button name="LoginButton" type="submit" class="btn btn-primary btn-lg">{'Accedi'|i18n('openpa_sensor/signin')}</button>
 				<hr />
 				<div class="forgot">

@@ -10,6 +10,8 @@ $eZTemplateOperatorArray[] = array(
         'sensor_categorycontainer',
         'user_settings',
         'objectstate_by_id',
-        'bracket_to_strong'
+        'bracket_to_strong',
+        'sensor_site_url',
+        'sensor_classes'
     )
 );
