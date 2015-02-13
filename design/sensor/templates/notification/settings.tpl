@@ -3,7 +3,7 @@
 <form method="post" action={"/notification/settings/"|ezurl}>
 
     <section class="hgroup">
-      <h1>{"Notification settings"|i18n('design/standard/notification')}</h1>
+      <h1>{"Impostazioni delle notifiche"|i18n('openpa_sensor/settings')}</h1>
     </section>
 
     {let handlers=fetch('notification','handler_list')}
@@ -19,7 +19,7 @@
     {/let}
 
     <div>
-        <input class="button btn btn-success" type="submit" name="Store" value="{'Store'|i18n('design/standard/notification')}" />
+        <input class="button btn btn-success" type="submit" name="Store" value="{'Salva le impostazioni'|i18n('openpa_sensor/settings')}" />
     </div>
     
 </form>

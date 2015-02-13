@@ -1,4 +1,4 @@
-{let handlers=$handler.collaboration_handlers
+  {let handlers=$handler.collaboration_handlers
      selection=$handler.collaboration_selections}
 
 {def $sensor = sensor_root_handler()}
@@ -7,7 +7,7 @@
   <div class="panel panel-default">
     <div class="panel-heading">
       <h4 class="panel-title">
-        Notifiche aggiornamento segnalazioni
+        {"Notifiche aggiornamento segnalazioni"|i18n('openpa_sensor/settings')}
       </h4>
     </div>
 

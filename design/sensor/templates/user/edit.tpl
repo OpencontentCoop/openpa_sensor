@@ -2,7 +2,7 @@
 
 
 <section class="hgroup">
-  <h1>{"User profile"|i18n("design/ocbootstrap/user/edit")}</h1>
+  <h1>{"Profilo utente"|i18n("openpa_sensor/user_edit")}</h1>
 </section>
 
 <dl class="dl-horizontal">
@@ -19,7 +19,7 @@
 </dl>
   
   
-<input class="button btn btn-info" type="submit" name="EditButton" value="{'Edit profile'|i18n('design/ocbootstrap/user/edit')}" />
-<input class="button btn btn-info" type="submit" name="ChangePasswordButton" value="{'Change password'|i18n('design/ocbootstrap/user/edit')}" />
+<input class="button btn btn-info" type="submit" name="EditButton" value="{'Modifica profilo'|i18n('openpa_sensor/user_edit')}" />
+<input class="button btn btn-info" type="submit" name="ChangePasswordButton" value="{'Cambia la password'|i18n('openpa_sensor/user_edit')}" />
 
 </form>
