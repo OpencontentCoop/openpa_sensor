@@ -12,9 +12,7 @@ class OpenPASensorOperator
             'sensor_categorycontainer',
             'user_settings',
             'objectstate_by_id',
-            'bracket_to_strong',
-            'sensor_site_url',
-            'sensor_classes'
+            'bracket_to_strong'
         );
     }
 
@@ -39,21 +37,6 @@ class OpenPASensorOperator
     {
         switch ( $operatorName )
         {
-            case 'sensor_site_url':
-            {
-                $sensorSA = OpenPABase::getCustomSiteaccessName( 'sensor' );
-                $path = "settings/siteaccess/{$sensorSA}/";
-                $iniFile = "site.ini";
-                $ini = new eZINI( $iniFile . '.append', $path, null, null, null, true, true );  
-                $siteUrl = $ini->variable( 'SiteSettings', 'SiteURL' );
-                return $operatorValue = $siteUrl;
-            } break;
-            
-            case 'sensor_classes':
-            {
-                return $operatorValue = OpenPASensorInstaller::sensorClassIdentifiers();
-            } break;
-            
             case 'bracket_to_strong':
             {
                 $operatorValue = ObjectHandlerServiceControlSensor::replaceBracket( $operatorValue );
