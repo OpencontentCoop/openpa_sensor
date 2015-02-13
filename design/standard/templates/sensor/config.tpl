@@ -1,4 +1,5 @@
 {def $sensor = sensor_root_handler()}
+{def $locales = fetch( 'content', 'translation_list' )}
 {ezscript_require( array( 'ezjsc::jquery', 'jquery.quicksearch.min.js' ) )}
 {literal}
 <script type="text/javascript">
@@ -88,9 +89,18 @@ $(document).ready(function(){
                 <span title="{"L'utente può inserire segnalazioni per conto di altri"|i18n('openpa_sensor/config')}"><i class="fa fa-life-ring"></i></span>
               {/if}
             </td>
+            <td>              
+              {foreach $operator.object.available_languages as $language}
+                {foreach $locales as $locale}
+                  {if $locale.locale_code|eq($language)}
+                    <img src="{$locale.locale_code|flag_icon()}" />
+                  {/if}
+                {/foreach}
+              {/foreach}
+            </td>
             <td width="1">
               <a href="{concat('sensor/user/',$operator.contentobject_id)|ezurl(no)}"><i class="fa fa-user"></i></a>
-            </td>
+            </td>            
             <td width="1">{include name=edit uri='design:parts/toolbar/node_edit.tpl' current_node=$operator}</td>
             <td width="1">{include name=trash uri='design:parts/toolbar/node_trash.tpl' current_node=$operator}</td>
             {*<td width="1">
@@ -205,6 +215,15 @@ $(document).ready(function(){
               <tr>
                 <td>
                   {*<a href="{$child.url_alias|ezurl(no)}">{$child.name|wash()}</a>*}{$child.name|wash()}
+                </td>
+                <td>              
+                  {foreach $child.object.available_languages as $language}
+                    {foreach $locales as $locale}
+                      {if $locale.locale_code|eq($language)}
+                        <img src="{$locale.locale_code|flag_icon()}" />
+                      {/if}
+                    {/foreach}
+                  {/foreach}
                 </td>
                 <td width="1">{include name=edit uri='design:parts/toolbar/node_edit.tpl' current_node=$child}</td>
                 <td width="1">{include name=trash uri='design:parts/toolbar/node_trash.tpl' current_node=$child}</td>
