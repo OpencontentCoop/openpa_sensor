@@ -13,6 +13,29 @@ class OpenPASensorFunctionCollection
         {
             $useSSL = true;
         }
-        return array( 'result' => recaptcha_get_html( $publicKey ), null, $useSSL );
+        return array( 'result' => self::recaptcha_get_html( $publicKey ), null, $useSSL );
     }
+
+    private static function recaptcha_get_html ($pubkey, $error = null, $use_ssl = false)
+    {
+        if ($pubkey == null || $pubkey == '') {
+                die ("To use reCAPTCHA you must get an API key from <a href='https://www.google.com/recaptcha/admin/create'>https://www.google.com/recaptcha/admin/create</a>");
+        }
+        
+        //$server = $use_ssl ? 'https:' : 'http:';
+	$server = "https://www.google.com/recaptcha/api";
+    
+        $errorpart = "";
+        if ($error) {
+           $errorpart = "&amp;error=" . $error;
+        }
+        return '<script type="text/javascript" src="'. $server . '/challenge?k=' . $pubkey . $errorpart . '"></script>
+    
+        <noscript>
+                <iframe src="'. $server . '/noscript?k=' . $pubkey . $errorpart . '" height="300" width="500" frameborder="0"></iframe><br/>
+                <textarea name="recaptcha_challenge_field" rows="3" cols="40"></textarea>
+                <input type="hidden" name="recaptcha_response_field" value="manual_challenge"/>
+        </noscript>';
+    }
+
 } 
