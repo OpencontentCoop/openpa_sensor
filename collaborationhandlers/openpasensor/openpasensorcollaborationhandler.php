@@ -11,7 +11,7 @@ class OpenPASensorCollaborationHandler extends eZCollaborationItemHandler
     {
         $this->eZCollaborationItemHandler(
             OpenPASensorCollaborationHandler::TYPE_STRING,
-            ezpI18n::tr( 'openpa_sensor/collaboration', 'Notifiche SensorCivico' ),
+            ezpI18n::tr( 'openpa_sensor/settings', 'Notifiche SensorCivico' ),
             array(
                 'use-messages' => true,
                 'notification-types' => true,
@@ -26,7 +26,7 @@ class OpenPASensorCollaborationHandler extends eZCollaborationItemHandler
      */
     function title( $collaborationItem )
     {
-        return ezpI18n::tr( 'openpa_sensor/collaboration', 'Notifiche SensorCivico' );
+        return ezpI18n::tr( 'openpa_sensor/settings', 'Notifiche SensorCivico' );
     }
 
     /**

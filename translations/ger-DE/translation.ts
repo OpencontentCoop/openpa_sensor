@@ -46,6 +46,40 @@
     </message>
 </context>
 <context>
+    <name>openpa_sensor/add</name>
+    <message>        
+        <source>I testi e le immagini inserite dovranno rispettare le policy stabilite per la &lt;a target="_blank" href="%privacy_link"&gt;privacy&lt;/a&gt;</source>
+        <translation>Texte und Bilder entsprechen den &lt;a target="_blank" href="%privacy_link"&gt;Datenschutzbestimmungen/Privacy/Netiquette&lt;/a&gt;</translation>
+    </message>
+    <message>
+        <source>Salva</source>
+        <translation>Löschen</translation>
+    </message>
+    <message>
+        <source>Annulla</source>
+        <translation>Speichern</translation>
+    </message>
+    <message>
+        <source>Rileva la mia posizione</source>
+        <translation>Mein Standort</translation>
+    </message>    
+</context>
+<context>
+    <name>openpa_sensor/user_edit</name>
+    <message>        
+        <source>Profilo utente</source>
+        <translation>Benutzerprofil</translation>
+    </message>
+    <message>        
+        <source>Modifica profilo</source>
+        <translation>Benutzerprofil erstellen</translation>
+    </message>
+    <message>        
+        <source>Cambia la password</source>
+        <translation>Passwort ändern</translation>
+    </message>
+</context>    
+<context>
     <name>openpa_sensor/dashboard</name>
     <message>
         <source>Le mie segnalazioni</source>
@@ -80,8 +114,40 @@
         <translation>Angenommen</translation>
     </message>
     <message>
+        <source>Legenda:</source>
+        <translation>Legende:</translation>
+    </message>
+    <message>
         <source>Dettagli</source>
         <translation>Details</translation>
+    </message>    
+    <message>
+        <source>Segnalazioni da leggere, in corso e chiuse</source>
+        <translation>Meldung lesen, bearbeiten oder beenden</translation>
+    </message>
+    <message>
+        <source>indica la presenza di messaggi</source>
+        <translation>Eingegangene Nachrichten</translation>
+    </message>
+    <message>
+        <source>indica la presenza di messaggi non letti</source>
+        <translation>Ungelesene Nachrichten</translation>
+    </message>
+    <message>
+        <source>indica la presenza di variazioni in cronologia non lette</source>
+        <translation>Ungelesene Änderungen im Verlauf</translation>
+    </message>
+    <message>
+        <source>Da leggere</source>
+        <translation>Lesen</translation>
+    </message>
+    <message>
+        <source>In corso</source>
+        <translation>Offen</translation>
+    </message>
+    <message>
+        <source>Chiuse</source>
+        <translation>Abgeschlossen</translation>
     </message>
 </context>
 <context>
@@ -274,12 +340,20 @@
     </message>
     <message>
         <source>Notifiche</source>
-        <translation>Mitteilungen</translation>
+        <translation>Benachrichtigungseinstellungen</translation>
     </message>
     <message>
         <source>Esci</source>
         <translation>Abmelden</translation>
     </message>
+    <message>
+        <source>Le mie attività</source>
+        <translation>Meine Tätigkeit</translation>
+    </message>
+    <message>
+        <source>Settings</source>
+        <translation>Einstellungen</translation>
+    </message>    
 </context>
 <context>
     <name>openpa_sensor/messages</name>
@@ -450,6 +524,26 @@
         <source>Accedi</source>
         <translation>Einloggen</translation>
     </message>
+    <message>
+        <source>Per partecipare devi iscriverti!</source>
+        <translation>Zuerst registrieren, dann mitmachen!</translation>
+    </message>
+    <message>
+        <source>Sei già iscritto?</source>
+        <translation>Bereits registriert?</translation>
+    </message>
+    <message>
+        <source>Accedi subito!</source>
+        <translation>Sofort einloggen!</translation>
+    </message>
+    <message>
+        <source>Non sei ancora iscritto?</source>
+        <translation>Noch nicht registriert?</translation>
+    </message>
+    <message>
+        <source>Bastano 5 secondi per registrarsi!</source>
+        <translation>In 5 Sekunden bist du mit dabei!</translation>
+    </message>
 </context>
 <context>
     <name>openpa_sensor/signup</name>
@@ -560,6 +654,52 @@
         <source>Reclamo</source>
         <translation>Beschwerde</translation>
     </message>
+</context>
+<context>
+    <name>openpa_sensor/settings</name>
+    <message>        
+        <source>Impostazioni delle notifiche</source>
+        <translation>Benachrichtigungseinstellungen</translation>
+    </message>
+    <message>        
+        <source>Salva le impostazioni</source>
+        <translation>Speichern</translation>
+    </message>
+    <message>        
+        <source>Notifiche aggiornamento segnalazioni</source>
+        <translation>Benachrichtigung bei Veränderung des Meldungsstatus</translation>
+    </message>
+    <message>        
+        <source>Notifiche SensorCivico</source>
+        <translation>Benachrichtigung BozenSensor</translation>
+    </message>    
+</context>
+<context>
+    <name>openpa_sensor/config</name>    
+    <message>        
+        <source>Impostazioni</source>
+        <translation>Einstellungen</translation>
+    </message>
+    <message>        
+        <source>Modifica impostazioni generali</source>
+        <translation>Ändere allgemeine Einstellungen</translation>
+    </message>    
+    <message>        
+        <source>Utenti</source>
+        <translation>Nutzer</translation>
+    </message>
+    <message>        
+        <source>Operatori</source>
+        <translation>Sachbearbeiter</translation>
+    </message>
+    <message>        
+        <source>Aree tematiche</source>
+        <translation>Themenbereiche</translation>
+    </message>
+    <message>        
+        <source>Punti sulla mappa</source>
+        <translation>Mappenpunkte POI</translation>
+    </message>    
 </context>
 </TS>
 

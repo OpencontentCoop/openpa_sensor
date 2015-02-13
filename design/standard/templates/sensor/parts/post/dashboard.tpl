@@ -3,15 +3,15 @@
     <div class="col-md-8">
       <h1>
         {"Le mie segnalazioni"|i18n('openpa_sensor/dashboard')}
-        {if $simplified_dashboard|not()}<br /><small>Segnalazioni da leggere, in corso e chiuse</small>{/if}
+        {if $simplified_dashboard|not()}<br /><small>{"Segnalazioni da leggere, in corso e chiuse"|i18n('openpa_sensor/dashboard')}</small>{/if}
       </h1>
     </div>
     <div class="col-md-4">
       <small>
-        <strong>Legenda:</strong><br />
-        <i class="fa fa-comments-o"></i> indica la presenza di messaggi <br />
-        <i class="fa fa-comments"></i> indica la presenza di messaggi non letti <br />
-        <i class="fa fa-exclamation-triangle"></i> indica la presenza di variazioni in cronologia non lette
+        <strong>{"Legenda:"|i18n('openpa_sensor/dashboard')}</strong><br />
+        <i class="fa fa-comments-o"></i> {"indica la presenza di messaggi"|i18n('openpa_sensor/dashboard')} <br />
+        <i class="fa fa-comments"></i> {"indica la presenza di messaggi non letti"|i18n('openpa_sensor/dashboard')} <br />
+        <i class="fa fa-exclamation-triangle"></i> {"indica la presenza di variazioni in cronologia non lette"|i18n('openpa_sensor/dashboard')}
       </small>
     </div>
   </div>

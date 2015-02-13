@@ -13,11 +13,11 @@ $(document).ready(function(){
 
 <div class="row">
   <div class="col-md-12">
-	
+	{*
 	<h2>
 	  {'Impostazioni'|i18n('openpa_sensor/config')}
 	</h2>
-
+  *}
   <ul class="list-unstyled">
     <li>{'Modifica impostazioni generali'|i18n('openpa_sensor/config')} {include name=edit uri='design:parts/toolbar/node_edit.tpl' current_node=$root}</li>
 
