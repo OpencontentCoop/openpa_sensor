@@ -3,9 +3,19 @@ $module = $Params['Module'];
 $tpl = eZTemplate::factory();
 $ini = eZINI::instance();
 $http = eZHTTPTool::instance();
-$test = 'post';
+$test = 'notification';
 
-if ( $test == 'registration' )
+if ( $test == 'notification' )
+{
+    $objectId = 172824;
+    $contentObject = eZContentObject::fetch($objectId);
+    $tpl->setVariable( 'object', $contentObject );
+    $result = $tpl->fetch( 'design:notification/handler/ezsubtree/view/plain.tpl' );
+    echo $result;
+    eZDisplayDebug();
+    eZExecution::cleanExit();
+}
+elseif ( $test == 'registration' )
 {
     $user = eZUser::fetch( 14 );
     if ( $user === null )
