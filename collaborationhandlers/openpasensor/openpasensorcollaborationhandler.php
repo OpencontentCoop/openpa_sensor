@@ -261,15 +261,15 @@ class OpenPASensorCollaborationHandler extends eZCollaborationItemHandler
      * @return int
      */
     static function handleCollaborationEvent( $event, $item, &$parameters )
-    {
+    {        
         $participantList = eZCollaborationItemParticipantLink::fetchParticipantList( array( 'item_id' => $item->attribute( 'id' ),
                                                                                             'participant_type' => eZCollaborationItemParticipantLink::TYPE_USER,
                                                                                             'as_object' => false ) );
-
         $userIDList = array();
         $participantMap = array();
         foreach ( $participantList as $participant )
         {
+            if ( is_array( $participant ) ) $participant = new OpenPATempletizable( $participant );
             $userIDList[] = $participant->attribute( 'participant_id' );
             $participantMap[$participant->attribute('participant_id' )] = $participant;
         }
