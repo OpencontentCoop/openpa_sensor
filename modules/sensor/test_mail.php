@@ -3,7 +3,16 @@ $module = $Params['Module'];
 $tpl = eZTemplate::factory();
 $ini = eZINI::instance();
 $http = eZHTTPTool::instance();
-$test = 'notification';
+$test = 'post';
+
+$siteUrl = eZINI::instance()->variable( 'SiteSettings', 'SiteURL' );
+        $parts = explode( '/', $siteUrl );
+        if ( count( $parts ) >= 2 )
+        {
+            $suffix = array_shift( $parts );
+            $siteUrl = implode( '/', $siteUrl );
+        }
+        echo rtrim( $siteUrl, '/' );
 
 if ( $test == 'notification' )
 {
@@ -49,7 +58,7 @@ elseif ( $test == 'registration' )
 }
 elseif ( $test == 'post' )
 {
-    $objectId = 2557;
+    $objectId = 2199;
     $participantRole = eZCollaborationItemParticipantLink::ROLE_AUTHOR;
     
     $helper = SensorHelper::instanceFromContentObjectId( $objectId );
@@ -79,12 +88,9 @@ elseif ( $test == 'post' )
     $body = $tpl->variable( 'body' );
     $subject = $tpl->variable( 'subject' );
 
-    if ( !empty( $body ) )
-    {
         $tpl->setVariable( 'title', $subject );
         $tpl->setVariable( 'content', $body );
         $templateResult = $tpl->fetch( 'design:sensor/mail/mail_pagelayout.tpl' ); 
-    }
     
 }
 

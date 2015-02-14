@@ -94,19 +94,11 @@
         </dl>
       </aside>
     
-      {def $m = fetch("collaboration","message_list",hash("item_id",$collaboration_item.id, "sort_by", array("created",true())))
-           $hasTimeline = false()}
-      {foreach $m as $item}
-          {if $item.message_type|eq(0)}
-              {set $hasTimeline = true()}
-              {break}
-          {/if}
-      {/foreach}
-      {if $hasTimeline}
+      {if $helper.robot_message_count|gt(0)}
       <aside class="widget timeline">
         <h4>{'Cronologia'|i18n('openpa_sensor/post')}</h4>
         <ol class="list-unstyled">
-          {foreach $m as $item}
+          {foreach $helper.robot_messages as $item}
             {if $item.message_type|eq(0)}
               <li>
                 <div class="icon"><i class="fa fa-clock-o"></i></div>
