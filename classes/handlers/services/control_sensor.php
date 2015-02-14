@@ -129,10 +129,14 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase
 
     protected function getAssetUrl()
     {
-        $sitaccessIdentifier = OpenPABase::getFrontendSiteaccessName();
-        $path = "settings/siteaccess/{$sitaccessIdentifier}/";
-        $ini = new eZINI( 'site.ini.append', $path, null, null, null, true, true );        
-        return rtrim( $ini->variable( 'SiteSettings', 'SiteURL' ), '/' );
+        $siteUrl = eZINI::instance()->variable( 'SiteSettings', 'SiteURL' );
+        $parts = explode( '/', $siteUrl );
+        if ( count( $parts ) >= 2 )
+        {
+            $suffix = array_shift( $parts );
+            $siteUrl = implode( '/', $siteUrl );
+        }
+        return rtrim( $siteUrl, '/' );
     }
     
     protected function getSensorSiteaccessUrl()
