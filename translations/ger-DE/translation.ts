@@ -548,6 +548,14 @@
 <context>
     <name>openpa_sensor/signup</name>
     <message>
+        <source>Non sei ancora iscritto?</source>
+        <translation>Noch nicht registriert?</translation>
+    </message>
+    <message>
+	<source>Bastano 5 secondi per registrarsi!</source>
+        <translation>In 5 Sekunden bist du mit dabei!</translation>
+    </message>
+    <message>
         <source>MESSAGGIO PRIVATO</source>
         <translation>PRIVATNACHRICHT</translation>
     </message>
