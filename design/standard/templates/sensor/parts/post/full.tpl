@@ -94,7 +94,7 @@
         </dl>
       </aside>
     
-      {def $m = fetch("collaboration","message_list",hash("item_id",$collaboration_item.id))
+      {def $m = fetch("collaboration","message_list",hash("item_id",$collaboration_item.id, "sort_by", array("created",true())))
            $hasTimeline = false()}
       {foreach $m as $item}
           {if $item.message_type|eq(0)}
