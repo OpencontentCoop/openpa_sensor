@@ -137,7 +137,7 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase
     
     protected function getSensorSiteaccessUrl()
     {
-        $sitaccessIdentifier = OpenPABase::getCurrentSiteaccessIdentifier() . '_sensor';
+        $sitaccessIdentifier = OpenPABase::getCustomSiteaccessName( 'sensor' );
         $path = "settings/siteaccess/{$sitaccessIdentifier}/";
         $ini = new eZINI( 'site.ini.append', $path, null, null, null, true, true );        
         if ( $ini->hasVariable( 'SiteSettings', 'SiteURL' ) )
