@@ -12,7 +12,7 @@
 
 {literal}
   <script type="text/javascript">	  		
-		var tiles = L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {maxZoom: 18,attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'});
+		var tiles = L.tileLayer('//{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {maxZoom: 18,attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'});
 		var map = L.map('map').addLayer(tiles);
     map.scrollWheelZoom.disable();
 		var markers = L.markerClusterGroup();     

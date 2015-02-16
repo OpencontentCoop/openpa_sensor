@@ -1,0 +1,2 @@
+{$sensor_person.name|wash()} 
+{if and( $sensor_person|has_attribute( 'ruolo' ), $sensor_person|has_attribute( 'struttura_di_competenza' ) )}({if $sensor_person|has_attribute( 'ruolo' )}{attribute_view_gui attribute=$sensor_person|attribute( 'ruolo' )}{/if}{if $sensor_person|has_attribute( 'struttura_di_competenza' )} {foreach $sensor_person|attribute( 'struttura_di_competenza' ).content.relation_list as $related}{fetch(content,object,hash(object_id,$related.contentobject_id)).name|wash()}{/foreach}{/if}){/if}

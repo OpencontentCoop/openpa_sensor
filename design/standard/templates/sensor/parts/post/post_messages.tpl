@@ -58,10 +58,10 @@
         <div class="col-sm-8 col-md-8">
             {if $collaboration_item.content.helper.can_send_private_message}
                 <select name="Collaboration_OpenPASensorItemCommentPrivateReceiver" class="form-control input-lg">
-                    <option>Visibile a tutti</option>
+                    <option>{'Visibile a tutti'|i18n('openpa_sensor/messages')}</option>
                     {foreach $collaboration_item.content.helper.participants as $user}
                         {if $user.id|ne($current_participant.participant_id)}
-                            <option value="{$user.id}">Visibile solo a {$user.name|wash()}</option>
+                            <option value="{$user.id}">{'Visibile solo a'|i18n('openpa_sensor/messages')} {$user.name|wash()}</option>
                         {/if}
                     {/foreach}
                 </select>

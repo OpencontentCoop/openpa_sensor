@@ -12,12 +12,13 @@
 </ul>
 <p>{attribute_view_gui attribute=$object|attribute('description')}</p>
 <ul class="list-unstyled">
-    <li><small><i class="fa fa-clock-o"></i> Pubblicata il {$object.published|l10n(shortdatetime)}</small></li>
+    <li><small><i class="fa fa-clock-o"></i> {'Pubblicata il'|i18n('openpa_sensor/post')} {$object.published|l10n(shortdatetime)}</small></li>
     {if $object.modified|gt($item.object.published)}
-        <li><small><i class="fa fa-clock-o"></i> Ultima modifica del {$object.modified|l10n(shortdatetime)}</small></li>
+        <li><small><i class="fa fa-clock-o"></i> {'Ultima modifica del'|i18n('openpa_sensor/post')} {$object.modified|l10n(shortdatetime)}</small></li>
     {/if}
-    <li><small><i class="fa fa-user"></i> In carico a {$post.current_owner}</small></li>
-    <li><small><i class="fa fa-comment"></i> {$post.comment_count} commenti</small></li>
+    <li><small><i class="fa fa-user"></i> {'In carico a'|i18n('openpa_sensor/post')} {$post.current_owner}</small></li>
+    <li><small><i class="fa fa-comment"></i> {$post.comment_count} {'commenti'|i18n('openpa_sensor/post')}</small></li>
+	<li><small><i class="fa fa-comment"></i> {$post.response_count} {'risposte ufficiali'|i18n('openpa_sensor/post')}</small></li>
 </ul>
 <p><a href={concat('sensor/posts/',$object.id)|ezurl()} class="pull-right btn btn-info btn-sm" style="color:#fff">{"Dettagli"|i18n('openpa_sensor/dashboard')}</a></p>
 </div>

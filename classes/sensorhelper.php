@@ -417,7 +417,7 @@ class SensorHelper
         $user = eZUser::fetch( $id );
         if ( $user instanceof eZUser )
         {
-            return $user->attribute( 'contentobject' )->attribute( 'name' );
+            return $id;
         }
         return false;
     }

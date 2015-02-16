@@ -109,26 +109,37 @@ class OpenPASensorOperator
                 }
                 if ( isset( $parts[1] ) )
                 {
+                    $name = $parts[1];
+                    if ( is_numeric( $name ) )
+                    {
+                        $user = eZUser::fetch( $name );
+                        if ( $user instanceof eZUser )
+                        {                            
+                            $tpl = eZTemplate::factory();                            
+                            $tpl->setVariable( 'sensor_person', $user->attribute( 'contentobject' ) );
+                            $name = $tpl->fetch( 'design:content/view/sensor_person.tpl' );
+                        }
+                    }
                     switch( $parts[0] )
                     {
                         case '_fixed':
-                            $result = ezpI18n::tr( 'openpa_sensor/robot message', 'Completata da %name', false, array( '%name' => $parts[1] ) );
+                            $result = ezpI18n::tr( 'openpa_sensor/robot message', 'Completata da %name', false, array( '%name' => $name ) );
                             break;
                         
                         case '_read':
-                            $result = ezpI18n::tr( 'openpa_sensor/robot message', 'Letta da %name', false, array( '%name' => $parts[1] ) );
+                            $result = ezpI18n::tr( 'openpa_sensor/robot message', 'Letta da %name', false, array( '%name' => $name ) );
                             break;
                         
                         case '_closed':
-                            $result = ezpI18n::tr( 'openpa_sensor/robot message', 'Chiusa da %name', false, array( '%name' => $parts[1] ) );
+                            $result = ezpI18n::tr( 'openpa_sensor/robot message', 'Chiusa da %name', false, array( '%name' => $name ) );
                             break;
                         
                         case '_assigned':
-                            $result = ezpI18n::tr( 'openpa_sensor/robot message', 'Assegnata a %name', false, array( '%name' => $parts[1] ) );
+                            $result = ezpI18n::tr( 'openpa_sensor/robot message', 'Assegnata a %name', false, array( '%name' => $name ) );
                             break;
                         
                         case '_reopened':
-                            $result = ezpI18n::tr( 'openpa_sensor/robot message', 'Riaperta da %name', false, array( '%name' => $parts[1] ) );
+                            $result = ezpI18n::tr( 'openpa_sensor/robot message', 'Riaperta da %name', false, array( '%name' => $name ) );
                             break;
                     }
                 }
