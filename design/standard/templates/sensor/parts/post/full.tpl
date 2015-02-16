@@ -50,10 +50,12 @@
             {/if}
           </ul>
           <ul class="list-inline">
-            <li><small><i class="fa fa-user"></i> {'In carico a'|i18n('openpa_sensor/post')} {$post.current_owner}</small></li>
+            {if $post.current_owner}
+			<li><small><i class="fa fa-user"></i> {'In carico a'|i18n('openpa_sensor/post')} {$post.current_owner}</small></li>
+			{/if}
             <li><small><i class="fa fa-comments"></i> {$post.comment_count} {'commenti'|i18n('openpa_sensor/post')}</small></li>
             <li><small><i class="fa fa-comment"></i> {$post.response_count} {'risposte ufficiali'|i18n('openpa_sensor/post')}</small></li>
-            {if $object.data_map.category.has_content}
+            {if $object|has_attribute( 'category' )}
               <li><small><i class="fa fa-tags"></i> {attribute_view_gui attribute=$object.data_map.category}</small></li>
             {/if}
           </ul>              
@@ -79,11 +81,11 @@
                 {if is_set( $p.participant.contentobject )}
                   <li>
                     <small>
-                      {$p.participant.contentobject.name|wash()}
-                      {if and( $item.role_id|eq(5), $object|has_attribute('on_behalf_of') )}
-                        [{$object|attribute('on_behalf_of').contentclass_attribute_name|wash()} {$object|attribute('on_behalf_of').content|wash()}]
-                      {/if}
-                    </small>
+					{include uri='design:content/view/sensor_person.tpl' sensor_person=$p.participant.contentobject}
+					{if and( $item.role_id|eq(5), $object|has_attribute('on_behalf_of') )}
+					  [{$object|attribute('on_behalf_of').contentclass_attribute_name|wash()} {$object|attribute('on_behalf_of').content|wash()}]
+					{/if}
+					</small>
                   </li>
                 {else}
                   <li>?</li>
@@ -169,7 +171,7 @@
                 <option></option>                                
                 {foreach $post.operators as $user}
                   {if $user.contentobject_id|ne($current_participant.participant_id)}
-                    <option value="{$user.contentobject_id}">{$user.name|wash()}</option>
+                    <option value="{$user.contentobject_id}">{include uri='design:content/view/sensor_person.tpl' sensor_person=$user.object}</option>
                   {/if}
                 {/foreach}
               </select>
@@ -189,7 +191,7 @@
                 <option></option>
                 {foreach $post.operators as $user}
                   {if $user.contentobject_id|ne($current_participant.participant_id)}
-                    <option value="{$user.contentobject_id}">{$user.name|wash()}</option>
+                    <option value="{$user.contentobject_id}">{include uri='design:content/view/sensor_person.tpl' sensor_person=$user.object}</option>
                   {/if}
                 {/foreach}
               </select>

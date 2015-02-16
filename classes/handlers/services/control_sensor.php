@@ -129,13 +129,13 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase
 
     protected function getAssetUrl()
     {
-        $siteUrl = eZINI::instance()->variable( 'SiteSettings', 'SiteURL' );
-        $parts = explode( '/', $siteUrl );
+        $siteUrl = eZINI::instance()->variable( 'SiteSettings', 'SiteURL' );       
+        $parts = explode( '/', $siteUrl );        
         if ( count( $parts ) >= 2 )
         {
-            $suffix = array_shift( $parts );
-            $siteUrl = implode( '/', $siteUrl );
-        }
+            $suffix = array_pop( $parts );
+            $siteUrl = implode( '/', $parts );
+        }        
         return rtrim( $siteUrl, '/' );
     }
     
@@ -312,7 +312,9 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase
             $object = eZContentObject::fetch( $objectId );
             if ( $object instanceof eZContentObject )
             {
-                return $object->attribute( 'name' );
+                $tpl = eZTemplate::factory();                            
+                $tpl->setVariable( 'sensor_person', $object );
+                return $tpl->fetch( 'design:content/view/sensor_person.tpl' );
             }
         }
         return false;

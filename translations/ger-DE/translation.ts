@@ -52,11 +52,11 @@
         <translation>Texte und Bilder entsprechen den &lt;a target="_blank" href="%privacy_link"&gt;Datenschutzbestimmungen/Privacy/Netiquette&lt;/a&gt;</translation>
     </message>
     <message>
-        <source>Salva</source>
+        <source>Annulla</source>
         <translation>Löschen</translation>
     </message>
     <message>
-        <source>Annulla</source>
+        <source>Salva</source>
         <translation>Speichern</translation>
     </message>
     <message>
@@ -365,9 +365,77 @@
         <source>Aggiungi un commento</source>
         <translation>Kommentar hinzufügen</translation>
     </message>
+    <message>
+        <source>Pubblica il commento</source>
+        <translation>Kommentar veröffentlichen</translation>
+    </message>
+    <message>
+        <source>Visibile solo a</source>
+        <translation>Sichtbar für</translation>
+    </message>
+    <message>
+        <source>Visibile a tutti</source>
+        <translation>Sichtbar</translation>
+    </message>
+    <message>
+        <source>Risposta ufficiale</source>
+        <translation></translation>
+    </message>
+    <message>
+        <source>Pubblica la risposta ufficiale</source>
+        <translation></translation>
+    </message>
 </context>
 <context>
     <name>openpa_sensor/post</name>
+    <message>
+        <source>Quartiere/Zona</source>
+        <translation>Stadtviertel/Satdtteil</translation>
+    </message>
+    <message>
+        <source>Seleziona Quartiere/Zona</source>
+        <translation>Stadtviertel/Satdtteil</translation>
+    </message>
+    <message>
+        <source>commenti</source>
+        <translation></translation>
+    </message>
+    <message>
+        <source>risposte ufficiali</source>
+        <translation></translation>
+    </message>
+    <message>
+        <source>Area tematica</source>
+        <translation>Themenbereiche</translation>
+    </message>
+    <message>
+        <source>Seleziona area tematica</source>
+        <translation>Themenbereiche</translation>
+    </message>
+    <message>
+        <source>Seleziona operatore</source>
+        <translation>Betreiber</translation>
+    </message>
+    <message>
+        <source>Assegna al responsabile dell'area selezionata</source>
+        <translation></translation>
+    </message>
+    <message>
+        <source>Aggiungi cc</source>
+        <translation></translation>
+    </message>
+    <message>
+        <source>Intervento terminato</source>
+        <translation></translation>
+    </message>
+    <message>
+        <source>Rendi la segnalazione privata</source>
+        <translation>Meldung nicht öffentlich</translation>
+    </message>    
+    <message>
+        <source>Associa</source>
+        <translation>Bestätige</translation>
+    </message>
     <message>
         <source>Pubblicata il</source>
         <translation>Veröffentlicht am</translation>
@@ -391,6 +459,10 @@
     <message>
         <source>Azioni</source>
         <translation>Maßnahmen</translation>
+    </message>
+    <message>
+        <source>Riassegna</source>
+        <translation>ändere Zuweisung</translation>
     </message>
     <message>
         <source>Assegna</source>
@@ -488,6 +560,14 @@
         <location filename="sensorhelper.php" line="820"/>
         <source>Autore</source>
         <translation>Autor</translation>
+    </message>
+    <message>        
+        <source>Riferimento per il cittadino</source>
+        <translation>Bezugstelle</translation>
+    </message>
+    <message>        
+        <source>In carico a</source>
+        <translation>Sachbearbeiter/in</translation>
     </message>
 </context>
 <context>
@@ -679,11 +759,19 @@
     </message>
     <message>        
         <source>Notifiche SensorCivico</source>
-        <translation>Benachrichtigung BozenSensor</translation>
+        <translation>Benachrichtigung StadtSensor</translation>
     </message>    
 </context>
 <context>
     <name>openpa_sensor/config</name>    
+    <message>
+        <source>Aggiungi</source>
+        <translation>Hinzufügen</translation>
+    </message>
+    <message>
+        <source>Aggiungi %classname</source>
+        <translation>Hinzufügen %classname</translation>
+    </message>
     <message>        
         <source>Impostazioni</source>
         <translation>Einstellungen</translation>

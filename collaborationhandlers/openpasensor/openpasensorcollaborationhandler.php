@@ -263,6 +263,8 @@ class OpenPASensorCollaborationHandler extends eZCollaborationItemHandler
     static function handleCollaborationEvent( $event, $item, &$parameters )
     {        
         $participantList = eZCollaborationItemParticipantLink::fetchParticipantList( array( 'item_id' => $item->attribute( 'id' ),
+                                                                                            'offset' => 0,
+                                                                                            'limit' => 100,
                                                                                             'participant_type' => eZCollaborationItemParticipantLink::TYPE_USER,
                                                                                             'as_object' => false ) );
         $userIDList = array();
@@ -272,6 +274,28 @@ class OpenPASensorCollaborationHandler extends eZCollaborationItemHandler
             if ( is_array( $participant ) ) $participant = new OpenPATempletizable( $participant );
             $userIDList[] = $participant->attribute( 'participant_id' );
             $participantMap[$participant->attribute('participant_id' )] = $participant;
+        }
+        
+        $authorLanguage = false;
+        foreach( $participantMap as $contentObjectID => $participant )
+        {
+            if ( !$authorLanguage && $participant->attribute( 'participant_role' ) == eZCollaborationItemParticipantLink::ROLE_AUTHOR )
+            {
+                $authorObject = eZContentObject::fetch( $contentObjectID );                
+                if ( $authorObject instanceof eZContentObject )
+                {
+                    $language = eZContentLanguage::fetch( $authorObject->attribute( 'initial_language_id' ) );
+                    if ( $language )
+                    {
+                        $authorLanguage = $language->attribute( 'locale' );
+                    }
+                }                
+            }
+        }
+        
+        if ( $authorLanguage != eZINI::instance()->variable( 'RegionalSettings', 'ContentObjectLocale', $authorLanguage ) )
+        {                                    
+            
         }
 
         $collaborationIdentifier = $event->attribute( 'data_text1' );
@@ -296,7 +320,7 @@ class OpenPASensorCollaborationHandler extends eZCollaborationItemHandler
 
         $db = eZDB::instance();
         $db->begin();
-
+        
         $userCollection = array();
         foreach( $userList as $subscriber )
         {
@@ -309,9 +333,9 @@ class OpenPASensorCollaborationHandler extends eZCollaborationItemHandler
             {
                 $userCollection[$participantRole] = array();
             }
-            $userCollection[$participantRole][] = $userItem;
+            $userCollection[$participantRole][] = $userItem;            
         }
-
+        
         $tpl = eZTemplate::factory();
         $tpl->resetVariables();
         

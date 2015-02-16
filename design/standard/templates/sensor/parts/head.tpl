@@ -26,8 +26,7 @@
         'isotope/jquery.isotope.min.js',
         'jquery.ui.totop.js',
         'easing.js',
-        'wow.min.js',
-        'snap.svg-min.js',
+        'wow.min.js',        
         'restart_theme.js',
         'collapser.js',
         'placeholders.min.js'

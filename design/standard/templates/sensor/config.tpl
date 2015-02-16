@@ -20,10 +20,10 @@ $(document).ready(function(){
 	</h2>
   *}
   <ul class="list-unstyled">
-    <li>{'Modifica impostazioni generali'|i18n('openpa_sensor/config')} {include name=edit uri='design:parts/toolbar/node_edit.tpl' current_node=$root}</li>
+    <li>{'Modifica impostazioni generali'|i18n('openpa_sensor/config')} {include name=edit uri='design:parts/toolbar/node_edit.tpl' current_node=$root redirect_if_discarded='/sensor/config' redirect_after_publish='/sensor/config'}</li>
 
     {if $sensor.forum_is_enabled}
-      <li>{'Modifica informazioni Dimmi'|i18n('openpa_sensor/config')} {include name=edit uri='design:parts/toolbar/node_edit.tpl' current_node=$sensor.forum_container_node}</li>
+      <li>{'Modifica informazioni Dimmi'|i18n('openpa_sensor/config')} {include name=edit uri='design:parts/toolbar/node_edit.tpl' current_node=$sensor.forum_container_node redirect_if_discarded='/sensor/config' redirect_after_publish='/sensor/config'}</li>
     {/if}
   </ul>
 		
@@ -60,10 +60,10 @@ $(document).ready(function(){
         {if $categories|count()|gt(0)}        
         <table class="table table-hover">          
           {foreach $categories as $category}
-          {include name=cattree uri='design:sensor/parts/walk_item_table.tpl' item=$category recursion=0}		
+          {include name=cattree uri='design:sensor/parts/walk_item_table.tpl' item=$category recursion=0 redirect_if_discarded='/sensor/config/categories' redirect_after_publish='/sensor/config/categories' redirect_if_cancel='/sensor/config/categories' redirect_after_remove='/sensor/config/categories'}		
           {/foreach}
         </table>
-        <div class="pull-right"><a class="btn btn-danger" href="{concat('openpa/add/sensor_category/?parent=',$categories[0].node.parent_node_id)|ezurl(no)}"><i class="fa fa-plus"></i> {'Aggiungi area tematica'|i18n('openpa_sensor/config')}</a></div>
+        <div class="pull-right"><a class="btn btn-danger" href="{concat('openpa/add/sensor_category/?parent=',$categories[0].node.parent_node_id)|ezurl(no)}"><i class="fa fa-plus"></i> {'Aggiungi'|i18n('openpa_sensor/config')} {$categories[0].node.class_name}</a></div>
         {/if}
       </div>
       {/if}
@@ -101,8 +101,8 @@ $(document).ready(function(){
             <td width="1">
               <a href="{concat('sensor/user/',$operator.contentobject_id)|ezurl(no)}"><i class="fa fa-user"></i></a>
             </td>            
-            <td width="1">{include name=edit uri='design:parts/toolbar/node_edit.tpl' current_node=$operator}</td>
-            <td width="1">{include name=trash uri='design:parts/toolbar/node_trash.tpl' current_node=$operator}</td>
+            <td width="1">{include name=edit uri='design:parts/toolbar/node_edit.tpl' current_node=$operator redirect_if_discarded='/sensor/config/operators' redirect_after_publish='/sensor/config/operators'}</td>
+            <td width="1">{include name=trash uri='design:parts/toolbar/node_trash.tpl' current_node=$operator redirect_if_cancel='/sensor/config/operators' redirect_after_remove='/sensor/config/operators'}</td>
             {*<td width="1">
               {if fetch( 'user', 'has_access_to', hash( 'module', 'user', 'function', 'setting' ))}
                 <form name="Setting" method="post" action={concat( 'user/setting/', $operator.contentobject_id )|ezurl}>                  
@@ -116,7 +116,7 @@ $(document).ready(function(){
           {undef $userSetting}
           {/foreach}          
         </table>
-        <div class="pull-right"><a class="btn btn-danger" href="{concat('openpa/add/sensor_operator/?parent=',$operators[0].parent_node_id)|ezurl(no)}"><i class="fa fa-plus"></i> {'Aggiungi operatore'|i18n('openpa_sensor/config')}</a></div>
+        <div class="pull-right"><a class="btn btn-danger" href="{concat('openpa/add/sensor_operator/?parent=',$operators[0].parent_node_id)|ezurl(no)}"><i class="fa fa-plus"></i> {'Aggiungi'|i18n('openpa_sensor/config')} {$operators[0].class_name}</a></div>
       </div>
       {/if}
       
@@ -142,7 +142,7 @@ $(document).ready(function(){
               {*include name=edit uri='design:parts/toolbar/node_edit.tpl' current_node=$user*}
               <a href="{concat('sensor/user/',$user.contentobject_id)|ezurl(no)}"><i class="fa fa-user"></i></a>
             </td>
-            <td width="1">{include name=trash uri='design:parts/toolbar/node_trash.tpl' current_node=$user}</td>
+            <td width="1">{include name=trash uri='design:parts/toolbar/node_trash.tpl' current_node=$user redirect_if_cancel='/sensor/config/users' redirect_after_remove='/sensor/config/users'}</td>
             {*<td width="1">
               {if fetch( 'user', 'has_access_to', hash( 'module', 'user', 'function', 'setting' ))}
                 <form name="Setting" method="post" action={concat( 'user/setting/', $operator.contentobject_id )|ezurl}>                  
@@ -177,10 +177,10 @@ $(document).ready(function(){
         </form>
         <table class="table table-hover">
           {foreach $areas as $area}
-          {include name=areatree uri='design:sensor/parts/walk_item_table.tpl' item=$area recursion=0}
+          {include name=areatree uri='design:sensor/parts/walk_item_table.tpl' item=$area recursion=0 redirect_if_discarded='/sensor/config/areas' redirect_after_publish='/sensor/config/areas' redirect_if_cancel='/sensor/config/areas' redirect_after_remove='/sensor/config/areas'}
           {/foreach}
         </table>
-        <div class="pull-right"><a class="btn btn-danger" href="{concat('openpa/add/sensor_area/?parent=',$areas[0].node.parent_node_id)|ezurl(no)}"><i class="fa fa-plus"></i> {'Aggiungi punto sulla mappa'|i18n('openpa_sensor/config')}</a></div>
+        <div class="pull-right"><a class="btn btn-danger" href="{concat('openpa/add/sensor_area/?parent=',$areas[0].node.parent_node_id)|ezurl(no)}"><i class="fa fa-plus"></i> {'Aggiungi'|i18n('openpa_sensor/config')} {$areas[0].node.class_name}</a></div>
       </div>
       {/if}
 
@@ -193,7 +193,7 @@ $(document).ready(function(){
           </form>
           <table class="table table-hover">
             {foreach $forums as $forum}
-              {include name=forumtree uri='design:sensor/parts/walk_item_table.tpl' item=$forum recursion=0 insert_child_class=true()}
+              {include name=forumtree uri='design:sensor/parts/walk_item_table.tpl' item=$forum recursion=0 insert_child_class=true() redirect_if_discarded='/sensor/config/dimmi' redirect_after_publish='/sensor/config/dimmi'  redirect_if_cancel='/sensor/config/dimmi' redirect_after_remove='/sensor/config/dimmi'}
             {/foreach}
           </table>
           <div class="pull-right"><a class="btn btn-danger" href="{concat('openpa/add/dimmi_forum/?parent=',$forums[0].node.parent_node_id)|ezurl(no)}"><i class="fa fa-plus"></i> {'Aggiungi discussione'|i18n('openpa_sensor/config')}</a></div>
@@ -225,8 +225,8 @@ $(document).ready(function(){
                     {/foreach}
                   {/foreach}
                 </td>
-                <td width="1">{include name=edit uri='design:parts/toolbar/node_edit.tpl' current_node=$child}</td>
-                <td width="1">{include name=trash uri='design:parts/toolbar/node_trash.tpl' current_node=$child}</td>
+                <td width="1">{include name=edit uri='design:parts/toolbar/node_edit.tpl' current_node=$child redirect_if_discarded=concat('/sensor/config/data-',$item.contentobject_id) redirect_after_publish=concat('/sensor/config/data-',$item.contentobject_id)}</td>
+                <td width="1">{include name=trash uri='design:parts/toolbar/node_trash.tpl' current_node=$child redirect_if_cancel=concat('/sensor/config/data-',$item.contentobject_id) redirect_after_remove=concat('/sensor/config/data-',$item.contentobject_id)}</td>
               </tr>
               {/foreach}
             </table>
