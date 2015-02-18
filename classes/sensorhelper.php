@@ -93,6 +93,7 @@ class SensorHelper
             'object',
             'human_unread_message_count',
             'human_message_count',
+            'human_messages',
             'robot_unread_message_count',
             'robot_message_count',
             'robot_messages'
@@ -234,6 +235,20 @@ class SensorHelper
                     );
                 } break;
             
+            case 'human_messages':
+            {
+                return eZPersistentObject::fetchObjectList(
+                    eZCollaborationItemMessageLink::definition(),
+                    null,
+                    array(
+                        'collaboration_id' => $this->collaborationItem->attribute( 'id' ),
+                        'message_type' => array( '!=', SensorHelper::MESSAGE_TYPE_ROBOT )
+                    ),
+                    array( 'created' => 'asc' ),
+                    null,
+                    true );
+            } break;
+            
             case 'human_unread_message_count':
                 {
                     $lastRead = 0;
@@ -273,7 +288,8 @@ class SensorHelper
                     null,
                     array(
                         'collaboration_id' => $this->collaborationItem->attribute( 'id' ),
-                        'message_type' => SensorHelper::MESSAGE_TYPE_ROBOT ),
+                        'message_type' => SensorHelper::MESSAGE_TYPE_ROBOT
+                    ),
                     array( 'created' => 'asc' ),
                     null,
                     true );

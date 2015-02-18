@@ -1,6 +1,6 @@
 {def $message_limit=100
      $message_offset=0
-     $message_list=fetch("collaboration","message_list",hash("item_id",$collaboration_item.id,"limit",$message_limit,"offset",$message_offset))
+     $message_list=$helper.human_messages
      $hasMessage = false()}
 
 {foreach $message_list as $item}
