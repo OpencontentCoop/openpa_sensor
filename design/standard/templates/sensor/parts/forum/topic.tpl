@@ -5,7 +5,7 @@
 <section class="hgroup">
   <h1>{$node.name|wash|bracket_to_strong}</h1>
   <h2>
-    <i class="fa fa-clock-o"></i> {$node.object.published|datetime( 'custom', '%l, %d %F %Y' )}
+    <i class="fa fa-clock-o"></i> {$node.modified_subnode|datetime( 'custom', '%l, %d %F %Y' )}
     {if $reply_tree_count|gt(0)}<a href="#post_comments"><i class="fa fa-comments-o"></i> {$reply_tree_count}  {if $reply_tree_count|gt(1)}commenti{else}commento{/if}</a>{/if}
   </h2>
   <ul class="breadcrumb pull-right">
@@ -20,10 +20,6 @@
       <figure>{attribute_view_gui attribute=$node.data_map.image image_class=original}</figure>
     </div>
 
-    <div class="col-lg-{if $node.data_map.approfondimenti.has_content}9{else}12{/if}">
-      <p>{$node.data_map.message.content|simpletags|wordtoimage|autolink|bracket_to_strong}</p>
-    </div>
-
     {if $node.data_map.approfondimenti.has_content}
       <div class="alert alert-info col-lg-3">
         <strong>Per saperne di più...</strong>
@@ -34,6 +30,10 @@
         </ul>
       </div>
     {/if}
+    
+    <div class="col-lg-{if $node.data_map.approfondimenti.has_content}9{else}12{/if}">
+      <p>{$node.data_map.message.content|simpletags|wordtoimage|autolink|bracket_to_strong}</p>
+    </div>
 
   </div>
 

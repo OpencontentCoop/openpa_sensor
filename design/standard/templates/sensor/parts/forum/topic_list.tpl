@@ -26,7 +26,7 @@
         <div class="service_details">
           <h2 class="section_header skincolored">
             <a href="{$topic.url_alias|ezurl(no)}">{$topic.object.name|wash|bracket_to_strong}</a>
-            <small>{$topic.object.published|datetime( 'custom', '%l, %d %F %Y' )} {if $topic_reply_count|gt(0)}<a class="pull-right" href="{$topic.url_alias|ezurl(no)}">{$topic_reply_count} <i class="fa fa-comments-o"></i></a>{/if}</small>
+            <small>{$topic.modified_subnode|datetime( 'custom', '%l, %d %F %Y' )} {if $topic_reply_count|gt(0)}<a class="pull-right" href="{$topic.url_alias|ezurl(no)}">{$topic_reply_count} <i class="fa fa-comments-o"></i></a>{/if}</small>
           </h2>
           <p>{$topic.data_map.message.content|simpletags|wordtoimage|autolink|bracket_to_strong}</p>
           <a href="{$topic.url_alias|ezurl(no)}" class="btn btn-primary">Partecipa</a>
