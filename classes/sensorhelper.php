@@ -621,6 +621,7 @@ class SensorHelper
     public function canSendPrivateMessage()
     {
         return $this->userIsA( eZCollaborationItemParticipantLink::ROLE_OWNER )
+               || $this->userIsA( eZCollaborationItemParticipantLink::ROLE_OBSERVER )
                || $this->userIsA( eZCollaborationItemParticipantLink::ROLE_APPROVER );
     }
 
