@@ -18,7 +18,7 @@
 			<div class="row">
 			  <div class="col-md-12">
 				<small>
-					{"Cliccando sul bottone Iscriviti accetti <a href=%term_url>le condizioni di utilizzo</a> e confermi di aver letto la nostra <a href=%privacy_url>Normativa sull'utilizzo dei dati</a>."|i18n('openpa_sensor/signup',, hash( '%term_url', 'sensor/terms'|ezurl(), '%privacy_url', 'sensor/privacy'|ezurl() ))}
+					{"Cliccando sul bottone Iscriviti accetti <a href=%term_url>le condizioni di utilizzo</a> e confermi di aver letto la nostra <a href=%privacy_url>Normativa sull'utilizzo dei dati</a>."|i18n('openpa_sensor/signup',, hash( '%term_url', 'sensor/info/terms'|ezurl(), '%privacy_url', 'sensor/info/privacy'|ezurl() ))}
 				</small>
 			  </div>
 			</div>

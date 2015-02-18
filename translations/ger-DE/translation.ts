@@ -661,7 +661,7 @@
     </message>
     <message>
         <source>Cliccando sul bottone Iscriviti accetti &lt;a href=%term_url&gt;le condizioni di utilizzo&lt;/a&gt; e confermi di aver letto la nostra &lt;a href=%privacy_url&gt;Normativa sull&apos;utilizzo dei dati&lt;/a&gt;.</source>
-        <translation>Klicke auf "Registrieren" und bestätige die &lt;a href=%term_url>Nutzungsbestimmungen&lt;/a&gt;. Bestätige die Datenschutzbestimmungen gelesen zu haben &lt;a href=%privacy_url>Privacy_URL&lt;/a&gt;.</translation>
+        <translation>Klicke auf "Registrierung" und bestätige die &lt;a href=%term_url>Nutzungsbestimmungen&lt;/a&gt;. Bestätige die Datenschutzbestimmungen gelesen zu haben &lt;a href=%privacy_url>Privacy_URL&lt;/a&gt;.</translation>
     </message>
     <message>
         <source>Iscriviti</source>
