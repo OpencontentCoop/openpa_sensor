@@ -73,7 +73,7 @@
 
       <li><a href="{'sensor/dashboard'|ezurl(no)}">{'Le mie attività'|i18n('openpa_sensor/menu')}</a></li>
 
-      {if $sensor.post_is_enabled}
+      {if and( $sensor.post_is_enabled, $sensor.forum_is_enabled|not(), $sensor.survey_is_enabled|not() ))}
         <li>
           <a href="{'sensor/add'|ezurl(no)}">
             <span class="label label-primary" style="font-size: 100%">
