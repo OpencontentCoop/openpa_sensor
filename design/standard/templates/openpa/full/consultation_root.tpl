@@ -4,11 +4,11 @@
 
 <article class="post">
     <div class="post_content row">
-        {if $node|has_attribute( 'image' )}
+        {*if $node|has_attribute( 'image' )}
             <div class="col-lg-12">
                 <figure>{attribute_view_gui attribute=$node.data_map.image image_class=original}</figure>
             </div>
-        {/if}
+        {/if*}
         <div class="col-lg-12">
             {if $node|has_attribute( 'description' )}
                 {attribute_view_gui attribute=$node.data_map.description}

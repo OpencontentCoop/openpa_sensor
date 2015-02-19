@@ -5,23 +5,27 @@ class OpenPASensorInstaller implements OpenPAInstaller
     protected $options = array();
 
     protected $steps = array(
-        '[0] sensor stuff',
-        '[1] dimmi stuff',
-        '[2] survey stuff',
-        '[3] roles',
-        '[4] ini configurations',
+        '[0] segnalazioni',
+        '[1] discussioni',
+        '[2] consultazioni',
+        '[3] ruoli',
+        '[4] configurazioni ini',
     );
 
     protected $installOnlyStep;
 
+    protected $environments = array();
+
     public function setScriptOptions( eZScript $script )
     {
         return $script->getOptions(
-            '[parent-node:][step:]',
+            '[parent-node:][step:][enable:][clean]',
             '',
             array(
-                'parent-node' => 'Parent node id for sensor tree (default is Apps root)',
-                'step' => 'Execute only selected step (steps are ' . implode( ', ', $this->steps ) . ')',
+                'parent-node' => 'Nodo id contenitore di sensor (Applicazioni di default)',
+                'step' => 'Esegue solo lo step selezionato: gli step possibili sono' . implode( ', ', $this->steps ),
+                'enable' => 'Abilita gli ambienti: [s] segnalazioni, [d] discussioni, [c] consultazioni (esempio: --enable=sd abilita le segnalazioni e le discussioni)',
+                'clean' => 'Elimina tutti i contenuti presenti di sensor prima di eseguire l\'installazione'
             )
         );
     }
@@ -35,8 +39,55 @@ class OpenPASensorInstaller implements OpenPAInstaller
                 $this->installOnlyStep = $this->options['step'];
             else
                 throw new Exception( "Step {$this->options['step']} not found, run script with -h for help" );
+
+            if ( isset( $this->options['clean'] ) )
+            {
+                throw new Exception( "Can not activate 'clean' with 'step' option" );
+            }
+        }
+
+        if ( isset( $this->options['clean'] ) )
+        {
+            self::cleanup();
+        }
+
+        if ( isset( $this->options['enable'] ) )
+        {
+            $environments = str_split( $this->options['enable'] );
+            foreach( $environments as $environment )
+            {
+                if ( $environment == 's' )
+                {
+                    $this->environments['post'] = true;
+                }
+                elseif ( $environment == 'd' )
+                {
+                    $this->environments['forum'] = true;
+                }
+                elseif ( $environment == 'c' )
+                {
+                    $this->environments['survey'] = true;
+                }
+                else
+                {
+                    throw new Exception( "Environment '{$environment}' does not exist, , run script with -h for help" );
+                }
+            }
         }
     }
+
+    protected static function cleanup()
+    {
+        OpenPALog::warning( "Cleanup data" );
+        $rootNode = ObjectHandlerServiceControlSensor::rootNode();
+        if ( $rootNode instanceof eZContentObjectTreeNode )
+        {
+            eZContentObjectTreeNode::removeNode( $rootNode->attribute( 'node_id' ) );
+        }
+        unset( $GLOBALS['SensorRootNode'] );
+        eZCollaborationItem::cleanup();
+    }
+
 
     public function install()
     {
@@ -54,7 +105,7 @@ class OpenPASensorInstaller implements OpenPAInstaller
             $parentNodeId = $this->options['parent-node'];
         else
             $parentNodeId = OpenPAAppSectionHelper::instance()->rootNode()->attribute( 'node_id' );
-        $root = self::installAppRoot( $parentNodeId, $section );
+        $root = self::installAppRoot( $parentNodeId, $section, $this->environments );
 
         if ( $this->installOnlyStep !== null )
         {
@@ -120,7 +171,10 @@ class OpenPASensorInstaller implements OpenPAInstaller
                 'remote_id' => ObjectHandlerServiceControlSensor::sensorRootRemoteId() . '_survey',
                 'class_identifier' => 'consultation_root',
                 'attributes' => array(
-                    'name' => 'Consultazioni'
+                    'name' => 'Consultazioni',
+                    'short_description' => SQLIContentUtils::getRichContent( "<p>Uno strumento di consultazione per conoscere la tua opinione.</p>" ),
+                    'description' => SQLIContentUtils::getRichContent( "<p>Uno strumento di consultazione per conoscere la tua opinione.</p>" ),
+                    'image' => 'extension/openpa_sensor/doc/default/consultation_root.png'
                 )
             );
             /** @var eZContentObject $containerObject */
@@ -128,6 +182,28 @@ class OpenPASensorInstaller implements OpenPAInstaller
             if( !$containerObject instanceof eZContentObject )
             {
                 throw new Exception( 'Failed creating Consultazioni container' );
+            }
+        }
+
+        if ( $installDemoContent )
+        {
+            OpenPALog::warning( "Install Survey demo " );
+            $params = array(
+                'parent_node_id' => $containerObject->attribute( 'main_node_id' ),
+                'section_id' => $section->attribute( 'id' ),
+                'class_identifier' => 'consultation_survey',
+                'attributes' => array(
+                    'name' => 'Demo Consultazione',
+                    'abstract' => SQLIContentUtils::getRichContent( "<p>Uno consultazione demo per conoscere la tua opinione.</p>" ),
+                    'description' => SQLIContentUtils::getRichContent( "<p>Uno strumento di consultazione per conoscere la tua opinione.</p>" ),
+                    'image' => 'extension/openpa_sensor/doc/default/consultation_root.png'
+                )
+            );
+            /** @var eZContentObject $categoryObject */
+            $surveyObject = eZContentFunctions::createAndPublishObject( $params );
+            if ( !$surveyObject instanceof eZContentObject )
+            {
+                throw new Exception( 'Failed creating Survey demo' );
             }
         }
     }
@@ -145,7 +221,11 @@ class OpenPASensorInstaller implements OpenPAInstaller
                 'remote_id' => ObjectHandlerServiceControlSensor::sensorRootRemoteId() . '_dimmi',
                 'class_identifier' => 'dimmi_root',
                 'attributes' => array(
-                    'title' => 'Discussioni'
+                    'title' => 'Quali sono le principali sfide che il tuo Comune sta affrontando?',
+                    'subtitle' => 'Discutine qui con i tuoi concittadini',
+                    'description' => SQLIContentUtils::getRichContent( "<p>Questo media civico istituzionale è aperto alla consultazione, confronto e partecipazione dei cittadini.</p><p>Per partecipare, basta effettuare una rapida registrazione.</p>" ),
+                    'image' => 'extension/openpa_sensor/doc/default/dimmi_root.jpg'
+
                 )
             );
             /** @var eZContentObject $containerObject */
@@ -158,38 +238,41 @@ class OpenPASensorInstaller implements OpenPAInstaller
 
         if ( $installDemoContent )
         {
-            // Forum sample
-            OpenPALog::warning( "Install Forum demo " );
-            $params = array(
-                'parent_node_id' => $containerObject->attribute( 'main_node_id' ),
-                'section_id' => $section->attribute( 'id' ),
-                'class_identifier' => 'dimmi_forum',
-                'attributes' => array(
-                    'name' => 'Demo'
-                )
-            );
-            /** @var eZContentObject $categoryObject */
-            $forumObject = eZContentFunctions::createAndPublishObject( $params );
-            if( !$forumObject  instanceof eZContentObject )
+            for ( $i = 1; $i <= 2; $i++ )
             {
-                throw new Exception( 'Failed creating Dimmi forum demo' );
-            }
+                // Forum sample
+                OpenPALog::warning( "Install Forum demo " );
+                $params = array(
+                    'parent_node_id' => $containerObject->attribute( 'main_node_id' ),
+                    'section_id' => $section->attribute( 'id' ),
+                    'class_identifier' => 'dimmi_forum',
+                    'attributes' => array(
+                        'title' => 'Demo'
+                    )
+                );
+                /** @var eZContentObject $categoryObject */
+                $forumObject = eZContentFunctions::createAndPublishObject( $params );
+                if ( !$forumObject instanceof eZContentObject )
+                {
+                    throw new Exception( 'Failed creating Dimmi forum demo' );
+                }
 
-            // Topic sample
-            OpenPALog::warning( "Install Topic demo " );
-            $params = array(
-                'parent_node_id' => $forumObject->attribute( 'main_node_id' ),
-                'section_id' => $section->attribute( 'id' ),
-                'class_identifier' => 'dimmi_forum_topic',
-                'attributes' => array(
-                    'subject' => 'Demo'
-                )
-            );
-            /** @var eZContentObject $categoryObject */
-            $topicObject = eZContentFunctions::createAndPublishObject( $params );
-            if( !$topicObject   instanceof eZContentObject )
-            {
-                throw new Exception( 'Failed creating Dimmi topic demo' );
+                // Topic sample
+                OpenPALog::warning( "Install Topic demo " );
+                $params = array(
+                    'parent_node_id' => $forumObject->attribute( 'main_node_id' ),
+                    'section_id' => $section->attribute( 'id' ),
+                    'class_identifier' => 'dimmi_forum_topic',
+                    'attributes' => array(
+                        'subject' => 'Demo'
+                    )
+                );
+                /** @var eZContentObject $categoryObject */
+                $topicObject = eZContentFunctions::createAndPublishObject( $params );
+                if ( !$topicObject instanceof eZContentObject )
+                {
+                    throw new Exception( 'Failed creating Dimmi topic demo' );
+                }
             }
         }
     }
@@ -242,7 +325,7 @@ class OpenPASensorInstaller implements OpenPAInstaller
         OpenPAClassTools::installClasses( OpenPASensorInstaller::sensorClassIdentifiers() );
     }
 
-    protected static function installAppRoot( $parentNodeId, eZSection $section )
+    protected static function installAppRoot( $parentNodeId, eZSection $section, $options = array() )
     {
         $rootObject = eZContentObject::fetchByRemoteID( ObjectHandlerServiceControlSensor::sensorRootRemoteId() );
         if ( !$rootObject instanceof eZContentObject )
@@ -254,7 +337,21 @@ class OpenPASensorInstaller implements OpenPAInstaller
                 'remote_id' => ObjectHandlerServiceControlSensor::sensorRootRemoteId(),
                 'class_identifier' => 'sensor_root',
                 'attributes' => array(
-                    'name' => 'SensorCivico'
+                    'name' => 'DimmiCittà',
+                    'logo' => 'extension/openpa_sensor/doc/default/logo.png',
+                    'logo_title' => 'Dimmi[Città]',
+                    'logo_subtitle' => 'Confronto tra [cittadini] ed il Comune',
+                    'banner' => 'extension/openpa_sensor/doc/default/banner.png',
+                    'banner_title' => "Spazio istituzionale per il confronto con i cittadini e l'Amministrazione",
+                    'banner_subtitle' => "L'ambiente adatto per discutere tra cittadini",
+                    'faq' => SQLIContentUtils::getRichContent( "<p>Attraverso la<b>&nbsp;piattaforma SensorCivico</b>&nbsp;i/le cittadini/e possono formulare suggerimenti e problematiche rivolte a migliorare la vivibilità della tua Città.</p>" ),
+                    'privacy' => SQLIContentUtils::getRichContent( "Da compilare" ),
+                    'terms' => SQLIContentUtils::getRichContent( "Da compilare" ),
+                    'footer' => SQLIContentUtils::getRichContent( "Da compilare" ),
+                    'contacts' => SQLIContentUtils::getRichContent( "Da compilare" ),
+                    'forum_enabled' => isset( $options['forum'] ),
+                    'survey_enabled' => isset( $options['survey'] ),
+                    'post_enabled' => isset( $options['post'] )
                 )
             );
             /** @var eZContentObject $rootObject */
@@ -280,7 +377,10 @@ class OpenPASensorInstaller implements OpenPAInstaller
                 'remote_id' => ObjectHandlerServiceControlSensor::sensorRootRemoteId() . '_postcontainer',
                 'class_identifier' => 'sensor_post_root',
                 'attributes' => array(
-                    'name' => 'Segnalazioni'
+                    'name' => 'Segnala!',
+                    'short_description' => SQLIContentUtils::getRichContent( "<p>Attraverso la piattaforma SensorCivico i cittadini possono formulare suggerimenti, segnalazioni e reclami su mappa per il miglioramento della qualità dei servizi offerti dall´Amministrazione e per migliorare la vivibilità della Città.</p>" ),
+                    'description' => SQLIContentUtils::getRichContent( "<p>Attraverso la<b>&nbsp;piattaforma SensorCivico</b> i/le cittadini/e possono formulare suggerimenti, segnalazioni e reclami su mappa (OpenStreet map) per il miglioramento della qualità dei servizi offerti dall´Amministrazione e per migliorare la vivibilità della Città.<br>Tutti i suggerimenti, segnalazioni e reclami saranno resi pubblici a meno che il/la cittadino/a non abbiamo indicato diversamente in fase di caricamento della “segnalazione”.</p>" ),
+                    'image' => 'extension/openpa_sensor/doc/default/sensor_post_root.png'
                 )
             );
             /** @var eZContentObject $containerObject */

@@ -527,7 +527,11 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase
         {
             if ( !isset( $GLOBALS['SensorRootNode'] ) )
             {
-                $GLOBALS['SensorRootNode'] = eZContentObject::fetchByRemoteID( self::sensorRootRemoteId() )->attribute( 'main_node' );    
+                $root =eZContentObject::fetchByRemoteID( self::sensorRootRemoteId() );
+                if ( $root instanceof eZContentObject )
+                {
+                    $GLOBALS['SensorRootNode'] = $root->attribute( 'main_node' );
+                }
             }            
             self::$rootNode = $GLOBALS['SensorRootNode'];
         }
