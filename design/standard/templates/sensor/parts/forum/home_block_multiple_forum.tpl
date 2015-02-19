@@ -9,7 +9,7 @@
       <a href="{$topic.url_alias|ezurl(no)}">{$topic.object.data_map.title.content|wash|bracket_to_strong}</a>
       <small>{$topic.object.data_map.subtitle.content|wash|bracket_to_strong}</small>
     </h2>
-    {attribute_view_gui attribute=$sensor.post_container_node.data_map.short_description}
+    {attribute_view_gui attribute=$topic.data_map.short_description}
     <a href="{$topic.url_alias|ezurl(no)}" class="btn btn-primary btn-lg btn-block">Partecipa alle discussioni</a>
   </div>
 </div>
