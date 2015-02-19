@@ -38,4 +38,18 @@ class OpenPASensorFunctionCollection
         </noscript>';
     }
 
+    public static function fetchSurveyData( $contentObjectId, $userId )
+    {
+        try
+        {
+            $helper = SurveyHelper::instance( $contentObjectId );
+            $helper->setUser( $userId );
+
+            return array( 'result' => $helper );
+        }
+        catch( Exception $e )
+        {
+            return array( 'error' => $e->getMessage() );
+        }
+    }
 } 

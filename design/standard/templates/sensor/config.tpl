@@ -22,8 +22,16 @@ $(document).ready(function(){
   <ul class="list-unstyled">
     <li>{'Modifica impostazioni generali'|i18n('openpa_sensor/config')} {include name=edit uri='design:parts/toolbar/node_edit.tpl' current_node=$root redirect_if_discarded='/sensor/config' redirect_after_publish='/sensor/config'}</li>
 
+    {if $sensor.post_is_enabled}
+      <li>{'Modifica informazioni Sensor'|i18n('openpa_sensor/config')} {include name=edit uri='design:parts/toolbar/node_edit.tpl' current_node=$sensor.post_container_node redirect_if_discarded='/sensor/config' redirect_after_publish='/sensor/config'}</li>
+    {/if}
+
     {if $sensor.forum_is_enabled}
       <li>{'Modifica informazioni Dimmi'|i18n('openpa_sensor/config')} {include name=edit uri='design:parts/toolbar/node_edit.tpl' current_node=$sensor.forum_container_node redirect_if_discarded='/sensor/config' redirect_after_publish='/sensor/config'}</li>
+    {/if}
+
+    {if $sensor.survey_is_enabled}
+      <li>{'Modifica informazioni Consultazioni'|i18n('openpa_sensor/config')} {include name=edit uri='design:parts/toolbar/node_edit.tpl' current_node=$sensor.survey_container_node redirect_if_discarded='/sensor/config' redirect_after_publish='/sensor/config'}</li>
     {/if}
   </ul>
 		
@@ -39,6 +47,9 @@ $(document).ready(function(){
         <li role="presentation" {if $current_part|eq('areas')}class="active"{/if}><a href="{'sensor/config/areas'|ezurl(no)}">{'Punti sulla mappa'|i18n('openpa_sensor/config')}</a></li>
         {if $sensor.forum_is_enabled}
           <li role="presentation" {if $current_part|eq('dimmi')}class="active"{/if}><a href="{'sensor/config/dimmi'|ezurl(no)}">{'Discussioni Dimmi'|i18n('openpa_sensor/config')}</a></li>
+        {/if}
+        {if $sensor.survey_is_enabled}
+          <li role="presentation" {if $current_part|eq('survey')}class="active"{/if}><a href="{'sensor/config/survey'|ezurl(no)}">{'Consultazioni'|i18n('openpa_sensor/config')}</a></li>
         {/if}
         {if $data|count()|gt(0)}
           {foreach $data as $item}
@@ -197,6 +208,53 @@ $(document).ready(function(){
             {/foreach}
           </table>
           <div class="pull-right"><a class="btn btn-danger" href="{concat('openpa/add/dimmi_forum/?parent=',$forums[0].node.parent_node_id)|ezurl(no)}"><i class="fa fa-plus"></i> {'Aggiungi discussione'|i18n('openpa_sensor/config')}</a></div>
+        </div>
+      {/if}
+
+      {if and( $current_part|eq('survey'), $sensor.survey_is_enabled )}
+        <div class="tab-pane active" id="survey">
+          <form action="#">
+            <fieldset>
+              <input type="text" name="search" value="" class="quick_search form-control" placeholder="{'Cerca'|i18n('openpa_sensor/config')}" autofocus />
+            </fieldset>
+          </form>
+          <table class="table table-hover">
+            {foreach $sensor.surveys as $survey}
+              <tr>
+                <td>
+                  {*<a href="{$survey.node.url_alias|ezurl(no)}">{$survey.object.name|wash()}</a>*}{$survey.object.name|wash()}
+                </td>
+                <td>
+                  {foreach $survey.object.available_languages as $language}
+                    {foreach $locales as $locale}
+                      {if $locale.locale_code|eq($language)}
+                        <img src="{$locale.locale_code|flag_icon()}" />
+                      {/if}
+                    {/foreach}
+                  {/foreach}
+                </td>
+                <td>
+                  {if $survey.survey_content.survey.enabled}<i class="fa fa-unlock"></i>{else}<i class="fa fa-lock"></i>{/if}
+                </td>
+                <td>
+                  <small>
+                    <i class="fa fa-clock-o"></i>
+                    {if $survey.survey_content.survey.valid_from_array.no_limit|not}{$survey.survey_content.survey.valid_from|l10n('shortdate')}{else}...{/if} -
+                    {if $survey.survey_content.survey.valid_to_array.no_limit|not}{$survey.survey_content.survey.valid_to|l10n('shortdate')}{else}...{/if}
+                  </small>
+                </td>
+                <td>
+                  {if $survey.survey_content.survey.persistent}<i class="fa fa-save"></i>{/if}
+                </td>
+                <td>
+                  {if $survey.survey_content.survey.one_answer}<i class="fa fa-thumbs-up "></i>{/if}
+                </td>
+                <td width="1">{include name=edit uri='design:parts/toolbar/node_edit.tpl' current_node=$survey.node redirect_if_discarded='/sensor/config/survey' redirect_after_publish='/sensor/config/survey'}</td>
+                <td width="1">{include name=trash uri='design:parts/toolbar/node_trash.tpl' current_node=$survey.node redirect_if_cancel='/sensor/config/survey' redirect_after_remove='/sensor/config/survey'}</td>
+              </tr>
+            {/foreach}
+          </table>
+          <div class="pull-right"><a class="btn btn-danger" href="{concat('openpa/add/consultation_survey/?parent=',$sensor.survey_container_node.node_id)|ezurl(no)}"><i class="fa fa-plus"></i> {'Aggiungi consultazione'|i18n('openpa_sensor/config')}</a></div>
         </div>
       {/if}
       

@@ -37,8 +37,11 @@ $data = array();
 $otherFolders = eZContentObjectTreeNode::subTreeByNodeID( array( 'ClassFilterType' => 'include', 'ClassFilterArray' => array( 'folder' ), 'Depth' => 1, 'DepthOperator' => 'eq', ), $root->attribute( 'node_id' ) );
 foreach( $otherFolders as $folder )
 {
-    if ( $folder->attribute( 'contentobject_id' ) != ObjectHandlerServiceControlSensor::postCategoriesNode()->attribute( 'contentobject_id' )
-         && $folder->attribute( 'contentobject_id' ) != ObjectHandlerServiceControlSensor::postContainerNode()->attribute( 'contentobject_id' ))
+    if (
+        $folder->attribute( 'contentobject_id' ) != ObjectHandlerServiceControlSensor::postCategoriesNode()->attribute( 'contentobject_id' )
+        && $folder->attribute( 'contentobject_id' ) != ObjectHandlerServiceControlSensor::postContainerNode()->attribute( 'contentobject_id' )
+        && $folder->attribute( 'contentobject_id' ) != ObjectHandlerServiceControlSensor::surveyContainerNode()->attribute( 'contentobject_id' )
+    )
     {
         $data[] = $folder;
     }
@@ -48,6 +51,11 @@ if ( ObjectHandlerServiceControlSensor::ForumIsEnable() && $Part == 'dimmi' )
 {
     $forums = ObjectHandlerServiceControlSensor::forums();
     $tpl->setVariable( 'forums', $forums['tree'] );
+}
+
+if ( ObjectHandlerServiceControlSensor::SurveyIsEnabled() && $Part == 'survey' )
+{
+
 }
 
 $tpl->setVariable( 'view_parameters', $viewParameters );

@@ -8,13 +8,9 @@ $script = eZScript::instance( array( 'description' => ( "OpenPA Sensor Installer
 
 $script->startup();
 
-$options = $script->getOptions(
-    '[parent-node:]',
-    '',
-    array(
-        'parent-node' => 'Parent node id for sensor tree (default is Apps root)'
-    )
-);
+$installer = new OpenPASensorInstaller();
+$options = $installer->setScriptOptions( $script );
+
 $script->initialize();
 $script->setUseDebugAccumulators( true );
 
@@ -24,11 +20,13 @@ OpenPALog::setOutputLevel( OpenPALog::ALL );
 
 try
 {
+    /** @var eZUser $user */
     $user = eZUser::fetchByName( 'admin' );
     eZUser::setCurrentlyLoggedInUser( $user , $user->attribute( 'contentobject_id' ) );
 
-    ObjectHandlerServiceControlSensor::init( $options );
-
+    $installer->beforeInstall( $options );
+    $installer->install();
+    $installer->afterInstall();
 
     $script->shutdown();
 }

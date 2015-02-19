@@ -7,7 +7,7 @@
 {if $sensor.forum_is_enabled}
   {set $count = $count|inc()}
 {/if}
-{if $sensor.survey_is_enabled}
+{if and( $sensor.survey_is_enabled, count( $sensor.valid_surveys )|gt(0) )}
   {set $count = $count|inc()}
 {/if}
 {if $count|gt(0)}
@@ -27,7 +27,7 @@
       </div>
     {/if}
 
-    {if $sensor.survey_is_enabled}
+    {if and( $sensor.survey_is_enabled, count( $sensor.valid_surveys )|gt(0) )}
       <div class="col-sm-{$col} col-md-{$col}">
         {include uri='design:sensor/parts/survey/home_block.tpl'}
       </div>

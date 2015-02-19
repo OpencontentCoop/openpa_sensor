@@ -1,0 +1,1 @@
+{include uri='design:sensor/parts/survey/full.tpl'}

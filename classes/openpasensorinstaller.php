@@ -1,40 +1,135 @@
 <?php
 
-class OpenPASensorInstaller
+class OpenPASensorInstaller implements OpenPAInstaller
 {
-    public static function run( $options = array() )
+    protected $options = array();
+
+    protected $steps = array(
+        '[0] sensor stuff',
+        '[1] dimmi stuff',
+        '[2] survey stuff',
+        '[3] roles',
+        '[4] ini configurations',
+    );
+
+    protected $installOnlyStep;
+
+    public function setScriptOptions( eZScript $script )
     {
+        return $script->getOptions(
+            '[parent-node:][step:]',
+            '',
+            array(
+                'parent-node' => 'Parent node id for sensor tree (default is Apps root)',
+                'step' => 'Execute only selected step (steps are ' . implode( ', ', $this->steps ) . ')',
+            )
+        );
+    }
+
+    public function beforeInstall( $options = array() )
+    {
+        $this->options = $options;
+        if ( isset( $this->options['step'] ) )
+        {
+            if ( array_key_exists( $this->options['step'], $this->steps ) )
+                $this->installOnlyStep = $this->options['step'];
+            else
+                throw new Exception( "Step {$this->options['step']} not found, run script with -h for help" );
+        }
+    }
+
+    public function install()
+    {
+        OpenPALog::warning( "Controllo stati" );
         $states = self::installStates();
 
+        OpenPALog::warning( "Controllo sezioni" );
         $section = self::installSections();
 
         OpenPALog::warning( "Controllo classi" );
         self::installClasses();
 
         OpenPALog::warning( "Installazione Sensor root" );
-        if ( isset( $options['parent-node'] ) )
-            $parentNodeId = $options['parent-node'];
+        if ( isset( $this->options['parent-node'] ) )
+            $parentNodeId = $this->options['parent-node'];
         else
             $parentNodeId = OpenPAAppSectionHelper::instance()->rootNode()->attribute( 'node_id' );
         $root = self::installAppRoot( $parentNodeId, $section );
 
-        OpenPALog::warning( "Installazione Sensor segnalazioni" );
-        self::installSensorPostStuff( $root, $section, true );
+        if ( $this->installOnlyStep !== null )
+        {
+            OpenPALog::warning( "Install step " . $this->steps[$this->installOnlyStep] );
+        }
 
-        OpenPALog::warning( "Installazione Sensor dimmi" );
-        self::installSensorDimmiStuff( $root, $section, true );
+        if ( ( $this->installOnlyStep !== null && $this->installOnlyStep == 0 ) || $this->installOnlyStep === null )
+        {
+            OpenPALog::warning( "Installazione Sensor segnalazioni" );
+            self::installSensorPostStuff( $root, $section, $this->installOnlyStep === null );
+        }
 
-        OpenPALog::warning( "Installazione ruoli" );
-        self::installRoles( $section, $states );
+        if ( ( $this->installOnlyStep !== null && $this->installOnlyStep == 1 ) || $this->installOnlyStep === null )
+        {
+            OpenPALog::warning( "Installazione Sensor dimmi" );
+            self::installSensorDimmiStuff( $root, $section, $this->installOnlyStep === null );
+        }
 
-        OpenPALog::warning( 'Salvo configurazioni' );
-        self::installIniParams();
+        if ( ( $this->installOnlyStep !== null && $this->installOnlyStep == 2 ) || $this->installOnlyStep === null )
+        {
+            OpenPALog::warning( "Installazione Sensor consultazioni" );
+            self::installSensorSurveyStuff( $root, $section, $this->installOnlyStep === null );
+        }
+
+        if ( ( $this->installOnlyStep !== null && $this->installOnlyStep == 3 ) || $this->installOnlyStep === null )
+        {
+            OpenPALog::warning( "Installazione ruoli" );
+            self::installRoles( $section, $states );
+        }
+
+        if ( ( $this->installOnlyStep !== null && $this->installOnlyStep == 4 ) || $this->installOnlyStep === null )
+        {
+            OpenPALog::warning( 'Salvo configurazioni' );
+            self::installIniParams();
+        }
 
         eZCache::clearById( 'global_ini' );
         eZCache::clearById( 'template' );
-        
-        OpenPALog::error( "@todo Impostare i workflow di PostPublish e di PreDelete" );
 
+        OpenPALog::error( "@todo Impostare i workflow di PostPublish e di PreDelete" );
+    }
+
+    public function afterInstall()
+    {
+        return false;
+    }
+
+    protected static function installSensorSurveyStuff( eZContentObject $rootObject, eZSection $section, $installDemoContent = true )
+    {
+        OpenPALog::setOutputLevel( OpenPALog::ERROR );
+        $surveyInstaller = new OpenPASurveyInstaller();
+        $surveyInstaller->install();
+        OpenPALog::setOutputLevel( OpenPALog::ALL );
+
+        $containerObject = eZContentObject::fetchByRemoteID( ObjectHandlerServiceControlSensor::sensorRootRemoteId() . '_survey' );
+        if ( !$containerObject instanceof eZContentObject )
+        {
+            // Post container
+            OpenPALog::warning( "Install Consultazioni container" );
+            $params = array(
+                'parent_node_id' => $rootObject->attribute( 'main_node_id' ),
+                'section_id' => $section->attribute( 'id' ),
+                'remote_id' => ObjectHandlerServiceControlSensor::sensorRootRemoteId() . '_survey',
+                'class_identifier' => 'consultation_root',
+                'attributes' => array(
+                    'name' => 'Consultazioni'
+                )
+            );
+            /** @var eZContentObject $containerObject */
+            $containerObject = eZContentFunctions::createAndPublishObject( $params );
+            if( !$containerObject instanceof eZContentObject )
+            {
+                throw new Exception( 'Failed creating Consultazioni container' );
+            }
+        }
     }
 
     protected static function installSensorDimmiStuff( eZContentObject $rootObject, eZSection $section, $installDemoContent = true )
@@ -131,11 +226,14 @@ class OpenPASensorInstaller
             "sensor_category",
             "sensor_operator",
             "sensor_post",
+            "sensor_post_root",
             "dimmi_category",
             "dimmi_forum_reply",
             "dimmi_forum",
             "dimmi_root",
             "dimmi_forum_topic",
+            "consultation_root",
+            "consultation_survey"
         );
     }
     
@@ -180,7 +278,7 @@ class OpenPASensorInstaller
                 'parent_node_id' => $rootObject->attribute( 'main_node_id' ),
                 'section_id' => $section->attribute( 'id' ),
                 'remote_id' => ObjectHandlerServiceControlSensor::sensorRootRemoteId() . '_postcontainer',
-                'class_identifier' => 'folder',
+                'class_identifier' => 'sensor_post_root',
                 'attributes' => array(
                     'name' => 'Segnalazioni'
                 )
@@ -190,6 +288,22 @@ class OpenPASensorInstaller
             if( !$containerObject instanceof eZContentObject )
             {
                 throw new Exception( 'Failed creating Sensor container node' );
+            }
+        }
+        if ( $containerObject->attribute( 'class_identifier' ) == 'folder' )
+        {
+            $mapping = array(
+                "name" => "name",
+                "short_description" => "short_description",
+                "description" => "description",
+                "image" => ""
+            );
+
+            $conversionFunctions = new conversionFunctions();
+            $containerObject = $conversionFunctions->convertObject( $containerObject->attribute('id'), eZContentClass::classIDByIdentifier( 'sensor_post_root' ), $mapping );
+            if ( !$containerObject )
+            {
+                throw new Exception( "Errore nella conversione dell'oggetto contentitore" );
             }
         }
 
@@ -242,7 +356,8 @@ class OpenPASensorInstaller
                 'class_identifier' => 'sensor_area',
                 'attributes' => array(
                     'name' => eZINI::instance()->variable( 'SiteSettings', 'SiteName' ),
-                    'approver' => $operatorObject->attribute( 'id' )
+                    'approver' => $operatorObject->attribute( 'id' ),
+                    'geo' => '1|#46.0700915|#11.119762600000058|#'
                 )
             );
             /** @var eZContentObject $areaObject */
@@ -325,6 +440,10 @@ class OpenPASensorInstaller
                     'FunctionName' => '*'
                 ),
                 array(
+                    'ModuleName' => 'survey',
+                    'FunctionName' => '*'
+                ),
+                array(
                     'ModuleName' => 'content',
                     'FunctionName' => 'edit',
                     'Limitation' => array( 'Section' => $section->attribute( 'id' ) )
@@ -343,6 +462,7 @@ class OpenPASensorInstaller
                             eZContentClass::classIDByIdentifier( 'dimmi_forum' ),
                             eZContentClass::classIDByIdentifier( 'dimmi_forum_topic' ),
                             eZContentClass::classIDByIdentifier( 'dimmi_forum_reply' ),
+                            eZContentClass::classIDByIdentifier( 'consultation_survey' )
                         ),
                         'Section' => $section->attribute( 'id' )
                     )
@@ -381,7 +501,7 @@ class OpenPASensorInstaller
                     'FunctionName' => 'create',
                     'Limitation' => array(
                         'Class' => eZContentClass::classIDByIdentifier( 'sensor_post' ),
-                        'ParentClass' => eZContentClass::classIDByIdentifier( 'folder' ),
+                        'ParentClass' => eZContentClass::classIDByIdentifier( 'sensor_post_root' ),
                         'Section' => $section->attribute( 'id' )
                     )
                 ),
@@ -447,12 +567,15 @@ class OpenPASensorInstaller
                     'Limitation' => array(
                         'Class' => array(
                             eZContentClass::classIDByIdentifier( 'sensor_area' ),
+                            eZContentClass::classIDByIdentifier( 'sensor_post_root' ),
                             eZContentClass::classIDByIdentifier( 'folder' ),
                             eZContentClass::classIDByIdentifier( 'dimmi_category' ),
                             eZContentClass::classIDByIdentifier( 'dimmi_forum_reply' ),
                             eZContentClass::classIDByIdentifier( 'dimmi_forum_topic' ),
                             eZContentClass::classIDByIdentifier( 'dimmi_forum' ),
                             eZContentClass::classIDByIdentifier( 'dimmi_root' ),
+                            eZContentClass::classIDByIdentifier( 'consultation_survey' ),
+                            eZContentClass::classIDByIdentifier( 'consultation_root' )
                         ),
                         'Section' => $section->attribute( 'id' )
                     )
@@ -518,7 +641,7 @@ class OpenPASensorInstaller
         $path = "settings/siteaccess/{$backend}/";
         $iniFile = "contentstructuremenu.ini";
         $ini = new eZINI( $iniFile . '.append', $path, null, null, null, true, true );
-        $value = array_unique( array_merge( (array) $ini->variable( 'TreeMenu', 'ShowClasses' ), array( 'sensor_root', 'dimmi_root' ) ) );
+        $value = array_unique( array_merge( (array) $ini->variable( 'TreeMenu', 'ShowClasses' ), array( 'sensor_root', 'dimmi_root', 'sensor_post_root', 'consultation_root' ) ) );
         $ini->setVariable( 'TreeMenu', 'ShowClasses', $value );
         if ( !$ini->save() ) throw new Exception( "Non riesco a salvare contentstructuremenu.ini" );
         
@@ -527,6 +650,5 @@ class OpenPASensorInstaller
         OpenPALog::error( "@todo Aggiungere ActiveAccessExtensions[]=openpa_sensor in " . OpenPABase::getBackendSiteaccessName() . "/site.ini.append.php" );
         OpenPALog::error( "@todo Aggiungere RelatedSiteAccessList[]=" . OpenPABase::getCustomSiteaccessName( 'sensor' ) . " in " . OpenPABase::getBackendSiteaccessName() . "/site.ini.append.php" );
     }
-
 
 }

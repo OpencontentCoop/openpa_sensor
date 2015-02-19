@@ -2,7 +2,7 @@
 {def $sensor = sensor_root_handler()}
 {/if}
 {if $sensor.post_container_node|has_attribute( 'short_description' )}
-<div class="service_teaser vertical">  
+  <div class="service_teaser vertical wow animated flipInX animated">
   {if $sensor.post_container_node|has_attribute( 'image' )}
     <div class="service_photo">
       <figure style="background-image:url({$sensor.post_container_node|attribute( 'image' ).content.original.full_path|ezroot(no)})"></figure>
@@ -11,8 +11,8 @@
   <div class="service_details">
     <h2 class="section_header skincolored">
       {$sensor.post_container_node.data_map.name.content|wash()}
-      <small>{attribute_view_gui attribute=$sensor.post_container_node.data_map.short_description}</small>
     </h2>
+    {attribute_view_gui attribute=$sensor.post_container_node.data_map.short_description}
     {*<div id="sensorgraph" style="width: 100%; height: 500px; margin: 0 auto; padding: 10px;"></div>*}
     {if $current_user.is_logged_in|not()}
       <a href="#login" class="btn btn-primary btn-lg btn-block">{'Accedi'|i18n('openpa_sensor/menu')}</a>

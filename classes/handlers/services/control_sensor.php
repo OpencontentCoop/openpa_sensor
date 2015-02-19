@@ -46,6 +46,13 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase
     protected static $forums;
     protected static $forumCommentClass;
 
+    // sensor/survey
+    /**
+     * @var eZContentObjectTreeNode
+     */
+    protected static $surveyContainerNode;
+    protected static $surveys;
+
     function run()
     {
         // general
@@ -104,6 +111,12 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase
 
         // forum
         $this->data['forum_container_node'] = self::forumContainerNode();
+        $this->data['forums'] = self::forums();
+
+        // survey
+        $this->data['survey_container_node'] = self::surveyContainerNode();
+        $this->data['surveys'] = self::surveys();
+        $this->data['valid_surveys'] = self::validSurveys();
     }
 
     public static function PostIsEnable()
@@ -497,7 +510,10 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase
      */
     public static function init( $options = array() )
     {
-        OpenPASensorInstaller::run( $options );
+        $installer = new OpenPASensorInstaller();
+        $installer->beforeInstall( $options );
+        $installer->install();
+        $installer->afterInstall();
     }
 
     public static function sensorRootRemoteId()
@@ -546,6 +562,23 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase
             }
         }
         return self::$forumContainerNode;
+    }
+
+    public static function surveyContainerNode()
+    {
+        if ( self::$surveyContainerNode == null )
+        {
+            $root = eZContentObject::fetchByRemoteID( self::sensorRootRemoteId() . '_survey' );
+            if ( $root instanceof eZContentObject )
+            {
+                self::$surveyContainerNode = $root->attribute( 'main_node' );
+            }
+            else
+            {
+                self::$surveyContainerNode = self::rootNode();;
+            }
+        }
+        return self::$surveyContainerNode;
     }
 
     public static function postContainerNode()
@@ -648,6 +681,58 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase
             self::$postCategories = array( 'tree' => $data );
         }
         return self::$postCategories;
+    }
+
+    public static function surveys()
+    {
+        if ( self::$surveys == null )
+        {
+            $data = array();
+            $false = false;
+            $includeClasses = array( 'consultation_survey' );
+            /** @var eZContentObjectTreeNode[] $treeCategories */
+            $surveys = self::surveyContainerNode()->subTree( array(
+                'ClassFilterType' => 'include',
+                'Depth' => 1,
+                'DepthOperator' => 'eq',
+                'ClassFilterArray' => $includeClasses,
+                'Limitation' => array(),
+                'SortBy' => array( 'name', true )
+            ) );
+
+            foreach( $surveys as $survey )
+            {
+                /** @var eZContentObject $surveyObject */
+                $surveyObject = $survey->attribute( 'object' );
+                /** @var eZContentObjectAttribute[] $surveyAttributes */
+                $surveyAttributes = $surveyObject->fetchAttributesByIdentifier( array( 'survey' ) );
+                if ( count( $surveyAttributes ) )
+                {
+                    $surveyAttribute = array_shift( $surveyAttributes );
+                    $surveyAttributeContent = $surveyAttribute->content();
+                    self::$surveys[] = array(
+                        'node' => $survey,
+                        'object' => $surveyObject,
+                        'survey_attribute' => $surveyAttribute,
+                        'survey_content' => $surveyAttributeContent
+                    );
+                }
+            }
+        }
+        return self::$surveys;
+    }
+
+    public static function validSurveys()
+    {
+        $data = array();
+        foreach( self::surveys() as $item )
+        {
+            if ( $item['survey_content']['survey']->attribute( 'enabled' ) )
+            {
+                $data[] = $item;
+            }
+        }
+        return $data;
     }
 
     public static function forums()
