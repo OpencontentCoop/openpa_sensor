@@ -48,7 +48,7 @@
       {/if}
 
       {if $sensor.survey_is_enabled}
-        <li><a href="{'sensor/survey'|ezurl(no)}">{'Questionari'|i18n('openpa_sensor/menu')}</a></li>
+        <li><a href="{'sensor/survey'|ezurl(no)}">{'Consultazioni'|i18n('openpa_sensor/menu')}</a></li>
       {/if}
 
       <li>
@@ -68,7 +68,7 @@
         <li><a href="{'sensor/dimmi'|ezurl(no)}">{'Discussioni'|i18n('openpa_sensor/menu')}</a></li>
       {/if}
       {if $sensor.survey_is_enabled}
-        <li><a href="{'sensor/survey'|ezurl(no)}">{'Questionari'|i18n('openpa_sensor/menu')}</a></li>
+        <li><a href="{'sensor/survey'|ezurl(no)}">{'Consultazioni'|i18n('openpa_sensor/menu')}</a></li>
       {/if}
 
       <li><a href="{'sensor/dashboard'|ezurl(no)}">{'Le mie attività'|i18n('openpa_sensor/menu')}</a></li>

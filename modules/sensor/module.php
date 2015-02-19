@@ -78,6 +78,18 @@ $ViewList['dimmi'] = array(
     'functions' => array( 'use' )
 );
 
+$ViewList['survey'] = array(
+    'script' =>	'survey.php',
+    'params' => array( 'NodeID' ),
+    'functions' => array( 'use' )
+);
+
+$ViewList['survey_user_result'] = array(
+    'script' =>	'survey_user_result.php',
+    'params' => array( 'ContentObjectID', 'SurveyResultID' ),
+    'functions' => array( 'use' )
+);
+
 $FunctionList = array();
 $FunctionList['use'] = array();
 $FunctionList['debug'] = array();

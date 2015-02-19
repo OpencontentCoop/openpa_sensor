@@ -60,6 +60,9 @@ $tpl->setVariable( 'limit', $limit );
 $viewParameters = array( 'offset' => $offset );
 $tpl->setVariable( 'view_parameters', $viewParameters );
 
+$access = $currentUser->hasAccessTo( 'sensor', 'manage' );
+$tpl->setVariable( 'simplified_dashboard', $access['accessWord'] == 'no' );
+
 if ( $currentUser->isAnonymous() )
 {
     $module->redirectTo( 'sensor/home' );

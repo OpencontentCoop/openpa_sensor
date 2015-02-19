@@ -1,4 +1,4 @@
-<div class="service_teaser vertical">
+<div class="service_teaser vertical wow animated flipInX animated">
   {if $topic|has_attribute( 'image' )}
     <div class="service_photo">
       <figure style="background-image:url({$topic|attribute( 'image' ).content.original.full_path|ezroot(no)})"></figure>
