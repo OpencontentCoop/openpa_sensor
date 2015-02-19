@@ -2,8 +2,8 @@
     {def $sensor = sensor_root_handler()}
 {/if}
 
-{if is_set($sensor)|not()}
-    {def $sensor = sensor_root_handler()}
+{if is_set($current_user)|not()}
+    {def $current_user = fetch( 'user', 'current_user' )}
 {/if}
 
 <section class="hgroup">
