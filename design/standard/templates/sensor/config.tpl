@@ -74,6 +74,7 @@ $(document).ready(function(){
           {include name=cattree uri='design:sensor/parts/walk_item_table.tpl' item=$category recursion=0 redirect_if_discarded='/sensor/config/categories' redirect_after_publish='/sensor/config/categories' redirect_if_cancel='/sensor/config/categories' redirect_after_remove='/sensor/config/categories'}		
           {/foreach}
         </table>
+		<div class="pull-left"><a class="btn btn-info" href="{concat('exportas/csv/sensor_category/',$categories[0].node.parent_node_id)|ezurl(no)}">{'Esporta in CSV'|i18n('openpa_sensor/config')}</a></div>
         <div class="pull-right"><a class="btn btn-danger" href="{concat('openpa/add/sensor_category/?parent=',$categories[0].node.parent_node_id)|ezurl(no)}"><i class="fa fa-plus"></i> {'Aggiungi'|i18n('openpa_sensor/config')} {$categories[0].node.class_name}</a></div>
         {/if}
       </div>
@@ -127,6 +128,7 @@ $(document).ready(function(){
           {undef $userSetting}
           {/foreach}          
         </table>
+		<div class="pull-left"><a class="btn btn-info" href="{concat('exportas/csv/sensor_operator/',$operators[0].parent_node_id)|ezurl(no)}">{'Esporta in CSV'|i18n('openpa_sensor/config')}</a></div>
         <div class="pull-right"><a class="btn btn-danger" href="{concat('openpa/add/sensor_operator/?parent=',$operators[0].parent_node_id)|ezurl(no)}"><i class="fa fa-plus"></i> {'Aggiungi'|i18n('openpa_sensor/config')} {$operators[0].class_name}</a></div>
       </div>
       {/if}
@@ -168,6 +170,8 @@ $(document).ready(function(){
           {/foreach}
           
         </table>
+		
+		<div class="pull-left"><a class="btn btn-info" href="{concat('exportas/csv/user/',ezini("UserSettings", "DefaultUserPlacement"))|ezurl(no)}">{'Esporta in CSV'|i18n('openpa_sensor/config')}</a></div>
         
         {include name=navigator
                      uri='design:navigator/google.tpl'
@@ -191,6 +195,7 @@ $(document).ready(function(){
           {include name=areatree uri='design:sensor/parts/walk_item_table.tpl' item=$area recursion=0 redirect_if_discarded='/sensor/config/areas' redirect_after_publish='/sensor/config/areas' redirect_if_cancel='/sensor/config/areas' redirect_after_remove='/sensor/config/areas'}
           {/foreach}
         </table>
+		<div class="pull-left"><a class="btn btn-info" href="{concat('exportas/csv/sensor_area/',$areas[0].node.parent_node_id)|ezurl(no)}">{'Esporta in CSV'|i18n('openpa_sensor/config')}</a></div>
         <div class="pull-right"><a class="btn btn-danger" href="{concat('openpa/add/sensor_area/?parent=',$areas[0].node.parent_node_id)|ezurl(no)}"><i class="fa fa-plus"></i> {'Aggiungi'|i18n('openpa_sensor/config')} {$areas[0].node.class_name}</a></div>
       </div>
       {/if}
@@ -207,6 +212,7 @@ $(document).ready(function(){
               {include name=forumtree uri='design:sensor/parts/walk_item_table.tpl' item=$forum recursion=0 insert_child_class=true() redirect_if_discarded='/sensor/config/dimmi' redirect_after_publish='/sensor/config/dimmi'  redirect_if_cancel='/sensor/config/dimmi' redirect_after_remove='/sensor/config/dimmi'}
             {/foreach}
           </table>
+		  <div class="pull-left"><a class="btn btn-info" href="{concat('exportas/csv/dimmi_forum/',$forums[0].node.parent_node_id)|ezurl(no)}">{'Esporta in CSV'|i18n('openpa_sensor/config')}</a></div>
           <div class="pull-right"><a class="btn btn-danger" href="{concat('openpa/add/dimmi_forum/?parent=',$forums[0].node.parent_node_id)|ezurl(no)}"><i class="fa fa-plus"></i> {'Aggiungi discussione'|i18n('openpa_sensor/config')}</a></div>
         </div>
       {/if}
@@ -254,6 +260,7 @@ $(document).ready(function(){
               </tr>
             {/foreach}
           </table>
+		  <div class="pull-left"><a class="btn btn-info" href="{concat('exportas/csv/consultation_survey/',$sensor.survey_container_node.node_id)|ezurl(no)}">{'Esporta in CSV'|i18n('openpa_sensor/config')}</a></div>
           <div class="pull-right"><a class="btn btn-danger" href="{concat('openpa/add/consultation_survey/?parent=',$sensor.survey_container_node.node_id)|ezurl(no)}"><i class="fa fa-plus"></i> {'Aggiungi consultazione'|i18n('openpa_sensor/config')}</a></div>
         </div>
       {/if}
@@ -288,6 +295,7 @@ $(document).ready(function(){
               </tr>
               {/foreach}
             </table>
+			<div class="pull-left"><a class="btn btn-info" href="{concat('exportas/csv/', $item.children[0].class_identifier, '/',$item.node_id)|ezurl(no)}">{'Esporta in CSV'|i18n('openpa_sensor/config')}</a></div>
             <div class="pull-right"><a class="btn btn-danger"<a href="{concat('openpa/add/', $item.children[0].class_identifier, '/?parent=',$item.node_id)|ezurl(no)}"><i class="fa fa-plus"></i> {'Aggiungi %classname'|i18n('openpa_sensor/config',, hash( '%classname', $item.children[0].class_name ))}</a></div>
             {/if}
           </div>
