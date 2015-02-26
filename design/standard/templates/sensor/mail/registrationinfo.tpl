@@ -29,7 +29,7 @@
                 <tr>
                     <td align='center' bgcolor='#f90f00' valign='top'>
                         <h3>                          
-                          <a href="http://{$sensor.sensor_url}/user/activate/{$hash}/{$user.contentobject.main_node_id}" style="color: #ffffff !important">
+                          <a href="http://{$sensor.sensor_url}/sensor/activate/{$hash}/{$user.contentobject.main_node_id}" style="color: #ffffff !important">
                             {'Click the following URL to confirm your account'|i18n('design/standard/user/register')}
                           </a>
                         </h3>

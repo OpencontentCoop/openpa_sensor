@@ -25,6 +25,13 @@ $ViewList['signup'] = array(
     'functions' => array( 'use' )
 );
 
+$ViewList['activate'] = array(
+    'script' =>	'activate.php',
+    'ui_context' => 'authentication',
+    'params' => array( 'Hash', 'MainNodeID' ),
+    'functions' => array( 'use' )
+);
+
 $ViewList['add'] = array(
     'script' =>	'add.php',
     'params' => array(),
