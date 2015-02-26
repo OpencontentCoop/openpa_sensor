@@ -26,10 +26,11 @@
                         </p>
                     </td>
                 </tr>
+                    http://{$hostname}{concat( 'user/activate/', $hash, '/', $object.main_node_id )|ezurl(no)}
                 {if $sensor.post_is_enabled}
                 <tr>
                     <td align='center' bgcolor='#f90f00' valign='top'>
-                        <h3><a href="http://{$sensor.sensor_url}/sensor/add" style="color: #ffffff !important">{'Invia la tua prima segnalazione'|i18n('openpa_sensor/mail/registration')}</a></h3>
+                        <h3><a href="http://{$sensor.sensor_url}/user/activate/{$hash}/{$user.contentobject.main_node_id}" style="color: #ffffff !important">{'Verifica il tuo indirizzo email'|i18n('openpa_sensor/mail/registration')}</a></h3>
                     </td>
                 </tr>
                 {/if}
