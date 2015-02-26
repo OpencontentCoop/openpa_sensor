@@ -13,8 +13,8 @@ $currentUser = eZUser::currentUser();
 $invalidForm = false;
 $errors = array();
 $showCaptcha = false;
-$name = $email = $password = false;
-
+$name = $email = $password = $needCheckMail = false;
+ 
 $tpl->setVariable( 'name', $name );
 $tpl->setVariable( 'email', $email );
 
@@ -140,7 +140,7 @@ if ( $http->hasPostVariable( 'RegisterButton' ) )
 
                     $user->setInformation( $objectID, $login, $email, $password, $password );
                     $handler->attribute( 'user_account' )->attribute( 'contentobject_attribute' )->setContent( $user );
-                    $handler->attribute( 'user_account' )->attribute( 'contentobject_attribute' )->store();
+                    $handler->attribute( 'user_account' )->attribute( 'contentobject_attribute' )->store();                    
                 }
                 else
                 {
@@ -152,7 +152,7 @@ if ( $http->hasPostVariable( 'RegisterButton' ) )
                     );
                 }
             }
-
+            eZUserOperationCollection::setSettings( $objectID, 0, 0 );
             $http->setSessionVariable( "RegisterUserID", $objectID );
         }
         $db->commit();
@@ -193,6 +193,7 @@ elseif ( $http->hasPostVariable( 'CaptchaButton' ) && $http->hasSessionVariable(
         if ( $object instanceof eZContentObject )
         {
             $operationResult = eZOperationHandler::execute( 'content', 'publish', array( 'object_id' => $object->attribute( 'id' ), 'version' => 1 ) );
+            eZUserOperationCollection::setSettings( $objectID, 0, 0 );
             if ( ( array_key_exists( 'status', $operationResult ) && $operationResult['status'] != eZModuleOperationInfo::STATUS_CONTINUE ) )
             {
                 eZDebug::writeDebug( $operationResult, __FILE__ );
@@ -254,8 +255,19 @@ elseif ( $http->hasPostVariable( 'CaptchaButton' ) && $http->hasSessionVariable(
                 if ( $user === null )
                     return $Module->handleError( eZError::KERNEL_NOT_FOUND, 'kernel' );
 
-                $user->loginCurrent();
+                $userSetting = eZUserSetting::fetch( $object->attribute( 'id' ) );
+                if ( $userSetting instanceof eZUserSetting && $user instanceof eZUser )
+                {
+                    $hash = md5( mt_rand() . time() . $user->id() );
+                    $accountKey = eZUserAccountKey::createNew( $user->id(), $hash, time() );
+                    $accountKey->store();
+                }
+                else
+                {
+                    throw new Exception( "UserSettings not found for user #" . $user->id() );
+                }
 
+                $tpl->setVariable( 'hash', $hash );
                 $tpl->setVariable( 'user', $user );
                 $body = $tpl->fetch( 'design:sensor/mail/registrationinfo.tpl' );
                 
@@ -286,7 +298,7 @@ elseif ( $http->hasPostVariable( 'CaptchaButton' ) && $http->hasSessionVariable(
                 $rule = eZCollaborationNotificationRule::create( OpenPASensorCollaborationHandler::TYPE_STRING, $user->id() );
                 $rule->store();
 
-                $Module->redirectTo( '/sensor/home' );
+                $needCheckMail = true;
             }
         }
     }
@@ -296,6 +308,7 @@ else
     $Module->redirectTo( '/sensor/home' );
 }
 
+$tpl->setVariable( 'check_mail', $needCheckMail );
 $tpl->setVariable( 'sensor_signup', true );
 $tpl->setVariable( 'show_captcha', $showCaptcha );
 $tpl->setVariable( 'invalid_form', $invalidForm );
