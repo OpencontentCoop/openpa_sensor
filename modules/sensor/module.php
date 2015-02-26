@@ -22,7 +22,7 @@ $ViewList['posts'] = array(
 $ViewList['signup'] = array(
     'script' =>	'signup.php',
     'params' => array(),
-    'functions' => array( 'use' )
+    'functions' => array( 'smart_login' )
 );
 
 $ViewList['add'] = array(
