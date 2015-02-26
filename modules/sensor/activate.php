@@ -1,5 +1,5 @@
 <?php
-
+/** @var eZModule $Module */
 $Module = $Params['Module'];
 $http = eZHTTPTool::instance();
 
@@ -18,6 +18,7 @@ else if ( $http->hasPostVariable( 'HashSaltAppend' ) )
 $accountActivated = false;
 $alreadyActive = false;
 $isPending = false;
+/** @var eZUserAccountKey $accountKey */
 $accountKey = $hash ? eZUserAccountKey::fetchByKey( $hash ) : false;
 
 if ( $accountKey )
@@ -45,7 +46,7 @@ if ( $accountKey )
     }
     else
     {
-        // Log in user
+        /** @var eZUser $user */
         $user = eZUser::fetch( $userID );
 
         if ( $user === null )
@@ -68,7 +69,12 @@ elseif( $mainNodeID )
     }
 }
 
-// Template handling
+
+if ( $alreadyActive )
+{
+    $Module->redirectTo( 'sensor/home' );
+    return;
+}
 
 $tpl = eZTemplate::factory();
 
