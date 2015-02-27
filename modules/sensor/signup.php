@@ -31,12 +31,12 @@ if ( $http->hasPostVariable( 'RegisterButton' ) )
         $name = false;
         if ( $http->hasPostVariable( 'Name' ) )
         {
-            $name = $http->postVariable( 'Name' );
+            $name = trim( $http->postVariable( 'Name' ) );
         }
         $email = false;
         if ( $http->hasPostVariable( 'EmailAddress' ) )
         {
-            $email = $http->postVariable( 'EmailAddress' );
+            $email = trim( $http->postVariable( 'EmailAddress' ) );
             if ( !eZMail::validate( $email ) )
             {
                 $invalidForm = true;
