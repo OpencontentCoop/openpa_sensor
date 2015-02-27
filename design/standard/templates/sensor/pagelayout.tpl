@@ -24,9 +24,7 @@
                     <span class="nb_right pull-right">Menu</span>
                 </a>
             </div>
-{/cache-block}
-            
-{cache-block ignore_content_expiry keys=$current_user.contentobject_id}
+
     {include uri='design:sensor/parts/menu.tpl'}
 {/cache-block}
             
@@ -59,9 +57,7 @@
         {$module_result.content}
 
         {if and( $current_user.is_logged_in|not(), is_set( $sensor_signup )|not )}
-{cache-block ignore_content_expiry}            
           {include uri='design:sensor/parts/login.tpl'}
-{/cache-block}            
         {/if}
 
     </div>
