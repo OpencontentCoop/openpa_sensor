@@ -3,7 +3,7 @@
 
 <script type="text/javascript">
   {if and( $edit_version|gt(1), $object.data_map.geo.has_content )}
-	var PointsOfInterest = [{rdelim}"id":"{$object.id}","coords":["{$object.data_map.geo.content.latitude|explode(',')|implode('.')}","{$object.data_map.geo.content.longitude|explode(',')|implode('.')}"]{ldelim}];
+	var PointsOfInterest = [{ldelim}"id":"{$object.id}","coords":["{$object.data_map.geo.content.latitude|explode(',')|implode('.')}","{$object.data_map.geo.content.longitude|explode(',')|implode('.')}"]{rdelim}];
   {else}
     var PointsOfInterest = {$sensor.areas.coords_json};
   {/if}
