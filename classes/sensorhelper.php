@@ -689,6 +689,36 @@ class SensorHelper
         $this->setStatus( self::STATUS_CLOSED );
     }
 
+    public function forceAssignTo( $userId )
+    {
+        $list = $this->participantIds();
+        $listByOwner = $this->participantIds( eZCollaborationItemParticipantLink::ROLE_OWNER );
+        foreach ( $listByOwner as $id )
+        {
+            if ( $id == $userId )
+            {
+                $this->changeParticipantRole(
+                    $id,
+                    eZCollaborationItemParticipantLink::ROLE_OBSERVER
+                );
+            }
+        }
+        if ( !in_array( $userId, $list ) )
+        {
+            $this->addParticipant(
+                $userId,
+                eZCollaborationItemParticipantLink::ROLE_OWNER
+            );
+        }
+        else
+        {
+            $this->changeParticipantRole(
+                $userId,
+                eZCollaborationItemParticipantLink::ROLE_OWNER
+            );
+        }
+    }
+
     public function assignTo( array $userIds, $message = null )
     {
         if ( !empty( $userIds ) )
