@@ -65,6 +65,9 @@
 		  {/if}
 	  </ul>
 	  <a href={concat('sensor/posts/',$node.object.id)|ezurl()} class="btn btn-info btn-sm">{"Dettagli"|i18n('openpa_sensor/dashboard')}</a>
+	  {if $node.object.can_edit}
+		<a class="btn btn-warning btn-sm" href="{concat('sensor/edit/',$node.object.id)|ezurl(no)}"><i class="fa fa-edit"></i></a>
+	  {/if}
 	  {if $node.object.can_remove}
 	  <form method="post" action={"content/action"|ezurl} style="display: inline">        
 		  <input type="hidden" name="ContentObjectID" value="{$node.object.id}" />                        
@@ -74,6 +77,7 @@
 		  <button type="submit" class="btn btn-danger btn-sm" name="ActionRemove"><i class="fa fa-trash"></i></button>
 	  </form>
 	  {/if}
+
   </div>
 </div>
 {undef $post}

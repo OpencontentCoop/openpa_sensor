@@ -38,6 +38,12 @@ $ViewList['add'] = array(
     'functions' => array( 'use' )
 );
 
+$ViewList['edit'] = array(
+    'script' =>	'edit.php',
+    'params' => array( 'ID' ),
+    'functions' => array( 'use' )
+);
+
 $ViewList['comment'] = array(
     'script' =>	'comment.php',
     'params' => array( 'ForumID', 'ForumReplyID' ),
