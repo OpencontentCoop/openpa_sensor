@@ -9,7 +9,7 @@ $script = eZScript::instance( array( 'description' => ( "OpenPA Sensor Force Own
 $script->startup();
 
 $options = $script->getOptions(
-    '[id:][owner_id:]',
+    '[id:][user_id:]',
     '',
     array(
         'id' => 'Object id',
@@ -25,9 +25,6 @@ OpenPALog::setOutputLevel( OpenPALog::ALL );
 
 try
 {
-    $user = eZUser::fetchByName( 'admin' );
-    eZUser::setCurrentlyLoggedInUser( $user , $user->attribute( 'contentobject_id' ) );
-
     if ( isset( $options['id'] ) )
     {
         $helper = SensorHelper::instanceFromContentObjectId( $options['id'] );
