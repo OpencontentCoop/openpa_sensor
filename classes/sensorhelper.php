@@ -75,6 +75,7 @@ class SensorHelper
             'collaboration_item',
             'can_do_something',
             'current_status',
+            'current_owner',
             'can_respond',
             'can_comment',
             'can_assign',
@@ -91,6 +92,8 @@ class SensorHelper
             'owner_name',
             'sensor',
             'object',
+            'public_message_count',
+            'response_message_count',
             'human_unread_message_count',
             'human_message_count',
             'human_messages',
@@ -113,7 +116,7 @@ class SensorHelper
             case 'collaboration_item':
                 return $this->collaborationItem;
                 break;
-            
+
             case 'current_status':
                 return $this->collaborationItem->attribute( self::ITEM_STATUS );
                 break;
@@ -200,6 +203,21 @@ class SensorHelper
                 //}
                 return null;
                 break;
+
+            case 'current_owner':
+                $objectId = $this->attribute( 'owner_id' );
+                if ( $objectId !== null )
+                {
+                    $object = eZContentObject::fetch( $objectId );
+                    if ( $object instanceof eZContentObject )
+                    {
+                        $tpl = eZTemplate::factory();
+                        $tpl->setVariable( 'sensor_person', $object );
+                        return $tpl->fetch( 'design:content/view/sensor_person.tpl' );
+                    }
+                }
+                return false;
+                break;
             
             case 'owner_name':
                 $id = $this->attribute( 'owner_id' );                
@@ -222,18 +240,33 @@ class SensorHelper
                 {
                     return $this->getContentObject();
                 } break;
-                
+
             case 'human_message_count':
+                break;
+
+            case 'public_message_count':
                 {
                     return eZCollaborationItemMessageLink::fetchItemCount(
                         array(
                             'item_id' => $this->collaborationItem->attribute( 'id' ),
                             'conditions' => array(
-                                'message_type' => array( array( SensorHelper::MESSAGE_TYPE_PUBLIC, SensorHelper::MESSAGE_TYPE_RESPONSE, eZUser::currentUserID() ) )
+                                'message_type' => SensorHelper::MESSAGE_TYPE_PUBLIC
                             )
                         )
                     );
                 } break;
+
+            case 'response_message_count':
+            {
+                return eZCollaborationItemMessageLink::fetchItemCount(
+                    array(
+                        'item_id' => $this->collaborationItem->attribute( 'id' ),
+                        'conditions' => array(
+                            'message_type' => SensorHelper::MESSAGE_TYPE_RESPONSE
+                        )
+                    )
+                );
+            } break;
             
             case 'human_messages':
             {
