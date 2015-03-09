@@ -64,7 +64,7 @@
 		  {if $post.comment_count|gt(0)}<li><small><i class="fa fa-comments"></i> {$post.comment_count} {'commenti'|i18n('openpa_sensor/post')}</small></li>{/if}
 		  {if $post.response_count|gt(0)}<li><small><i class="fa fa-comment"></i> {$post.response_count} {'risposte ufficiali'|i18n('openpa_sensor/post')}</small></li>{/if}
 		  {if $node.data_map.category.has_content}
-			<li><small><i class="fa fa-tags"></i> {attribute_view_gui attribute=$node.data_map.category}</small></li>
+			<li><small><i class="fa fa-tags"></i> {attribute_view_gui attribute=$node.data_map.category href=no-link}</small></li>
 		  {/if}
 	  </ul>
 	  <a href={concat('sensor/posts/',$node.object.id)|ezurl()} class="btn btn-info btn-sm">{"Dettagli"|i18n('openpa_sensor/dashboard')}</a>

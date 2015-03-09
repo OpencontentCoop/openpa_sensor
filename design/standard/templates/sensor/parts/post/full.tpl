@@ -59,7 +59,7 @@
             <li><small><i class="fa fa-comments"></i> {$post.comment_count} {'commenti'|i18n('openpa_sensor/post')}</small></li>
             <li><small><i class="fa fa-comment"></i> {$post.response_count} {'risposte ufficiali'|i18n('openpa_sensor/post')}</small></li>
             {if $object|has_attribute( 'category' )}
-              <li><small><i class="fa fa-tags"></i> {attribute_view_gui attribute=$object.data_map.category}</small></li>
+              <li><small><i class="fa fa-tags"></i> {attribute_view_gui attribute=$object.data_map.category href=no-link}</small></li>
             {/if}
           </ul>              
         </div>        
