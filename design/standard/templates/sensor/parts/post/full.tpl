@@ -22,6 +22,9 @@
             <span class="label
             label-{$post.current_privacy_status.css_class}">{$post.current_privacy_status.name}</span>
           {/if}
+          {if $post.current_moderation_status.identifier|eq('waiting')}
+            <span class="label label-{$post.current_moderation_status.css_class}">{$post.current_moderation_status.name}</span>
+          {/if}
         </li>
       </ul>
   </section>
@@ -220,6 +223,16 @@
 			<input class="btn btn-danger btn-lg btn-block" type="submit" name="CollaborationAction_MakePrivate" value="{'Rendi la segnalazione privata'|i18n('openpa_sensor/post')}" />
 		  </div>
 		{/if}
+
+        {if and( $post.current_moderation_status.identifier|ne('waiting'), $helper.can_moderate )}
+          <div class="form-group">
+            <select name="Collaboration_OpenPASensorItemModerationIdentifier" class="form-control">
+              <option value="approved">{'Approva'|i18n('openpa_sensor/post')}</option>
+              <option value="refused">{'Rifiuta'|i18n('openpa_sensor/post')}</option>
+            </select>
+            <input class="btn btn-danger btn-lg btn-block" type="submit" name="CollaborationAction_Moderate" value="{'Modera segnalazione'|i18n('openpa_sensor/post')}" />
+          </div>
+        {/if}
     
       </aside>
       {/if}

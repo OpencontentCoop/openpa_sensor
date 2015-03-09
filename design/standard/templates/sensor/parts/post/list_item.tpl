@@ -18,6 +18,9 @@
 		{if $post.current_privacy_status.identifier|eq('private')}
 		  <span class="label label-{$post.current_privacy_status.css_class}">{$post.current_privacy_status.name}</span>
 		{/if}
+		{if $post.current_moderation_status.identifier|eq('waiting')}
+		  <span class="label label-{$post.current_moderation_status.css_class}">{$post.current_moderation_status.name}</span>
+		{/if}
 		</li>
 	  </ul>
 	</section>

@@ -86,6 +86,7 @@ class SensorHelper
             'can_add_category',
             'can_add_area',
             'can_change_privacy',
+            'can_moderate',
             'participants',
             'has_owner',
             'owner_id',
@@ -152,6 +153,10 @@ class SensorHelper
 
             case 'can_change_privacy':
                 return $this->canChangePrivacy();
+                break;
+
+            case 'can_moderate':
+                return $this->canModerate();
                 break;
             
             case 'can_close':
@@ -663,9 +668,27 @@ class SensorHelper
         return $this->userIsA( eZCollaborationItemParticipantLink::ROLE_OWNER ) && $this->is( self::STATUS_ASSIGNED );
     }
 
+    public function canModerate()
+    {
+        return $this->userIsA( eZCollaborationItemParticipantLink::ROLE_APPROVER );
+    }
+
     public function canChangePrivacy()
     {
         return $this->userIsA( eZCollaborationItemParticipantLink::ROLE_APPROVER );
+    }
+
+    public function moderate( $identifier )
+    {
+        $object = $this->getContentObject();
+        if ( $object instanceof eZContentObject )
+        {
+            OpenPABase::sudo(
+                function() use( $object, $identifier ){
+                    ObjectHandlerServiceControlSensor::setState( $object, 'moderation', $identifier );
+                }
+            );
+        }
     }
     
     public function makePrivate()
@@ -679,7 +702,6 @@ class SensorHelper
                 }
             );  
         }
-        
     }
     
     public function canClose()

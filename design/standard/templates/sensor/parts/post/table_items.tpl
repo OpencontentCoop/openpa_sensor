@@ -28,9 +28,12 @@
 		<li><strong>{$item.content.helper.object.id}</strong></li>
 	  {/if}
 	  <li>
-      {if $post.current_privacy_status.identifier|eq('private')}
-        <span class="label label-{$post.current_privacy_status.css_class}">{$post.current_privacy_status.name}</span>
-      {/if}      
+        {if $post.current_privacy_status.identifier|eq('private')}
+          <span class="label label-{$post.current_privacy_status.css_class}">{$post.current_privacy_status.name}</span>
+        {/if}
+        {if $post.current_moderation_status.identifier|eq('waiting')}
+          <span class="label label-{$post.current_moderation_status.css_class}">{$post.current_moderation_status.name}</span>
+        {/if}
         <span class="label label-{$post.type.css_class}">{$post.type.name}</span>
         <span class="label label-{$post.current_status.css_class}">{$post.current_status.name}</span>
       </li>

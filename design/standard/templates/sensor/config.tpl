@@ -12,6 +12,14 @@ $(document).ready(function(){
   <h1>{'Settings'|i18n('openpa_sensor/menu')}</h1>    
 </section>
 
+{if $sensor.moderation_is_enabled}
+  <div class="alert alert-warning">
+    {'Moderazione attivata dalle ore %moderation_from alle ore %moderation_to'|i18n('openpa_sensor/config', '',
+                                        hash( '%moderation_from', concat( $sensor.moderation_from.hour, ':', $sensor.moderation_from.minute),
+                                              '%moderation_to', concat( $sensor.moderation_to.hour, ':', $sensor.moderation_to.minute) ))}
+  </div>
+{/if}
+
 <div class="row">
   <div class="col-md-12">
 	{*
