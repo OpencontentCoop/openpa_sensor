@@ -13,6 +13,7 @@
 
 $module = $Params['Module'];
 $tpl = eZTemplate::factory();
+$http = eZHTTPTool::instance();
 $part = !is_string( $Params['Part'] ) ? false : $Params['Part'];
 $offset = !is_numeric( $Params['Offset'] ) ? 0 : $Params['Offset'];
 $groupId = !is_numeric( $Params['Group'] ) ? false : $Params['Group'];
@@ -90,20 +91,21 @@ else
             $access = $currentUser->hasAccessTo( 'sensor', 'manage' );
             if ( $access['accessWord'] == 'no' )
             {
-                $items = SensorHelper::fetchAllItems( $group, $limit, $offset );
-                $itemsCount = SensorHelper::fetchAllItemsCount( $group );
+                $items = SensorHelper::fetchAllItems( array(), $group, $limit, $offset );
+                $itemsCount = SensorHelper::fetchAllItemsCount( array(), $group );
                 $tpl->setVariable( 'simplified_dashboard', true );
                 $tpl->setVariable( 'all_items', $items );
                 $tpl->setVariable( 'all_items_count', $itemsCount );
             }
             else
             {
+                $filters = $http->hasGetVariable( 'filters' ) ? $http->getVariable( 'filters' ) : array();
                 $currentList = false;
                 foreach( $listTypes as $key => $type )
                 {
                     if ( $type['identifier'] == 'unread' )
                     {
-                        $count = SensorHelper::fetchUnreadItemsCount( $group );
+                        $count = SensorHelper::fetchUnreadItemsCount( $filters, $group );
                         $listTypes[$key]['count'] = $count;
                         if ( $selectedList == 'unread' || ( !$selectedList && $count > 0 && $currentList == false ) )
                         {
@@ -112,7 +114,7 @@ else
                     }
                     elseif ( $type['identifier'] == 'active' )
                     {
-                        $count = SensorHelper::fetchActiveItemsCount( $group );
+                        $count = SensorHelper::fetchActiveItemsCount( $filters, $group );
                         $listTypes[$key]['count'] = $count;
                         if ( $selectedList == 'active' || ( !$selectedList && $count > 0 && $currentList == false  ) )
                         {
@@ -121,7 +123,7 @@ else
                     }
                     elseif ( $type['identifier'] == 'unactive' )
                     {
-                        $count = SensorHelper::fetchUnactiveItemsCount( $group );
+                        $count = SensorHelper::fetchUnactiveItemsCount( $filters, $group );
                         $listTypes[$key]['count'] = $count;
                         if ( $selectedList == 'unactive' || ( !$selectedList && $count > 0 && $currentList == false  ) )
                         {
@@ -137,17 +139,17 @@ else
 
                 if ( $currentList['identifier'] == 'unread' )
                 {
-                    $unreadItems = SensorHelper::fetchUnreadItems( $group, $limit, $offset );
+                    $unreadItems = SensorHelper::fetchUnreadItems( $filters, $group, $limit, $offset );
                     $tpl->setVariable( 'items', $unreadItems );
                 }
                 elseif ( $currentList['identifier'] == 'active' )
                 {
-                    $activeItems = SensorHelper::fetchActiveItems( $group, $limit, $offset );
+                    $activeItems = SensorHelper::fetchActiveItems( $filters, $group, $limit, $offset );
                     $tpl->setVariable( 'items', $activeItems );
                 }
                 elseif ( $currentList['identifier'] == 'unactive' )
                 {
-                    $unactiveItems = SensorHelper::fetchUnactiveItems( $group, $limit, $offset );
+                    $unactiveItems = SensorHelper::fetchUnactiveItems( $filters, $group, $limit, $offset );
                     $tpl->setVariable( 'items', $unactiveItems );
                 }
 
