@@ -54,7 +54,7 @@ ezscript_require(array('ezjsc::jquery', 'plugins/chosen.jquery.js'))}
                                 {foreach $items as $item}
                                     {if $name|eq('Stato')}
                                         {def $state = $item.name|objectstate_by_id()}
-                                        {if array( 'sensor', 'privacy' )|contains( $state.group.identifier )}
+                                        {if array( 'sensor', 'privacy', 'moderation' )|contains( $state.group.identifier )}
                                             <option {if $item.active}selected="selected"{/if} value="{$item.query|wash()}">
                                                 {$state.group.current_translation.name|wash()}/{$state.current_translation.name|wash()}
                                                 {if $item.count|gt(0)}({$item.count}){/if}

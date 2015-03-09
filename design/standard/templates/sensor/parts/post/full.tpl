@@ -224,13 +224,15 @@
 		  </div>
 		{/if}
 
-        {if and( $post.current_moderation_status.identifier|ne('waiting'), $helper.can_moderate )}
+        {if and( $post.current_moderation_status.identifier|eq('waiting'), $helper.can_moderate )}
           <div class="form-group">
+            {*
             <select name="Collaboration_OpenPASensorItemModerationIdentifier" class="form-control">
               <option value="approved">{'Approva'|i18n('openpa_sensor/post')}</option>
               <option value="refused">{'Rifiuta'|i18n('openpa_sensor/post')}</option>
             </select>
-            <input class="btn btn-danger btn-lg btn-block" type="submit" name="CollaborationAction_Moderate" value="{'Modera segnalazione'|i18n('openpa_sensor/post')}" />
+            *}
+            <input class="btn btn-default btn-lg btn-block" type="submit" name="CollaborationAction_Moderate" value="{'Elimina moderazione'|i18n('openpa_sensor/post')}" />
           </div>
         {/if}
     

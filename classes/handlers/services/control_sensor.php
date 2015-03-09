@@ -855,13 +855,14 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase
      */
     public static function surveys()
     {
+        if ( !self::SurveyIsEnabled() ) return array();
         if ( self::$surveys == null )
         {
             $data = array();
             $false = false;
             $includeClasses = array( 'consultation_survey' );
             /** @var eZContentObjectTreeNode[] $treeCategories */
-            $surveys = self::surveyContainerNode()->subTree( array(
+            $surveys = (array) self::surveyContainerNode()->subTree( array(
                 'ClassFilterType' => 'include',
                 'Depth' => 1,
                 'DepthOperator' => 'eq',
@@ -897,6 +898,7 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase
      */
     public static function validSurveys()
     {
+        if ( !self::SurveyIsEnabled() ) return array();
         $data = array();
         foreach( self::surveys() as $item )
         {
