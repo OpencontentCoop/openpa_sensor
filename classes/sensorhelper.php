@@ -1411,7 +1411,7 @@ class SensorHelper
                        ezcollab_item_status.user_id = '$userID' AND
                        ezcollab_item_group_link.user_id = '$userID'
                 $sortText";
-
+eZDebug::writeNotice($sql);
         $db = eZDB::instance();
         if ( !$asCount )
         {
@@ -1448,16 +1448,17 @@ class SensorHelper
         $filterText = '';
         if ( isset( $filters['id'] ) && is_numeric( $filters['id'] ) )
         {
-            $filterText .= "ezcollab_item.id = " . intval( $filters['id'] ) . " AND ";
+            $filterText .= "ezcollab_item.data_int1 = " . intval( $filters['id'] ) . " AND ";
         }
 
-        if ( isset( $filters['text'] ) )
+        if ( isset( $filters['subject'] ) && !empty( $filters['subject']  ) )
         {
             $itemIdArray = array();
             $solr = new eZSolr();
-            $search =$solr->search( $filters['text'], array(
+            $search =$solr->search( '', array(
+                'Filter' => array( 'attr_subject_t:' . $filters['subject'] ),
                 'SearchContentClassID' => array( ObjectHandlerServiceControlSensor::postContentClass()->attribute( 'id' ) ),
-                'SearchSubTreeArray' => 1 ) );
+                'SearchSubTreeArray' => array( 1 ) ) );
             if ( $search['SearchCount'] > 0 )
             {
                 /** @var eZFindResultNode $item */
@@ -1465,14 +1466,57 @@ class SensorHelper
                 {
                     $itemIdArray[] = $item->attribute( 'contentobject_id' );
                 }
-            }
+            }            
             if ( !empty( $itemIdArray ) )
             {
-                $filterText .= "ezcollab_item.id IN (" . implode( ', ', $itemIdArray ) . ") AND ";
+                $filterText .= "ezcollab_item.data_int1 IN (" . implode( ', ', $itemIdArray ) . ") AND ";
+            }
+            else
+            {
+                $filterText .= "ezcollab_item.id = 0  AND ";
+            }
+        }
+        
+        if ( isset( $filters['category'] ) && !empty( $filters['category']  ) )
+        {
+            $itemIdArray = array();
+            $solr = new eZSolr();
+            $categoryFilter = array();
+            if ( count( $filters['category'] ) > 1 )
+            {
+                $categoryFilter[] = 'or';
+            }
+            foreach( $filters['category'] as $category )
+            {
+                if ( !empty( $category ) )
+                    $categoryFilter[] = 'submeta_category___id_si:' . $category;
+            }
+            if ( !empty( $categoryFilter ) )
+            {
+                $search =$solr->search( '', array(
+                    'Filter' => $categoryFilter,
+                    'SearchContentClassID' => array( ObjectHandlerServiceControlSensor::postContentClass()->attribute( 'id' ) ),
+                    'SearchSubTreeArray' => array( 1 ) ) );
+                if ( $search['SearchCount'] > 0 )
+                {
+                    /** @var eZFindResultNode $item */
+                    foreach( $search['SearchResult'] as $item )
+                    {
+                        $itemIdArray[] = $item->attribute( 'contentobject_id' );
+                    }
+                }            
+                if ( !empty( $itemIdArray ) )
+                {
+                    $filterText .= "ezcollab_item.data_int1 IN (" . implode( ', ', $itemIdArray ) . ") AND ";
+                }
+                else
+                {
+                    $filterText .= "ezcollab_item.id = 0  AND ";
+                }
             }
         }
 
-        if ( isset( $filters['creator_id'] ) )
+        if ( isset( $filters['creator_id'] ) && !empty( $filters['creator_id'] ) )
         {
             $creatorId = $filters['creator_id'];
             $creatorIdArray = array();
@@ -1485,7 +1529,7 @@ class SensorHelper
                 $solr = new eZSolr();
                 $search =$solr->search( $creatorId, array(
                     'SearchContentClassID' => array( 'user', 'sensor_operator' ),
-                    'SearchSubTreeArray' => 1 ) );
+                    'SearchSubTreeArray' => array( 1 ) ) );
                 if ( $search['SearchCount'] > 0 )
                 {
                     /** @var eZFindResultNode $item */
@@ -1498,6 +1542,10 @@ class SensorHelper
             if ( !empty( $creatorIdArray ) )
             {
                 $filterText .= "ezcollab_item.creator_id IN (" . implode( ', ', $creatorIdArray ) . ") AND ";
+            }
+            else
+            {
+                $filterText .= "ezcollab_item.id = 0  AND ";
             }
         }
 

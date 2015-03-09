@@ -41,14 +41,19 @@
       {if $item.modified|ne($item.created)}<li><small><strong>{"Modificata"|i18n('openpa_sensor/dashboard')}</strong> {$item.modified|l10n(shortdatetime)}</small></li>{/if}
     </ul>
     <p>      
-	  {$item.content.helper.object.name|wash()}
+      {$item.content.helper.object.name|wash()}    
     </p>
     <p>
       <small>
-        {if $item.content.helper.object.data_map.category.has_content}
-          <i class="fa fa-tags"></i> {attribute_view_gui attribute=$item.content.helper.object.data_map.category} &middot; 
+        {if $item.content.helper.object.owner}
+          <i class="fa fa-user"></i> {$item.content.helper.object.owner.name|wash()} {if $item.content.helper.object|has_attribute('on_behalf_of')}[{$item.content.helper.object|attribute('on_behalf_of').contentclass_attribute_name|wash()} {$item.content.helper.object|attribute('on_behalf_of').content|wash()}]{/if}
         {/if}
-        {if $post.current_owner}<strong>{"In carico a"|i18n('openpa_sensor/dashboard')}</strong> {$post.current_owner}{/if}
+        {if $item.content.helper.object.data_map.category.has_content}
+          &middot;  <i class="fa fa-tags"></i> {attribute_view_gui attribute=$item.content.helper.object.data_map.category href=no-link} 
+        {/if}
+        {if $post.current_owner}
+          &middot; <strong>{"In carico a"|i18n('openpa_sensor/dashboard')}</strong> {$post.current_owner}
+        {/if}
       </small>
     </p>    
   </td>  

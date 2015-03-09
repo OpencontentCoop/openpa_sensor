@@ -52,7 +52,7 @@ $tpl->setVariable( 'available_dashboard', $availableParts );
 
 $selectedList = $Params['List'];
 
-$limit = 30;
+$limit = 10;
 
 $currentUser = eZUser::currentUser();
 
@@ -99,7 +99,16 @@ else
             }
             else
             {
-                $filters = $http->hasGetVariable( 'filters' ) ? $http->getVariable( 'filters' ) : array();
+                $filters = $http->hasGetVariable( 'filters' ) ? $http->getVariable( 'filters' ) : array();                
+                $availableFilters = array( 'id', 'subject', 'category', 'creator_id', 'expiring_range' );                
+                foreach( $filters as $key => $filter )
+                {
+                    if ( !in_array( $key, $availableFilters ) || empty( $filter ) )
+                    {
+                        unset( $filters[$key] );
+                    }                    
+                }
+                $filtersQuery = count( $filters ) > 0 ? '?' . http_build_query( array( 'filters' => $filters ) ) : '';
                 $currentList = false;
                 foreach( $listTypes as $key => $type )
                 {
@@ -153,6 +162,8 @@ else
                     $tpl->setVariable( 'items', $unactiveItems );
                 }
 
+                $tpl->setVariable( 'filters', $filters );
+                $tpl->setVariable( 'filters_query', $filtersQuery );
                 $tpl->setVariable( 'simplified_dashboard', false );
                 $tpl->setVariable( 'current_list', $currentList );
                 $tpl->setVariable( 'list_types', $listTypes );
