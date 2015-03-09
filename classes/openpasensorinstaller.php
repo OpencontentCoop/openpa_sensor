@@ -31,7 +31,8 @@ class OpenPASensorInstaller implements OpenPAInstaller
     }
 
     public function beforeInstall( $options = array() )
-    {
+    {        
+        eZContentClass::removeTemporary();
         $this->options = $options;
         if ( isset( $this->options['step'] ) )
         {
@@ -279,16 +280,21 @@ class OpenPASensorInstaller implements OpenPAInstaller
 
     protected static function installStates()
     {
-        OpenPABase::initStateGroup(
+        $sensorStates = OpenPABase::initStateGroup(
             ObjectHandlerServiceControlSensor::$stateGroupIdentifier,
             ObjectHandlerServiceControlSensor::$stateIdentifiers
         );
 
-        $states = OpenPABase::initStateGroup(
+        $privacyStates = OpenPABase::initStateGroup(
             ObjectHandlerServiceControlSensor::$privacyStateGroupIdentifier,
             ObjectHandlerServiceControlSensor::$privacyStateIdentifiers
         );
-        return $states;
+        
+        $moderationStates = OpenPABase::initStateGroup(
+            ObjectHandlerServiceControlSensor::$moderationStateGroupIdentifier,
+            ObjectHandlerServiceControlSensor::$moderationStateIdentifiers
+        );
+        return array_merge( $sensorStates, $privacyStates, $moderationStates );
     }
 
     protected static function installSections()
@@ -623,8 +629,7 @@ class OpenPASensorInstaller implements OpenPAInstaller
                     'Limitation' => array(
                         'Class' => eZContentClass::classIDByIdentifier( 'sensor_post' ),
                         'Owner' => 1,
-                        'Section' => $section->attribute( 'id' ),
-                        'StateGroup_privacy' => $states['privacy.private']->attribute( 'id' )
+                        'Section' => $section->attribute( 'id' )
                     )
                 ),
                 array(
@@ -658,7 +663,11 @@ class OpenPASensorInstaller implements OpenPAInstaller
                     'Limitation' => array(
                         'Class' => eZContentClass::classIDByIdentifier( 'sensor_post' ),
                         'Section' => $section->attribute( 'id' ),
-                        'StateGroup_privacy' => $states['privacy.public']->attribute( 'id' )
+                        'StateGroup_privacy' => $states['privacy.public']->attribute( 'id' ),
+                        'StateGroup_moderation' => array(
+                            $states['moderation.skipped']->attribute( 'id' ),
+                            $states['moderation.accepted']->attribute( 'id' )
+                        )
                     )
                 ),
                 array(

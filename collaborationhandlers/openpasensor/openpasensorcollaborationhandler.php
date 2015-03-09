@@ -191,10 +191,10 @@ class OpenPASensorCollaborationHandler extends eZCollaborationItemHandler
             $handler->makePrivate();
         }
 
-        if ( $this->isCustomAction( 'Moderate' ) && $this->hasCustomInput( 'OpenPASensorItemModerationIdentifier' )
+        if ( $this->isCustomAction( 'Moderate' )
              && $handler->canModerate() )
         {
-            $handler->moderate( $this->customInput( 'OpenPASensorItemModerationIdentifier' ) );
+            $handler->moderate( $this->hasCustomInput( 'OpenPASensorItemModerationIdentifier' ) ? $this->customInput( 'OpenPASensorItemModerationIdentifier' ) : 'accepted' );
         }
 
         if ( $this->isCustomAction( 'AddObserver' ) && $this->hasCustomInput( 'OpenPASensorItemAddObserver' )
