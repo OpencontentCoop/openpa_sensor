@@ -1256,11 +1256,15 @@ class SensorHelper
         $res['ezcollab_item_status'] = $db->arrayQuery( "SELECT * FROM ezcollab_item_status WHERE collaboration_id = $itemId" );        
         return $res;
     }
-    
+
     /**
-     * @see eZCollaborationItem::fetchListTool
+     * @param array $parameters
+     * @param bool $asCount
+     * @param array $filters
+     *
+     * @return array
      */
-    public static function fetchListTool( $parameters = array(), $asCount )
+    public static function fetchListTool( $parameters = array(), $asCount, array $filters = array() )
     {
         $parameters = array_merge( array( 'as_object' => true,
                                           'offset' => false,
@@ -1268,6 +1272,7 @@ class SensorHelper
                                           'limit' => false,
                                           'is_active' => null,
                                           'is_read' => null,
+                                          'is_expiring' => null,
                                           'last_change' => null,
                                           'status' => false,
                                           'sort_by' => array( 'modified', false ) ),
@@ -1278,6 +1283,7 @@ class SensorHelper
         $statusTypes = $parameters['status'];
         $isRead = $parameters['is_read'];
         $isActive = $parameters['is_active'];
+        $isExpiring = $parameters['is_expiring'];
         $parentGroupID = $parameters['parent_group_id'];
 
         $sortText = '';
@@ -1294,9 +1300,9 @@ class SensorHelper
                     $sortList = array( $sortList );
                 }
             }
+            $sortingFields = '';
             if ( $sortList !== false )
             {
-                $sortingFields = '';
                 foreach ( $sortList as $sortBy )
                 {
                     if ( is_array( $sortBy ) and count( $sortBy ) > 0 )
@@ -1354,11 +1360,23 @@ class SensorHelper
             $isActiveValue = $isActive ? 1 : 0;
             $isActiveText = "ezcollab_item_status.is_active = '$isActiveValue' AND";
         }
+
+        $isExpiringTest = '';
+        if ( $isExpiring !== null )
+        {
+
+        }
         
         $lastChangeText = '';
         if ( $lastChangeText !== null )
         {
             //@todo
+        }
+
+        $filterText = '';
+        if ( !empty( $filters ) )
+        {
+            $filterText = self::parseFetchFilters( $filters );
         }
 
         $userID = eZUser::currentUserID();
@@ -1384,7 +1402,9 @@ class SensorHelper
                 WHERE  ezcollab_item.status IN ( $statusText ) AND
                        $isReadText
                        $isActiveText
+                       $isExpiringTest
                        $lastChangeText
+                       $filterText
                        ezcollab_item.id = ezcollab_item_status.collaboration_id AND
                        ezcollab_item.id = ezcollab_item_group_link.collaboration_id AND
                        $parentGroupText
@@ -1422,83 +1442,140 @@ class SensorHelper
             return $itemCount[0]['count'];
         }
     }
-    
-    public static function fetchAllItems( $group, $limit, $offset = 0, $lastChange = null, $sortBy = 'modified', $sortOrder = false, $status = false )
+
+    protected static function parseFetchFilters( array $filters )
     {
-        $itemParameters = array(
-            'offset' => $offset,
-            'limit' => $limit,
-            'sort_by' => array( $sortBy, $sortOrder ),
-            'is_read' => null,
-            'is_active' => null,
-            'last_change' => $lastChange,
-            'parent_group_id' => $group->attribute( 'id' ),
-            'status' => $status
-        );        
-        return SensorHelper::fetchListTool( $itemParameters, false );  
-    }
-    
-    public static function fetchAllItemsCount( $group )
-    {
-        $itemParameters = array(            
-            'is_read' => null,
-            'is_active' => null,            
-            'parent_group_id' => $group->attribute( 'id' )            
-        );        
-        return SensorHelper::fetchListTool( $itemParameters, true ); 
-    }
-    
-    public static function fetchUnreadItems( $group, $limit, $offset = 0, $lastChange = null, $sortBy = 'modified', $sortOrder = false, $status = false )
-    {
-        $itemParameters = array(
-            'offset' => $offset,
-            'limit' => $limit,
-            'sort_by' => array( $sortBy, $sortOrder ),
-            'is_read' => false,
-            'is_active' => null,
-            'last_change' => $lastChange,
-            'parent_group_id' => $group->attribute( 'id' ),
-            'status' => $status
-        );        
-        return SensorHelper::fetchListTool( $itemParameters, false );  
-    }
-    
-    public static function fetchUnreadItemsCount( $group )
-    {
-        $itemParameters = array(            
-            'is_read' => false,
-            'is_active' => null,            
-            'parent_group_id' => $group->attribute( 'id' )       
-        );        
-        return SensorHelper::fetchListTool( $itemParameters, true );  
-    }
-    
-    public static function fetchActiveItems( $group, $limit, $offset = 0, $lastChange = null, $sortBy = 'modified', $sortOrder = false, $status = false )
-    {
-        $itemParameters = array(
-            'offset' => $offset,
-            'limit' => $limit,
-            'sort_by' => array( $sortBy, $sortOrder ),
-            'is_read' => true,
-            'is_active' => true,
-            'last_change' => $lastChange,
-            'parent_group_id' => $group->attribute( 'id' ),
-            'status' => $status
-        );        
-        return SensorHelper::fetchListTool( $itemParameters, false );  
-    }
-    
-    public static function fetchActiveItemsCount( $group )
-    {
-        $itemParameters = array(
-            'is_read' => true,
-            'is_active' => true,
-            'parent_group_id' => $group->attribute( 'id' ),
-        );        
-        return SensorHelper::fetchListTool( $itemParameters, true );  
+        $filterText = '';
+        if ( isset( $filters['id'] ) && is_numeric( $filters['id'] ) )
+        {
+            $filterText .= "ezcollab_item.id = " . intval( $filters['id'] ) . " AND ";
+        }
+
+        if ( isset( $filters['text'] ) )
+        {
+            $itemIdArray = array();
+            $solr = new eZSolr();
+            $search =$solr->search( $filters['text'], array(
+                'SearchContentClassID' => array( ObjectHandlerServiceControlSensor::postContentClass()->attribute( 'id' ) ),
+                'SearchSubTreeArray' => 1 ) );
+            if ( $search['SearchCount'] > 0 )
+            {
+                /** @var eZFindResultNode $item */
+                foreach( $search['SearchResult'] as $item )
+                {
+                    $itemIdArray[] = $item->attribute( 'contentobject_id' );
+                }
+            }
+            if ( !empty( $itemIdArray ) )
+            {
+                $filterText .= "ezcollab_item.id IN (" . implode( ', ', $itemIdArray ) . ") AND ";
+            }
+        }
+
+        if ( isset( $filters['creator_id'] ) )
+        {
+            $creatorId = $filters['creator_id'];
+            $creatorIdArray = array();
+            if ( is_numeric( $creatorId ) )
+            {
+                $creatorIdArray[] = $creatorId;
+            }
+            else
+            {
+                $solr = new eZSolr();
+                $search =$solr->search( $creatorId, array(
+                    'SearchContentClassID' => array( 'user', 'sensor_operator' ),
+                    'SearchSubTreeArray' => 1 ) );
+                if ( $search['SearchCount'] > 0 )
+                {
+                    /** @var eZFindResultNode $item */
+                    foreach( $search['SearchResult'] as $item )
+                    {
+                        $creatorIdArray[] = $item->attribute( 'contentobject_id' );
+                    }
+                }
+            }
+            if ( !empty( $creatorIdArray ) )
+            {
+                $filterText .= "ezcollab_item.creator_id IN (" . implode( ', ', $creatorIdArray ) . ") AND ";
+            }
+        }
+
+        if ( isset( $filters['expiring_range'] ) )
+        {
+
+        }
+
+        return $filterText;
     }
 
-    public static function fetchUnactiveItems( $group, $limit, $offset = 0, $lastChange = null, $sortBy = 'modified', $sortOrder = false, $status = false )
+    public static function fetchAllItems( array $filters = array(), eZCollaborationGroup $group, $limit, $offset = 0, $sortBy = 'modified', $sortOrder = false, $status = false )
+    {
+        $itemParameters = array(
+            'offset' => $offset,
+            'limit' => $limit,
+            'sort_by' => array( $sortBy, $sortOrder ),
+            'parent_group_id' => $group->attribute( 'id' ),
+            'status' => $status
+        );        
+        return SensorHelper::fetchListTool( $itemParameters, false, $filters );
+    }
+    
+    public static function fetchAllItemsCount( array $filters = array(), eZCollaborationGroup $group )
+    {
+        $itemParameters = array(
+            'parent_group_id' => $group->attribute( 'id' )            
+        );        
+        return SensorHelper::fetchListTool( $itemParameters, true, $filters );
+    }
+    
+    public static function fetchUnreadItems( array $filters = array(), eZCollaborationGroup $group, $limit, $offset = 0, $sortBy = 'modified', $sortOrder = false, $status = false )
+    {
+        $itemParameters = array(
+            'offset' => $offset,
+            'limit' => $limit,
+            'sort_by' => array( $sortBy, $sortOrder ),
+            'is_read' => false,
+            'parent_group_id' => $group->attribute( 'id' ),
+            'status' => $status
+        );        
+        return SensorHelper::fetchListTool( $itemParameters, false, $filters );
+    }
+    
+    public static function fetchUnreadItemsCount( array $filters = array(), eZCollaborationGroup $group )
+    {
+        $itemParameters = array(            
+            'is_read' => false,
+            'parent_group_id' => $group->attribute( 'id' )       
+        );        
+        return SensorHelper::fetchListTool( $itemParameters, true, $filters );
+    }
+    
+    public static function fetchActiveItems( array $filters = array(), eZCollaborationGroup $group, $limit, $offset = 0, $sortBy = 'modified', $sortOrder = false, $status = false )
+    {
+        $itemParameters = array(
+            'offset' => $offset,
+            'limit' => $limit,
+            'sort_by' => array( $sortBy, $sortOrder ),
+            'is_read' => true,
+            'is_active' => true,
+            'parent_group_id' => $group->attribute( 'id' ),
+            'status' => $status
+        );        
+        return SensorHelper::fetchListTool( $itemParameters, false, $filters );
+    }
+    
+    public static function fetchActiveItemsCount( array $filters = array(), eZCollaborationGroup $group )
+    {
+        $itemParameters = array(
+            'is_read' => true,
+            'is_active' => true,
+            'parent_group_id' => $group->attribute( 'id' ),
+        );        
+        return SensorHelper::fetchListTool( $itemParameters, true, $filters );
+    }
+
+    public static function fetchUnactiveItems( array $filters = array(), eZCollaborationGroup $group, $limit, $offset = 0, $sortBy = 'modified', $sortOrder = false, $status = false )
     {
         $itemParameters = array(
             'offset' => $offset,
@@ -1506,20 +1583,43 @@ class SensorHelper
             'sort_by' => array( $sortBy, $sortOrder ),
             'is_read' => true,
             'is_active' => false,
-            'last_change' => $lastChange,
             'parent_group_id' => $group->attribute( 'id' ),
             'status' => $status
         );        
-        return SensorHelper::fetchListTool( $itemParameters, false );  
+        return SensorHelper::fetchListTool( $itemParameters, false, $filters );
     }
     
-    public static function fetchUnactiveItemsCount( $group )
+    public static function fetchUnactiveItemsCount( array $filters = array(), eZCollaborationGroup $group )
     {
         $itemParameters = array(
             'is_read' => true,
             'is_active' => false,
             'parent_group_id' => $group->attribute( 'id' )
         );        
-        return SensorHelper::fetchListTool( $itemParameters, true );  
+        return SensorHelper::fetchListTool( $itemParameters, true, $filters );
+    }
+
+    public static function fetchExpiringItems( array $filters = array(), eZCollaborationGroup $group, $limit, $offset = 0, $sortBy = 'modified', $sortOrder = false, $status = false )
+    {
+        $itemParameters = array(
+            'offset' => $offset,
+            'limit' => $limit,
+            'sort_by' => array( $sortBy, $sortOrder ),
+            'is_expiring' => true,
+            'is_active' => true,
+            'parent_group_id' => $group->attribute( 'id' ),
+            'status' => $status
+        );
+        return SensorHelper::fetchListTool( $itemParameters, false, $filters );
+    }
+
+    public static function fetchExpiringItemsCount( array $filters = array(), eZCollaborationGroup $group )
+    {
+        $itemParameters = array(
+            'is_expiring' => true,
+            'is_active' => true,
+            'parent_group_id' => $group->attribute( 'id' )
+        );
+        return SensorHelper::fetchListTool( $itemParameters, true, $filters );
     }
 }
