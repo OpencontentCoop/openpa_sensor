@@ -42,7 +42,7 @@
       <li><small><strong>{"Creata"|i18n('openpa_sensor/dashboard')}</strong> {$item.created|l10n(shortdatetime)}</small></li>      
       {if $item.modified|ne($item.created)}<li><small><strong>{"Modificata"|i18n('openpa_sensor/dashboard')}</strong> {$item.modified|l10n(shortdatetime)}</small></li>{/if}
       
-      {if and( fetch( 'user', 'has_access_to', hash( 'module', 'sensor', 'function', 'config' ) ), $item.user_status.is_active )}
+      {if and( $item.content.helper.can_do_something, $item.user_status.is_active )}
         <li><small><strong>{"Scadenza"|i18n('openpa_sensor/dashboard')}</strong></small> <span class="label label-{$item.content.helper.expiring_date.label}">{$item.content.helper.expiring_date.text|wash()}</span></li>
       {/if}
     </ul>
