@@ -54,8 +54,8 @@
           </ul>
           <ul class="list-inline">
             {if $post.current_owner}
-			<li><small><i class="fa fa-user"></i> {'In carico a'|i18n('openpa_sensor/post')} {$post.current_owner}</small></li>
-			{/if}
+              <li><small><i class="fa fa-user"></i> {'In carico a'|i18n('openpa_sensor/post')} {$post.current_owner}</small></li>
+            {/if}
             <li><small><i class="fa fa-comments"></i> {$post.comment_count} {'commenti'|i18n('openpa_sensor/post')}</small></li>
             <li><small><i class="fa fa-comment"></i> {$post.response_count} {'risposte ufficiali'|i18n('openpa_sensor/post')}</small></li>
             {if $object|has_attribute( 'category' )}
