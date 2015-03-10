@@ -100,7 +100,8 @@ class SensorHelper
             'human_messages',
             'robot_unread_message_count',
             'robot_message_count',
-            'robot_messages'
+            'robot_messages',
+            'expiring_date',
         );
     }
 
@@ -352,12 +353,167 @@ class SensorHelper
                         )
                     );
                 } break;
-
+                
+            case 'expiring_date':
+                return $this->getExpiringDate();
+                break;
+            
             default:
                 eZDebug::writeError( "Attribute $key not found", get_called_class() );
                 return false;
         }
     }
+    
+    public function getExpiringDate( $interval = 'P15D' )
+    {
+        $data = array(            
+            'text' => null,
+            'timestamp' => null,
+            'label' => 'default'
+        );
+        try
+        {
+            $date = DateTime::createFromFormat( 'U', $this->collaborationItem->attribute( "created" ) );
+            if ( $date instanceof DateTime )
+            {
+                $dateInterval = new DateInterval( $interval );
+                if ( !$dateInterval instanceof DateInterval )
+                {
+                    throw new Exception( "Invalid interval $interval" );
+                }
+                $date->add( $dateInterval );                
+                $data['timestamp'] = $date->format( 'U' );                
+                $diff = self::getDateDiff( $date );
+                $interval = $diff['interval'];
+                $format = $diff['format'];
+                $text = ezpI18n::tr( 'openpa_sensor/expiring', 'Scade fra' );
+                if ( $interval->invert )
+                {
+                    $text = ezpI18n::tr( 'openpa_sensor/expiring', 'Scaduto da' );
+                    $data['label'] = 'danger';
+                }
+                $data['text'] = $text . ' ' . $interval->format( $format );
+            }
+            else
+            {
+                throw new Exception( "Invalid creation date in collaboration item" );
+            }
+        }
+        catch( Exception $e )
+        {
+            $data['text'] = $e->getMessage();
+        }
+        return $data;
+    }
+    
+    public static function getDateDiff( $start, $end = null )
+    {
+        if ( !( $start instanceof DateTime ) )
+        {
+            $start = new DateTime( $start );
+        }
+    
+        if ( $end === null )
+        {
+            $end = new DateTime();
+        }
+    
+        if ( !( $end instanceof DateTime ) )
+        {
+            $end = new DateTime( $start );
+        }
+    
+        $interval = $end->diff( $start );
+        $translate = function ( $nb, $str )
+        {
+            $string = $nb > 1 ? $str . 's' : $str;
+            switch ( $string )
+            {
+                case 'year';
+                    $string = ezpI18n::tr( 'openpa_sensor/expiring', 'anno' );
+                    break;
+                case 'years';
+                    $string = ezpI18n::tr( 'openpa_sensor/expiring', 'anni' );
+                    break;
+                case 'month';
+                    $string = ezpI18n::tr( 'openpa_sensor/expiring', 'mese' );
+                    break;
+                case 'months';
+                    $string = ezpI18n::tr( 'openpa_sensor/expiring', 'mesi' );
+                    break;
+                case 'day';
+                    $string = ezpI18n::tr( 'openpa_sensor/expiring', 'giorno' );
+                    break;
+                case 'days';
+                    $string = ezpI18n::tr( 'openpa_sensor/expiring', 'giorni' );
+                    break;
+                case 'hour';
+                    $string = ezpI18n::tr( 'openpa_sensor/expiring', 'ora' );
+                    break;
+                case 'hours';
+                    $string = ezpI18n::tr( 'openpa_sensor/expiring', 'ore' );
+                    break;
+                case 'minute';
+                    $string = ezpI18n::tr( 'openpa_sensor/expiring', 'minuto' );
+                    break;
+                case 'minutes';
+                    $string = ezpI18n::tr( 'openpa_sensor/expiring', 'minuti' );
+                    break;
+                case 'second';
+                    $string = ezpI18n::tr( 'openpa_sensor/expiring', 'secondo' );
+                    break;
+                case 'seconds';
+                    $string = ezpI18n::tr( 'openpa_sensor/expiring', 'secondi' );
+                    break;
+            }
+            return $string;
+        };
+    
+        $format = array();
+        if ( $interval->y !== 0 )
+        {
+            $format[] = "%y " . $translate( $interval->y, "year" );
+        }
+        if ( $interval->m !== 0 )
+        {
+            $format[] = "%m " . $translate( $interval->m, "month" );
+        }
+        if ( $interval->d !== 0 )
+        {
+            $format[] = "%d " . $translate( $interval->d, "day" );
+        }
+        if ( $interval->h !== 0 )
+        {
+            $format[] = "%h " . $translate( $interval->h, "hour" );
+        }
+        if ( $interval->i !== 0 )
+        {
+            $format[] = "%i " . $translate( $interval->i, "minute" );
+        }
+        if ( $interval->s !== 0 )
+        {
+            if ( !count( $format ) )
+            {
+                return ezpI18n::tr( 'openpa_sensor/expiring', 'meno di un minuto' );
+            }
+            else
+            {
+                $format[] = "%s " . $translate( $interval->s, "second" );
+            }
+        }
+    
+        // We use the two biggest parts
+        if ( count( $format ) > 1 )
+        {
+            $format = array_shift( $format ) . " " . ezpI18n::tr( 'openpa_sensor/expiring', 'e' ) . " " . array_shift( $format );
+        }
+        else
+        {
+            $format = array_pop( $format );
+        }
+    
+        return array( 'interval' => $interval, 'format' => $format );
+    } 
     
     public function getContentObject()
     {
@@ -1411,7 +1567,7 @@ class SensorHelper
                        ezcollab_item_status.user_id = '$userID' AND
                        ezcollab_item_group_link.user_id = '$userID'
                 $sortText";
-eZDebug::writeNotice($sql);
+
         $db = eZDB::instance();
         if ( !$asCount )
         {
@@ -1549,9 +1705,28 @@ eZDebug::writeNotice($sql);
             }
         }
 
-        if ( isset( $filters['expiring_range'] ) )
+        if ( isset( $filters['creation_range']['from'] ) && !empty( $filters['creation_range']['from'] ) )
         {
-
+            $from = DateTime::createFromFormat( 'd-m-Y', $filters['creation_range']['from'] );
+            $to = false;
+            if ( $from instanceof DateTime )
+            {
+                if ( isset( $filters['creation_range']['to'] ) && !empty( $filters['creation_range']['to'] ) )
+                {
+                    $to = DateTime::createFromFormat( 'd-m-Y', $filters['creation_range']['to'] );
+                }
+                else
+                {
+                    $to = clone $from;                
+                }
+                $from->setTime( 00, 00 );
+                $to->setTime( 23, 59 );
+                $filterText .= "ezcollab_item.created BETWEEN " . $from->format( 'U' ) . " AND " . $to->format( 'U' ) . " AND ";
+            }
+            else
+            {
+                $filterText .= "ezcollab_item.id = 0  AND ";
+            }
         }
 
         return $filterText;
@@ -1647,7 +1822,7 @@ eZDebug::writeNotice($sql);
         return SensorHelper::fetchListTool( $itemParameters, true, $filters );
     }
 
-    public static function fetchExpiringItems( array $filters = array(), eZCollaborationGroup $group, $limit, $offset = 0, $sortBy = 'modified', $sortOrder = false, $status = false )
+    public static function fetchExpiringItems( array $filters = array(), eZCollaborationGroup $group, $limit, $offset = 0, $sortBy = 'created', $sortOrder = true, $status = false )
     {
         $itemParameters = array(
             'offset' => $offset,

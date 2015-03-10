@@ -1079,28 +1079,43 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase
             $id = $parameters['object_id'];
             $object = eZContentObject::fetch( $id );
             if ( $object instanceof eZContentObject
-                 && $object->attribute( 'class_identifier' ) == 'sensor_post'
-                 && $object->attribute( 'current_version') == 1 )
+                 && $object->attribute( 'class_identifier' ) == 'sensor_post' )
             {
-                SensorHelper::createCollaborationItem( $id );
-                $dataMap = $object->attribute( 'data_map' );
-                if ( isset( $dataMap['privacy'] ) )
+                if ( $object->attribute( 'current_version') == 1  )
                 {
-                    if ( $dataMap['privacy']->attribute( 'data_int' ) == 0 )
+                    SensorHelper::createCollaborationItem( $id );
+                    $dataMap = $object->attribute( 'data_map' );
+                    if ( isset( $dataMap['privacy'] ) )
+                    {
+                        if ( $dataMap['privacy']->attribute( 'data_int' ) == 0 )
+                        {
+                            OpenPABase::sudo( function() use( $object ){
+                                ObjectHandlerServiceControlSensor::setState( $object, 'privacy', 'private' );
+                            });
+                        }
+                    }
+                    if ( self::needModeration() )
                     {
                         OpenPABase::sudo( function() use( $object ){
-                            ObjectHandlerServiceControlSensor::setState( $object, 'privacy', 'private' );
+                            ObjectHandlerServiceControlSensor::setState( $object, 'moderation', 'waiting' );
                         });
                     }
+                    // force reindex object in solr
+                    eZSearch::addObject( $object, true );
                 }
-                if ( self::needModeration() )
+                else
                 {
-                    OpenPABase::sudo( function() use( $object ){
-                        ObjectHandlerServiceControlSensor::setState( $object, 'moderation', 'waiting' );
-                    });
+                    try
+                    {
+                        $helper = SensorHelper::instanceFromContentObjectId( $id );
+                        $helper->attribute( 'collaboration_item' )->setAttribute( 'modified', $object->attribute( 'modified' ) );
+                        $helper->attribute( 'collaboration_item' )->sync();
+                    }
+                    catch( Exception $e )
+                    {
+                        eZDebug::writeError( $e->getMessage(), __METHOD__ );
+                    }
                 }
-                // force reindex object in solr
-                eZSearch::addObject( $object, true );
             }
             elseif ( $object instanceof eZContentObject
                  && $object->attribute( 'class_identifier' ) == 'sensor_root'  )

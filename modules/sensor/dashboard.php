@@ -52,7 +52,7 @@ $tpl->setVariable( 'available_dashboard', $availableParts );
 
 $selectedList = $Params['List'];
 
-$limit = 10;
+$limit = 15;
 
 $currentUser = eZUser::currentUser();
 
@@ -100,7 +100,7 @@ else
             else
             {
                 $filters = $http->hasGetVariable( 'filters' ) ? $http->getVariable( 'filters' ) : array();                
-                $availableFilters = array( 'id', 'subject', 'category', 'creator_id', 'expiring_range' );                
+                $availableFilters = array( 'id', 'subject', 'category', 'creator_id', 'creation_range' );                
                 foreach( $filters as $key => $filter )
                 {
                     if ( !in_array( $key, $availableFilters ) || empty( $filter ) )
