@@ -113,9 +113,9 @@
         </form>
       </div>
       
-      <aside class="widget">
+      <aside class="widget" style="height: 570px;overflow-y: auto">
         <h4 class="section_header">In scadenza</h4>
-        {def $expiring_items = fetch( 'sensor', 'items', hash( 'type', 'expiring' ) )}
+        {def $expiring_items = fetch( 'sensor', 'items', hash( 'type', 'expiring', 'limit', 100 ) )}
         {if count( $expiring_items )|gt(0)}
           <ul class="media-list">
           {foreach $expiring_items as $item}              

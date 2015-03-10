@@ -35,6 +35,20 @@ class SensorHelper
     {
         $this->collaborationItem = $collaborationItem;
     }
+    
+    /**
+     * @return DateInterval
+     */
+    public static function expiringInterval()
+    {
+        $expiringIntervalString = 'P15D'; //@todo mettere valore in ini
+        $expiringInterval = new DateInterval( $expiringIntervalString ); 
+        if ( !$expiringInterval instanceof DateInterval )
+        {
+            throw new Exception( "Invalid interval {$expiringIntervalString}" );
+        }
+        return $expiringInterval;
+    }
 
     /**
      * @param eZCollaborationItem $collaborationItem
@@ -364,7 +378,7 @@ class SensorHelper
         }
     }
     
-    public function getExpiringDate( $interval = 'P15D' )
+    public function getExpiringDate()
     {
         $data = array(            
             'text' => null,
@@ -375,13 +389,8 @@ class SensorHelper
         {
             $date = DateTime::createFromFormat( 'U', $this->collaborationItem->attribute( "created" ) );
             if ( $date instanceof DateTime )
-            {
-                $dateInterval = new DateInterval( $interval );
-                if ( !$dateInterval instanceof DateInterval )
-                {
-                    throw new Exception( "Invalid interval $interval" );
-                }
-                $date->add( $dateInterval );                
+            {                
+                $date->add( self::expiringInterval() );                
                 $data['timestamp'] = $date->format( 'U' );                
                 $diff = self::getDateDiff( $date );
                 $interval = $diff['interval'];
@@ -1518,9 +1527,14 @@ class SensorHelper
         }
 
         $isExpiringTest = '';
-        if ( $isExpiring !== null )
+        if ( $isExpiring == true )
         {
-
+            $date = new DateTime();
+            $date->sub( self::expiringInterval() );            
+            $bound = clone $date;
+            $bound->add( new DateInterval( 'P7D' ) );
+            $bound->setTime( 23, 59 );
+            $isExpiringTest = "ezcollab_item.created < " . $bound->format( 'U' ) . " AND ";
         }
         
         $lastChangeText = '';
@@ -1567,7 +1581,7 @@ class SensorHelper
                        ezcollab_item_status.user_id = '$userID' AND
                        ezcollab_item_group_link.user_id = '$userID'
                 $sortText";
-
+        //eZDebug::writeNotice($sql);
         $db = eZDB::instance();
         if ( !$asCount )
         {
