@@ -16,7 +16,9 @@
     {if $object.modified|gt($item.object.published)}
         <li><small><i class="fa fa-clock-o"></i> {'Ultima modifica del'|i18n('openpa_sensor/post')} {$object.modified|l10n(shortdatetime)}</small></li>
     {/if}
+    {if $post.current_owner}
     <li><small><i class="fa fa-user"></i> {'In carico a'|i18n('openpa_sensor/post')} {$post.current_owner}</small></li>
+    {/if}
     <li><small><i class="fa fa-comment"></i> {$post.comment_count} {'commenti'|i18n('openpa_sensor/post')}</small></li>
 	<li><small><i class="fa fa-comment"></i> {$post.response_count} {'risposte ufficiali'|i18n('openpa_sensor/post')}</small></li>
 </ul>
