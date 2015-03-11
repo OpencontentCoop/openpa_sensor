@@ -19,12 +19,13 @@ class OpenPASensorInstaller implements OpenPAInstaller
     public function setScriptOptions( eZScript $script )
     {
         return $script->getOptions(
-            '[parent-node:][step:][enable:][clean]',
+            '[parent-node:][step:][enable:][sa_suffix:][clean]',
             '',
             array(
                 'parent-node' => 'Nodo id contenitore di sensor (Applicazioni di default)',
                 'step' => 'Esegue solo lo step selezionato: gli step possibili sono' . implode( ', ', $this->steps ),
                 'enable' => 'Abilita gli ambienti: [s] segnalazioni, [d] discussioni, [c] consultazioni (esempio: --enable=sd abilita le segnalazioni e le discussioni)',
+                'sa_suffix' => 'Suffisso del siteaccess (default: partecipa)',
                 'clean' => 'Elimina tutti i contenuti presenti di sensor prima di eseguire l\'installazione'
             )
         );
@@ -34,6 +35,12 @@ class OpenPASensorInstaller implements OpenPAInstaller
     {        
         eZContentClass::removeTemporary();
         $this->options = $options;
+
+        if ( !isset( $this->options['sa_suffix'] ) )
+        {
+            $this->options['sa_suffix'] = 'partecipa';
+        }
+
         if ( isset( $this->options['step'] ) )
         {
             if ( array_key_exists( $this->options['step'], $this->steps ) )
@@ -140,7 +147,7 @@ class OpenPASensorInstaller implements OpenPAInstaller
         if ( ( $this->installOnlyStep !== null && $this->installOnlyStep == 4 ) || $this->installOnlyStep === null )
         {
             OpenPALog::warning( 'Salvo configurazioni' );
-            self::installIniParams();
+            self::installIniParams( $this->options['sa_suffix'] );
         }
 
         eZCache::clearById( 'global_ini' );
@@ -184,6 +191,11 @@ class OpenPASensorInstaller implements OpenPAInstaller
             {
                 throw new Exception( 'Failed creating Consultazioni container' );
             }
+        }
+
+        if ( $containerObject->attribute( 'main_node' )->attribute( 'children_count' ) > 0 )
+        {
+            $installDemoContent = false;
         }
 
         if ( $installDemoContent )
@@ -235,6 +247,11 @@ class OpenPASensorInstaller implements OpenPAInstaller
             {
                 throw new Exception( 'Failed creating Dimmi container' );
             }
+        }
+
+        if ( $containerObject->attribute( 'main_node' )->attribute( 'children_count' ) > 0 )
+        {
+            $installDemoContent = false;
         }
 
         if ( $installDemoContent )
@@ -433,6 +450,11 @@ class OpenPASensorInstaller implements OpenPAInstaller
             {
                 throw new Exception( 'Failed creating Sensor group node' );
             }
+        }
+
+        if ( $groupObject->attribute( 'main_node' )->attribute( 'children_count' ) > 0 )
+        {
+            $installDemoContent = false;
         }
 
         if ( $installDemoContent )
@@ -744,8 +766,11 @@ class OpenPASensorInstaller implements OpenPAInstaller
 
     }
 
-    protected static function installIniParams()
-    {        
+    protected static function installIniParams( $saSuffix )
+    {
+        $sensor = OpenPABase::getCustomSiteaccessName( 'sensor', false );
+        $sensorPath = "settings/siteaccess/{$sensor}/";
+
         // impostatzioni in backend
         $backend = OpenPABase::getBackendSiteaccessName();
         $backendPath = "settings/siteaccess/{$backend}/";
@@ -753,15 +778,34 @@ class OpenPASensorInstaller implements OpenPAInstaller
         $ini = new eZINI( $iniFile . '.append', $backendPath, null, null, null, true, true );
         $value = array_unique( array_merge( (array) $ini->variable( 'TreeMenu', 'ShowClasses' ), array( 'sensor_root', 'dimmi_root', 'sensor_post_root', 'consultation_root' ) ) );
         $ini->setVariable( 'TreeMenu', 'ShowClasses', $value );
-        if ( !$ini->save() ) throw new Exception( "Non riesco a salvare {$iniFile}" );
+        if ( !$ini->save() ) throw new Exception( "Non riesco a salvare {$backendPath}{$iniFile}" );
 
-        OpenPALog::error( "@todo Aggiungere ActiveAccessExtensions[]=openpa_sensor in " . OpenPABase::getBackendSiteaccessName() . "/site.ini.append.php" );
-        OpenPALog::error( "@todo Aggiungere RelatedSiteAccessList[]=" . OpenPABase::getCustomSiteaccessName( 'sensor' ) . " in " . OpenPABase::getBackendSiteaccessName() . "/site.ini.append.php" );
+        $iniFile = "site.ini";
+        $ini = new eZINI( $iniFile . '.append', $backendPath, null, null, null, true, true );
+        $value = array_unique( array_merge( (array) $ini->variable( 'ExtensionSettings', 'ActiveAccessExtensions' ), array( 'openpa_sensor' ) ) );
+        $ini->setVariable( 'ExtensionSettings', 'ActiveAccessExtensions', $value );
+        $value = array_unique( array_merge( (array) $ini->variable( 'SiteAccessSettings', 'RelatedSiteAccessList' ), array( $sensor ) ) );
+        $ini->setVariable( 'SiteAccessSettings', 'RelatedSiteAccessList', $value );
+        if ( !$ini->save() ) throw new Exception( "Non riesco a salvare {$backendPath}{$iniFile}" );
 
         // impostatzioni in sensor
-        $sensor = OpenPABase::getCustomSiteaccessName( 'sensor' );
-        $sensorPath = "settings/siteaccess/{$sensor}/";
         eZDir::mkdir( $sensorPath );
+
+        $frontend = OpenPABase::getFrontendSiteaccessName();
+        $frontendPath = "settings/siteaccess/{$frontend}/";
+        $frontendSiteUrl = eZINI::instance()->variable( 'SiteSettings', 'SiteURL' );
+
+        eZFileHandler::copy( $frontendPath . 'site.ini.append.php', $sensorPath . 'site.ini.append.php' );
+        $iniFile = "site.ini";
+        $ini = new eZINI( $iniFile . '.append', $sensorPath, null, null, null, true, true );
+        $ini->setVariable( 'ExtensionSettings', 'ActiveAccessExtensions', array( '', 'openpa_theme_2014', 'ocbootstrap', 'ocoperatorscollection', 'openpa_sensor' ) );
+        $ini->setVariable( 'SiteSettings', 'SiteURL', $frontendSiteUrl . '/' . $saSuffix );
+        $ini->setVariable( 'SiteSettings', 'DefaultPage', 'sensor/home' );
+        $ini->setVariable( 'SiteSettings', 'IndexPage', 'sensor/home' );
+        $ini->setVariable( 'SiteSettings', 'LoginPage', 'embedded' );
+        $ini->setVariable( 'DesignSettings', 'SiteDesign', 'sensor' );
+        $ini->setVariable( 'DesignSettings', 'AdditionalSiteDesignList', array( '', 'ocbootstrap', 'standard' ) );
+        if ( !$ini->save() ) throw new Exception( "Non riesco a salvare {$sensorPath}{$iniFile}" );
 
         $iniFile = "ezcomments.ini";
         $ini = new eZINI( $iniFile . '.append', $sensorPath, null, null, null, true, true );
@@ -770,11 +814,11 @@ class OpenPASensorInstaller implements OpenPAInstaller
         $ini->setVariable( 'RecaptchaSetting', 'Theme', 'custom' );
         $ini->setVariable( 'RecaptchaSetting', 'Language', 'en' );
         $ini->setVariable( 'RecaptchaSetting', 'TabIndex', '0' );
-        if ( !$ini->save() ) throw new Exception( "Non riesco a salvare {$iniFile}" );
+        if ( !$ini->save() ) throw new Exception( "Non riesco a salvare {$sensorPath}{$iniFile}" );
 
-
-        OpenPALog::error( "@todo Aggiungere siteaccess in override/site.ini" );
-
+        OpenPALog::error( "@todo Aggiungere siteaccess in override/site.ini:
+[SiteSettings]SiteList[]={$sensor}
+[SiteAccessSettings]AvailableSiteAccessList[]={$sensor}
+[SiteAccessSettings]HostUriMatchMapItems[]={$frontendSiteUrl};{$saSuffix};{$sensor} \n" );
     }
-
 }
