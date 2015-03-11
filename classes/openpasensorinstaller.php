@@ -256,25 +256,25 @@ class OpenPASensorInstaller implements OpenPAInstaller
 
         if ( $installDemoContent )
         {
+            // Forum sample
+            OpenPALog::warning( "Install Forum demo " );
+            $params = array(
+                'parent_node_id' => $containerObject->attribute( 'main_node_id' ),
+                'section_id' => $section->attribute( 'id' ),
+                'class_identifier' => 'dimmi_forum',
+                'attributes' => array(
+                    'title' => 'Demo'
+                )
+            );
+            /** @var eZContentObject $categoryObject */
+            $forumObject = eZContentFunctions::createAndPublishObject( $params );
+            if ( !$forumObject instanceof eZContentObject )
+            {
+                throw new Exception( 'Failed creating Dimmi forum demo' );
+            }
+
             for ( $i = 1; $i <= 2; $i++ )
             {
-                // Forum sample
-                OpenPALog::warning( "Install Forum demo " );
-                $params = array(
-                    'parent_node_id' => $containerObject->attribute( 'main_node_id' ),
-                    'section_id' => $section->attribute( 'id' ),
-                    'class_identifier' => 'dimmi_forum',
-                    'attributes' => array(
-                        'title' => 'Demo'
-                    )
-                );
-                /** @var eZContentObject $categoryObject */
-                $forumObject = eZContentFunctions::createAndPublishObject( $params );
-                if ( !$forumObject instanceof eZContentObject )
-                {
-                    throw new Exception( 'Failed creating Dimmi forum demo' );
-                }
-
                 // Topic sample
                 OpenPALog::warning( "Install Topic demo " );
                 $params = array(
