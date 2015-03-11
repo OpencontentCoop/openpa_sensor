@@ -746,18 +746,35 @@ class OpenPASensorInstaller implements OpenPAInstaller
 
     protected static function installIniParams()
     {        
+        // impostatzioni in backend
         $backend = OpenPABase::getBackendSiteaccessName();
-        $path = "settings/siteaccess/{$backend}/";
+        $backendPath = "settings/siteaccess/{$backend}/";
         $iniFile = "contentstructuremenu.ini";
-        $ini = new eZINI( $iniFile . '.append', $path, null, null, null, true, true );
+        $ini = new eZINI( $iniFile . '.append', $backendPath, null, null, null, true, true );
         $value = array_unique( array_merge( (array) $ini->variable( 'TreeMenu', 'ShowClasses' ), array( 'sensor_root', 'dimmi_root', 'sensor_post_root', 'consultation_root' ) ) );
         $ini->setVariable( 'TreeMenu', 'ShowClasses', $value );
-        if ( !$ini->save() ) throw new Exception( "Non riesco a salvare contentstructuremenu.ini" );
-        
-        OpenPALog::error( "@todo Creare cartella di steaccess " . OpenPABase::getCustomSiteaccessName( 'sensor' ) );
-        OpenPALog::error( "@todo Aggiungere siteaccess in override/site.ini" );
+        if ( !$ini->save() ) throw new Exception( "Non riesco a salvare {$iniFile}" );
+
         OpenPALog::error( "@todo Aggiungere ActiveAccessExtensions[]=openpa_sensor in " . OpenPABase::getBackendSiteaccessName() . "/site.ini.append.php" );
         OpenPALog::error( "@todo Aggiungere RelatedSiteAccessList[]=" . OpenPABase::getCustomSiteaccessName( 'sensor' ) . " in " . OpenPABase::getBackendSiteaccessName() . "/site.ini.append.php" );
+
+        // impostatzioni in sensor
+        $sensor = OpenPABase::getCustomSiteaccessName( 'sensor' );
+        $sensorPath = "settings/siteaccess/{$sensor}/";
+        eZDir::mkdir( $sensorPath );
+
+        $iniFile = "ezcomments.ini";
+        $ini = new eZINI( $iniFile . '.append', $sensorPath, null, null, null, true, true );
+        $ini->setVariable( 'RecaptchaSetting', 'PublicKey', '6Lee6v4SAAAAAKaBcnKYaMiD' );
+        $ini->setVariable( 'RecaptchaSetting', 'PrivateKey', '6Lee6v4SAAAAAD39ImIzsTrIOkyPy2La13T7aZzf' );
+        $ini->setVariable( 'RecaptchaSetting', 'Theme', 'custom' );
+        $ini->setVariable( 'RecaptchaSetting', 'Language', 'en' );
+        $ini->setVariable( 'RecaptchaSetting', 'TabIndex', '0' );
+        if ( !$ini->save() ) throw new Exception( "Non riesco a salvare {$iniFile}" );
+
+
+        OpenPALog::error( "@todo Aggiungere siteaccess in override/site.ini" );
+
     }
 
 }
