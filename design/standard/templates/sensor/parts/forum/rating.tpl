@@ -55,10 +55,6 @@
 {if and( $attribute.data_int|not, has_access_to_limitation( 'ezjscore', 'call', hash( 'FunctionList', 'ezstarrating_rate' ) ))}
   {def $preferred_lib = 'jquery'}
   {ezscript_require( array( 'ezjsc::jquery', 'ezjsc::jqueryio', 'ezstarrating_jquery.js' ) )}
-{else}
-  {if fetch( 'user', 'current_user' ).is_logged_in}
-    <p id="ezsr_no_permission_{$attribute.id}" class="ezsr-no-permission">Per poter esprimere il tuo parere, devi accedere con login e password</p>
-  {/if}
 {/if}
 {/run-once}
 {undef $rating}
