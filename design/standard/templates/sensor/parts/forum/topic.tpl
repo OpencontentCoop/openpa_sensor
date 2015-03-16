@@ -37,14 +37,19 @@
 
   </div>
 
+  {if or( $node.data_map.star_ratin.data_int, $node.data_map.usefull_rating.data_int )}
   <div class="row">
     <div class="col-md-6 text-center">
-      <h4><span>Come valuti la chiarezza di questa proposta?</span></h4>
-      {include uri='design:sensor/parts/forum/rating.tpl' attribute=$node.data_map.star_rating}
+      {if $node.data_map.star_ratin.data_int}
+        <h4><span>Come valuti la chiarezza di questa proposta?</span></h4>
+        {include uri='design:sensor/parts/forum/rating.tpl' attribute=$node.data_map.star_rating}
+      {/if}
     </div>
     <div class="col-md-6 {*people_rating*} text-center">
-      <h4><span>Come valuti l'importanza di questa proposta?</span></h4>
-      {include uri='design:sensor/parts/forum/rating.tpl' attribute=$node.data_map.usefull_rating}
+      {if $node.data_map.usefull_rating.data_int}
+        <h4><span>Come valuti l'importanza di questa proposta?</span></h4>
+        {include uri='design:sensor/parts/forum/rating.tpl' attribute=$node.data_map.usefull_rating}
+      {/if}
     </div>
   </div>
 
