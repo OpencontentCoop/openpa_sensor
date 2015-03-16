@@ -3,10 +3,12 @@
      $reply_count=fetch('content','list_count', hash( parent_node_id, $node.node_id ) )}
 
 <section class="hgroup">
-  <h1>{$node.name|wash|bracket_to_strong}</h1>
+  <h1>
+    {$node.name|wash|bracket_to_strong}
+    {if $reply_tree_count|gt(0)} <a href="#post_comments"><small><i class="fa fa-comments-o"></i> {$reply_tree_count}  {if $reply_tree_count|gt(1)}commenti{else}commento{/if}</small></a>{/if}
+  </h1>
   <h2>
     <i class="fa fa-clock-o"></i> {$node.modified_subnode|datetime( 'custom', '%l, %d %F %Y' )}
-    {if $reply_tree_count|gt(0)}<a href="#post_comments"><i class="fa fa-comments-o"></i> {$reply_tree_count}  {if $reply_tree_count|gt(1)}commenti{else}commento{/if}</a>{/if}
   </h2>
   <ul class="breadcrumb pull-right">
     <li><a href="{$node.parent.url_alias|ezurl(no)}"><small>{$node.parent.name|wash()|bracket_to_strong}</small></a></li>
@@ -16,22 +18,26 @@
 <article class="post">
   <div class="post_content row">
 
-    <div class="col-lg-12">
+    {if $node|has_attribute('image')}
+    <div class="col-md-3">
       <figure>{attribute_view_gui attribute=$node.data_map.image image_class=original}</figure>
     </div>
+    {/if}
 
-    <div class="col-md-{if $node.data_map.approfondimenti.has_content}9{else}12{/if}">
+    <div class="col-md-{if and( $node|has_attribute('approfondimenti'), $node|has_attribute('image') )}6{elseif or( $node|has_attribute('approfondimenti'), $node|has_attribute('image') )}9{else}12{/if} abstract">
       <p>{$node.data_map.message.content|simpletags|wordtoimage|autolink|bracket_to_strong}</p>
     </div>
 
-    {if $node.data_map.approfondimenti.has_content}
-      <div class="alert alert-info col-md-3">
-        <strong>Per saperne di più...</strong>
-        <ul class="list list-unstyled">
-          {foreach $node.data_map.approfondimenti.content.rows.sequential as $s}
-            <li><a href="{$s.columns[1]}">{$s.columns[0]}</a></li>
-          {/foreach}
-        </ul>
+    {if $node|has_attribute('approfondimenti')}
+      <div class="col-md-3">
+        <div class="alert alert-info">
+          <strong>Per saperne di più...</strong>
+          <ul class="list list-unstyled">
+            {foreach $node.data_map.approfondimenti.content.rows.sequential as $s}
+              <li><a href="{$s.columns[1]}">{$s.columns[0]}</a></li>
+            {/foreach}
+          </ul>
+        </div>
       </div>
     {/if}
 
