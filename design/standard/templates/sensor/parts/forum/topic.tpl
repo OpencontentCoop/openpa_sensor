@@ -20,8 +20,12 @@
       <figure>{attribute_view_gui attribute=$node.data_map.image image_class=original}</figure>
     </div>
 
+    <div class="col-md-{if $node.data_map.approfondimenti.has_content}9{else}12{/if}">
+      <p>{$node.data_map.message.content|simpletags|wordtoimage|autolink|bracket_to_strong}</p>
+    </div>
+
     {if $node.data_map.approfondimenti.has_content}
-      <div class="alert alert-info col-lg-3">
+      <div class="alert alert-info col-md-3">
         <strong>Per saperne di più...</strong>
         <ul class="list list-unstyled">
           {foreach $node.data_map.approfondimenti.content.rows.sequential as $s}
@@ -30,10 +34,6 @@
         </ul>
       </div>
     {/if}
-    
-    <div class="col-lg-{if $node.data_map.approfondimenti.has_content}9{else}12{/if}">
-      <p>{$node.data_map.message.content|simpletags|wordtoimage|autolink|bracket_to_strong}</p>
-    </div>
 
   </div>
 
