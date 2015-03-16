@@ -23,7 +23,7 @@
         </div>
       {/if}
       
-    <section class="call_to_action {if $node|has_attribute('image')}hidden-lg hidden-md{/if}">
+    <section class="{if $node|has_attribute('image')}hidden-lg hidden-md{/if}">
       <a href={$node.url_alias|ezurl()} class="btn btn-primary btn-lg btn-block">Partecipa</a>
     </section>
       
