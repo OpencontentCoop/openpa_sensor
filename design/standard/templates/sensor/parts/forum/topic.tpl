@@ -37,10 +37,10 @@
 
   </div>
 
-  {if or( $node.data_map.star_ratin.data_int, $node.data_map.usefull_rating.data_int )}
+  {if or( $node.data_map.star_rating.data_int, $node.data_map.usefull_rating.data_int )}
   <div class="row">
     <div class="col-md-6 text-center">
-      {if $node.data_map.star_ratin.data_int}
+      {if $node.data_map.star_rating.data_int}
         <h4><span>Come valuti la chiarezza di questa proposta?</span></h4>
         {include uri='design:sensor/parts/forum/rating.tpl' attribute=$node.data_map.star_rating}
       {/if}
