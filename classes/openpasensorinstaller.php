@@ -101,7 +101,7 @@ class OpenPASensorInstaller implements OpenPAInstaller
     {
         OpenPALog::warning( "Controllo stati" );
         $states = self::installStates();
-
+        
         OpenPALog::warning( "Controllo sezioni" );
         $section = self::installSections();
 
@@ -223,6 +223,7 @@ class OpenPASensorInstaller implements OpenPAInstaller
 
     protected static function installSensorDimmiStuff( eZContentObject $rootObject, eZSection $section, $installDemoContent = true )
     {
+$installDemoContent = false;        
         $containerObject = eZContentObject::fetchByRemoteID( ObjectHandlerServiceControlSensor::sensorRootRemoteId() . '_dimmi' );
         if ( !$containerObject instanceof eZContentObject )
         {
@@ -560,7 +561,7 @@ class OpenPASensorInstaller implements OpenPAInstaller
                     'ModuleName' => 'user',
                     'FunctionName' => 'login',
                     'Limitation' => array(
-                        'SiteAccess' => eZSys::ezcrc32( OpenPABase::getCustomSiteaccessName( 'sensor' ) )
+                        'SiteAccess' => eZSys::ezcrc32( OpenPABase::getCustomSiteaccessName( 'sensor', false ) )
                     )
                 ),
                 array(
@@ -662,7 +663,7 @@ class OpenPASensorInstaller implements OpenPAInstaller
                     'ModuleName' => 'user',
                     'FunctionName' => 'login',
                     'Limitation' => array(
-                        'SiteAccess' => eZSys::ezcrc32( OpenPABase::getCustomSiteaccessName( 'sensor' ) )
+                        'SiteAccess' => eZSys::ezcrc32( OpenPABase::getCustomSiteaccessName( 'sensor', false ) )
                     )
                 ),
                 array(
@@ -719,7 +720,7 @@ class OpenPASensorInstaller implements OpenPAInstaller
                     'ModuleName' => 'user',
                     'FunctionName' => 'login',
                     'Limitation' => array(
-                        'SiteAccess' => eZSys::ezcrc32( OpenPABase::getCustomSiteaccessName( 'sensor' ) )
+                        'SiteAccess' => eZSys::ezcrc32( OpenPABase::getCustomSiteaccessName( 'sensor', false ) )
                     )
                 ),
             )
@@ -794,6 +795,8 @@ class OpenPASensorInstaller implements OpenPAInstaller
         $frontend = OpenPABase::getFrontendSiteaccessName();
         $frontendPath = "settings/siteaccess/{$frontend}/";
         $frontendSiteUrl = eZINI::instance()->variable( 'SiteSettings', 'SiteURL' );
+        $parts = explode( '/', $frontendSiteUrl ); //bugfix
+        $frontendSiteUrl = $parts[0];
 
         eZFileHandler::copy( $frontendPath . 'site.ini.append.php', $sensorPath . 'site.ini.append.php' );
         $iniFile = "site.ini";
@@ -817,8 +820,10 @@ class OpenPASensorInstaller implements OpenPAInstaller
         if ( !$ini->save() ) throw new Exception( "Non riesco a salvare {$sensorPath}{$iniFile}" );
 
         OpenPALog::error( "@todo Aggiungere siteaccess in override/site.ini:
-[SiteSettings]SiteList[]={$sensor}
-[SiteAccessSettings]AvailableSiteAccessList[]={$sensor}
-[SiteAccessSettings]HostUriMatchMapItems[]={$frontendSiteUrl};{$saSuffix};{$sensor} \n" );
+[SiteSettings]
+SiteList[]={$sensor}
+[SiteAccessSettings]
+AvailableSiteAccessList[]={$sensor}
+HostUriMatchMapItems[]={$frontendSiteUrl};{$saSuffix};{$sensor} \n" );
     }
 }
