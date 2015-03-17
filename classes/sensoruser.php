@@ -270,7 +270,7 @@ class SensorUser
                     }
                     else
                     {
-                        throw new InvalidArgumentException( "UserSettings not found for user #" . $user->id() );
+                        throw new RuntimeException( "UserSettings not found for user #" . $user->id() );
                     }
                     self::sendMail( $user, $hash );
                 }
