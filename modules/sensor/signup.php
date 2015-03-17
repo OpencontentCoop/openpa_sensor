@@ -79,24 +79,28 @@ elseif ( SensorUser::hasSessionUser() )
     try
     {
         $showCaptcha = !SensorUser::checkCaptcha();
-        SensorUser::finish();
+        try
+        {
+            SensorUser::finish();
+        }
+        catch( RuntimeException $e )
+        {
+            $Module->redirectTo( '/sensor/signup' );
+        }
+        catch ( Exception $e )
+        {
+            return $Module->handleError(
+                intval( $e->getMessage() ),
+                false,
+                array(),
+                array( 'SensorErrorCode', 1 )
+            );
+        }
     }
     catch( InvalidArgumentException $e )
     {
         $errors[] = $e->getMessage();
-    }
-    catch( RuntimeException $e )
-    {
-        $Module->redirectTo( '/sensor/signup' );
-    }
-    catch ( Exception $e )
-    {
-        return $Module->handleError(
-            intval( $e->getMessage() ),
-            false,
-            array(),
-            array( 'SensorErrorCode', 1 )
-        );
+        $showCaptcha = true;
     }
 }
 else
