@@ -186,32 +186,48 @@ class SensorUser
 
     public static function checkCaptcha()
     {
-        require_once 'extension/openpa_sensor/classes/recaptchalib.php';
-        $http = eZHTTPTool::instance();
-        $commentsIni = eZINI::instance( 'ezcomments.ini' );
-        $privateKey = $commentsIni->variable( 'RecaptchaSetting' , 'PrivateKey' );
-        if( $http->hasPostVariable( 'recaptcha_challenge_field' ) &&
-            $http->hasPostVariable( 'recaptcha_response_field' ) )
+        if ( self::getVerifyMode() == self::MODE_MAIL_BLOCK )
         {
-            $ip = $_SERVER["REMOTE_ADDR"];
-            $challengeField = $http->postVariable( 'recaptcha_challenge_field' );
-            $responseField = $http->postVariable( 'recaptcha_response_field' );
-            $captchaResponse = recaptcha_check_answer( $privateKey, $ip, $challengeField, $responseField );
-            if( !$captchaResponse->is_valid )
-            {
-                throw new InvalidArgumentException( ezpI18n::tr(
-                    'openpa_sensor/signup',
-                    'Il codice inserito non è corretto.'
-                ) );
-            }
+            return true;
         }
         else
         {
-            throw new InvalidArgumentException( ezpI18n::tr(
-                'openpa_sensor/signup',
-                'Errore nella configurazione del Captcha.'
-            ) );
+            require_once 'extension/openpa_sensor/classes/recaptchalib.php';
+            $http = eZHTTPTool::instance();
+            $commentsIni = eZINI::instance( 'ezcomments.ini' );
+            $privateKey = $commentsIni->variable( 'RecaptchaSetting', 'PrivateKey' );
+            if ( $http->hasPostVariable( 'recaptcha_challenge_field' )
+                 && $http->hasPostVariable(
+                    'recaptcha_response_field'
+                )
+            )
+            {
+                $ip = $_SERVER["REMOTE_ADDR"];
+                $challengeField = $http->postVariable( 'recaptcha_challenge_field' );
+                $responseField = $http->postVariable( 'recaptcha_response_field' );
+                $captchaResponse = recaptcha_check_answer(
+                    $privateKey,
+                    $ip,
+                    $challengeField,
+                    $responseField
+                );
+                if ( !$captchaResponse->is_valid )
+                {
+                    throw new InvalidArgumentException(
+                        ezpI18n::tr(
+                            'openpa_sensor/signup',
+                            'Il codice inserito non è corretto.'
+                        )
+                    );
+                }
+                else
+                {
+                    return true;
+                }
+            }
+            return false;
         }
+
     }
 
     public static function finish()
