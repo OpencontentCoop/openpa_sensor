@@ -92,9 +92,10 @@
         view_parameters=$view_parameters
         item_limit=$reply_limit}
 
-{if $comment_form}
+
+{if and( $comment_form, current_sensor_userinfo().has_deny_comment_mode|not() )}
   {$comment_form}
-{elseif $node.object.can_create}
+{elseif and( $node.object.can_create, current_sensor_userinfo().has_deny_comment_mode|not() )}
   {def $notification_access=fetch( 'user', 'has_access_to', hash( 'module', 'notification', 'function', 'use' ) )}
   <form method="post" action={"content/action/"|ezurl}>
     {def $offset = $view_parameters.offset}

@@ -14,9 +14,7 @@ $(document).ready(function(){
 
 {if $sensor.moderation_is_enabled}
   <div class="alert alert-warning">
-    {'Moderazione attivata dalle ore %moderation_from alle ore %moderation_to'|i18n('openpa_sensor/config', '',
-                                        hash( '%moderation_from', $sensor.moderation_from.timestamp|l10n(shorttime),
-                                              '%moderation_to', $sensor.moderation_to.timestamp|l10n(shorttime) ))}
+    {'Moderazione attivata'|i18n('openpa_sensor/config')}
   </div>
 {/if}
 

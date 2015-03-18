@@ -92,9 +92,7 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase
         $this->data['forum_is_enabled'] = self::ForumIsEnable();
         $this->data['survey_is_enabled'] = self::SurveyIsEnabled();
 
-        $this->data['moderation_is_enabled'] = self::ModerationIsEnabled();
-        $this->fnData['moderation_from'] = 'getModerationFromTime';
-        $this->fnData['moderation_to'] = 'getModerationToTime';
+        $this->data['timed_moderation_is_enabled'] = self::TimedModerationIsEnabled();
 
         // post
         $this->data['use_per_area_approver'] = false; //@todo impostare da ini?
@@ -1078,49 +1076,59 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase
         {
             $id = $parameters['object_id'];
             $object = eZContentObject::fetch( $id );
-            if ( $object instanceof eZContentObject
-                 && $object->attribute( 'class_identifier' ) == 'sensor_post' )
+            if ( $object instanceof eZContentObject )
             {
-                if ( $object->attribute( 'current_version') == 1  )
+                if ( $object->attribute( 'class_identifier' ) == 'sensor_post' )
                 {
-                    SensorHelper::createCollaborationItem( $id );
-                    $dataMap = $object->attribute( 'data_map' );
-                    if ( isset( $dataMap['privacy'] ) )
+                    if ( $object->attribute( 'current_version') == 1  )
                     {
-                        if ( $dataMap['privacy']->attribute( 'data_int' ) == 0 )
+                        SensorHelper::createCollaborationItem( $id );
+                        $dataMap = $object->attribute( 'data_map' );
+                        if ( isset( $dataMap['privacy'] ) )
+                        {
+                            if ( $dataMap['privacy']->attribute( 'data_int' ) == 0 )
+                            {
+                                OpenPABase::sudo( function() use( $object ){
+                                    ObjectHandlerServiceControlSensor::setState( $object, 'privacy', 'private' );
+                                });
+                            }
+                        }
+                        if ( self::needModeration() )
                         {
                             OpenPABase::sudo( function() use( $object ){
-                                ObjectHandlerServiceControlSensor::setState( $object, 'privacy', 'private' );
+                                ObjectHandlerServiceControlSensor::setState( $object, 'moderation', 'waiting' );
                             });
                         }
+                        // force reindex object in solr
+                        eZSearch::addObject( $object, true );
                     }
+                    else
+                    {
+                        try
+                        {
+                            $helper = SensorHelper::instanceFromContentObjectId( $id );
+                            $helper->attribute( 'collaboration_item' )->setAttribute( 'modified', $object->attribute( 'modified' ) );
+                            $helper->attribute( 'collaboration_item' )->sync();
+                        }
+                        catch( Exception $e )
+                        {
+                            eZDebug::writeError( $e->getMessage(), __METHOD__ );
+                        }
+                    }
+                }
+                elseif ( $object->attribute( 'class_identifier' ) == 'dimmi_forum_reply'  )
+                {
                     if ( self::needModeration() )
                     {
                         OpenPABase::sudo( function() use( $object ){
                             ObjectHandlerServiceControlSensor::setState( $object, 'moderation', 'waiting' );
                         });
                     }
-                    // force reindex object in solr
-                    eZSearch::addObject( $object, true );
                 }
-                else
+                elseif ( $object->attribute( 'class_identifier' ) == 'sensor_root'  )
                 {
-                    try
-                    {
-                        $helper = SensorHelper::instanceFromContentObjectId( $id );
-                        $helper->attribute( 'collaboration_item' )->setAttribute( 'modified', $object->attribute( 'modified' ) );
-                        $helper->attribute( 'collaboration_item' )->sync();
-                    }
-                    catch( Exception $e )
-                    {
-                        eZDebug::writeError( $e->getMessage(), __METHOD__ );
-                    }
+                    eZCache::clearByTag( 'template' );
                 }
-            }
-            elseif ( $object instanceof eZContentObject
-                 && $object->attribute( 'class_identifier' ) == 'sensor_root'  )
-            {                
-                eZCache::clearByTag( 'template' );
             }
         }
         elseif ( $trigger == 'pre_delete' )
@@ -1151,65 +1159,30 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase
 
     protected static function needModeration( $timestamp = null )
     {
-        if ( self::ModerationIsEnabled() )
+        if ( SensorUserInfo::current()->hasModerationMode() )
+        {
+            return true;
+        }
+        if ( self::TimedModerationIsEnabled() )
         {
             if ( !$timestamp )
             {
                 $timestamp = time();
             }
             $current = DateTime::createFromFormat( 'U', $timestamp );
-
-            $fromTime = self::getModerationFromTime();
-            $fromDatetime = DateTime::createFromFormat( 'U', $fromTime->attribute( 'timestamp' ) );
-
-            /** @var eZTime $toTime */
-            $toTime = self::getModerationToTime();
-            if ( $toTime->attribute( 'timestamp' ) < $fromTime->attribute( 'timestamp' ) ) // se to_time è minore di from_time calcolo il giorno successivo
-            {
-                $toDatetime = clone $fromDatetime;
-                $toDatetime->add( new DateInterval( 'P1D' ) );
-                $toDatetime->setTime( $toTime->attribute( 'hour' ), $toTime->attribute( 'minute' ) );
-            }
-            else
-            {
-                $toDatetime = DateTime::createFromFormat( 'U', $toTime->attribute( 'timestamp' ) );
-            }
-
-            return ( $current > $fromDatetime && $current < $toDatetime );
+            $node = self::rootNode();
+            $dataMap = $node->attribute( 'data_map' );
+            $officeTimeTable = $dataMap['office_timetable']->content();
+            return !$officeTimeTable->contains( $current );
         }
         return false;
     }
 
-    /**
-     * @return eZTime
-     */
-    public static function getModerationFromTime()
-    {
-        $node = self::rootNode();
-        /** @var eZContentObjectAttribute[] $dataMap */
-        $dataMap = $node->attribute( 'data_map' );
-        return $dataMap['moderation_from']->attribute( 'content' );
-    }
-
-    /**
-     * @return eZTime
-     */
-    public static function getModerationToTime()
-    {
-        $node = self::rootNode();
-        /** @var eZContentObjectAttribute[] $dataMap */
-        $dataMap = $node->attribute( 'data_map' );
-        return $dataMap['moderation_to']->attribute( 'content' );
-    }
-
-    public static function ModerationIsEnabled()
+    public static function TimedModerationIsEnabled()
     {
         $node = self::rootNode();
         $dataMap = $node->attribute( 'data_map' );
-        return (
-            isset( $dataMap['moderation_from'] ) && $dataMap['moderation_from']->attribute( 'has_content' ) && $dataMap['moderation_from']->attribute( 'data_type_string' ) == 'eztime'
-            && isset( $dataMap['moderation_to'] ) && $dataMap['moderation_to']->attribute( 'has_content' ) && $dataMap['moderation_from']->attribute( 'data_type_string' ) == 'eztime'
-        );
+        return isset( $dataMap['office_timetable'] ) && $dataMap['office_timetable']->attribute( 'has_content' ) && $dataMap['office_timetable']->attribute( 'data_type_string' ) == 'ocrecurrence';
     }
 
     /**

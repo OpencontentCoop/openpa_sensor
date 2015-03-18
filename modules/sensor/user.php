@@ -14,73 +14,13 @@ if ( !$user instanceof eZUser )
 }
 else
 {
-    $userObject = $user->attribute( 'contentobject' );
-    $userSetting = eZUserSetting::fetch( $UserID );
-    $denyComment = eZPreferences::value( 'sensor_deny_comment', $user );
-    
-    if ( !$userObject )
-    {
-        return $Module->handleError( eZError::KERNEL_NOT_AVAILABLE, 'kernel' );
-    }
-    
+    $sensorUserInfo = SensorUserInfo::instance( $user );
     if ( $http->hasPostVariable( "UpdateSettingButton" ) && $currentUser->attribute( 'login' ) !== $user->attribute( 'login' ) )
     {
-        $isEnabled = 1;
-        if ( $http->hasPostVariable( 'max_login' ) )
-        {
-            $maxLogin = $http->postVariable( 'max_login' );
-        }
-        else
-        {
-            $maxLogin = $userSetting->attribute( 'max_login' );
-        }
-        if ( $http->hasPostVariable( 'is_enabled' ) )
-        {
-            $isEnabled = 0;
-        }
-    
-        if ( eZOperationHandler::operationIsAvailable( 'user_setsettings' ) )
-        {
-               $operationResult = eZOperationHandler::execute( 'user',
-                                                               'setsettings', array( 'user_id'    => $UserID,
-                                                                                     'is_enabled' => $isEnabled,
-                                                                                     'max_login'  => $maxLogin ) );
-        }
-        else
-        {
-            eZUserOperationCollection::setSettings( $UserID, $isEnabled, $maxLogin );
-        }
-        
-        if ( $http->hasPostVariable( 'sensor_deny_comment' ) )
-        {
-            eZPreferences::setValue( 'sensor_deny_comment', 1, $userObject->attribute( 'id' ) );
-        }
-        else
-        {
-            $db = eZDB::instance();
-            $db->query( "DELETE FROM ezpreferences WHERE user_id = {$userObject->attribute( 'id' )} AND name = 'sensor_deny_comment'" );
-        }
-        
-        $userSetting = eZUserSetting::fetch( $UserID );
-        $denyComment = eZPreferences::value( 'sensor_deny_comment', $user );
-        
-        $role = eZRole::fetchByName( 'Sensor Assistant' );        
-        if ( $http->hasPostVariable( 'sensor_can_behalf_of' ) )
-        {
-            if ( $role instanceof eZRole )
-            {
-                $role->assignToUser( $UserID );
-            }
-        }
-        else
-        {
-            if ( $role instanceof eZRole )
-            {
-                $role->removeUserAssignment( $UserID );
-            }
-        }
-        eZUser::purgeUserCacheByUserId( $UserID );
-        
+        $sensorUserInfo->setBlockMode( $http->hasPostVariable( 'is_enabled' ) );
+        $sensorUserInfo->setDenyCommentMode( $http->hasPostVariable( 'sensor_deny_comment' ) );
+        $sensorUserInfo->setCanBehalfOfMode( $http->hasPostVariable( 'sensor_can_behalf_of' ) );
+        $sensorUserInfo->setModerationMode( $http->hasPostVariable( 'moderate' ) );
     }
     
     if ( $http->hasPostVariable( "CancelSettingButton" ) )
@@ -92,12 +32,9 @@ else
     $result = $user->hasAccessTo( 'sensor', 'behalf' );
     $canBehalfOf = $result['accessWord'] != 'no';
     
-    $tpl->setVariable( 'user_can_behalf_of', $canBehalfOf );
-    $tpl->setVariable( 'user_deny_comment', $denyComment );
     $tpl->setVariable( 'user', $user );
     $tpl->setVariable( 'userID', $UserID );
-    $tpl->setVariable( 'userObject', $userObject );
-    $tpl->setVariable( 'userSetting', $userSetting );
+    $tpl->setVariable( 'sensor_user_info', $sensorUserInfo );
     
     $tpl->setVariable( 'persistent_variable', array() );
     

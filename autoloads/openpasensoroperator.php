@@ -12,7 +12,8 @@ class OpenPASensorOperator
             'sensor_categorycontainer',
             'user_settings',
             'objectstate_by_id',
-            'bracket_to_strong'
+            'bracket_to_strong',
+            'current_sensor_userinfo'
         );
     }
 
@@ -37,6 +38,11 @@ class OpenPASensorOperator
     {
         switch ( $operatorName )
         {
+            case 'current_sensor_userinfo':
+            {
+                $operatorValue = SensorUserInfo::current();;
+            } break;
+
             case 'bracket_to_strong':
             {
                 $operatorValue = ObjectHandlerServiceControlSensor::replaceBracket( $operatorValue );

@@ -749,7 +749,8 @@ class SensorHelper
     
     public function canComment()
     {
-        return ! (bool) eZPreferences::value( 'sensor_deny_comment', eZUser::currentUser() );
+        $sensorUser = SensorUserInfo::current();
+        return ! (bool) $sensorUser->hasDenyCommentMode();
     }
 
     public function addResponse( $text )

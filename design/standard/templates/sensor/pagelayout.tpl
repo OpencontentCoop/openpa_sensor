@@ -107,6 +107,16 @@
 </script>
 {/if}
 
+<script>
+{literal}
+$(document).ready(function(){
+    $.get({/literal}{'sensor/alert'|ezurl()}{literal}, function(data){
+        $('header').prepend(data)
+    });
+});
+{/literal}
+</script>
+
 <!--DEBUG_REPORT-->
 </body>
 </html>

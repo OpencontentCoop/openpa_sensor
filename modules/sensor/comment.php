@@ -24,8 +24,9 @@ if ( isset( $Params['UserParameters']['offset'] ) )
 }
 
 $class = ObjectHandlerServiceControlSensor::forumCommentClass();
+$sensorUserInfo = SensorUserInfo::current();
 
-if ( $node instanceof eZContentObjectTreeNode && $class instanceof eZContentClass )
+if ( $node instanceof eZContentObjectTreeNode && $class instanceof eZContentClass && !$sensorUserInfo->hasDenyCommentMode() )
 {
     $languageCode = eZINI::instance()->variable( 'RegionalSettings', 'Locale' );
     $object = eZContentObject::createWithNodeAssignment( $node,

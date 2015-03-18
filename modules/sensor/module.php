@@ -103,6 +103,12 @@ $ViewList['survey_user_result'] = array(
     'functions' => array( 'use' )
 );
 
+$ViewList['alert'] = array(
+    'script' =>	'alert.php',
+    'params' => array(),
+    'functions' => array( 'use' )
+);
+
 $FunctionList = array();
 $FunctionList['use'] = array();
 $FunctionList['debug'] = array();
