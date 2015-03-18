@@ -182,7 +182,12 @@ class SensorUserInfo
                 $messages = array();
                 if ( $this->hasModerationMode() )
                 {
-                    $messages[] = ezpI18n::tr('openpa_sensor/alerts', 'Il tuo account è in moderazione, tutte le tue attività non saranno rese pubbliche.' );
+                    $activate = false;
+                    if ( eZPersistentObject::fetchObject( eZUserAccountKey::definition(), null,  array( 'user_id' => $this->user->id() ), true ) )
+                    {
+                        $activate = ' Attiva il tuo profilo per partecipare!';
+                    }
+                    $messages[] = ezpI18n::tr('openpa_sensor/alerts', 'Il tuo account è ora in moderazione, tutte le tue attività non saranno rese pubbliche.' . $activate );
                 }
                 return $messages;
                 break;
