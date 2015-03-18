@@ -1,3 +1,6 @@
+{def $post = object_handler($object.main_node).control_sensor}
+{if $post.current_moderation_status.identifier|ne('waiting')}
+
 {def $sensor = sensor_root_handler()}
 {def $siteurl = $sensor.sensor_url $sitename = $sensor.logo_title}
 {def $is_update=false()}
@@ -47,3 +50,5 @@
 {/if}
 
 {include uri='design:sensor/mail/mail_pagelayout.tpl' content=$content}
+
+{/if}
