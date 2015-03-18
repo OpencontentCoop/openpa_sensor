@@ -14,7 +14,7 @@
 
       {if $comment_form|not()}
       <div class="pull-right">
-        {if and( $recursion|eq(0), $reply.object.can_create )}
+        {if and( $recursion|eq(0), $reply.object.can_create, current_sensor_userinfo().has_deny_comment_mode|not() )}
           <a href={concat("sensor/comment/",$reply.parent_node_id,"/",$reply.node_id)|ezurl()} class="reply btn btn-xs btn-primary">Rispondi</a>
         {/if}
         {include name=edit uri='design:parts/toolbar/node_edit.tpl' current_node=$reply}
