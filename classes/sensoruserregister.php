@@ -128,6 +128,7 @@ class SensorUserRegister
                 'La password non può essere "password".'
             ) );
         }
+        $this->password = $password;
     }
 
     public function store()
