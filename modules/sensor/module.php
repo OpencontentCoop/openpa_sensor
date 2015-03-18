@@ -109,6 +109,12 @@ $ViewList['alert'] = array(
     'functions' => array( 'use' )
 );
 
+$ViewList['moderate'] = array(
+    'script' =>	'moderate.php',
+    'params' => array( 'ObjectID' ),
+    'functions' => array( 'use' )
+);
+
 $FunctionList = array();
 $FunctionList['use'] = array();
 $FunctionList['debug'] = array();

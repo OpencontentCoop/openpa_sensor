@@ -1,4 +1,5 @@
 {def $owner = $reply.object.owner}
+{def $post = object_handler($reply).control_sensor}
 <div class="row{if and( is_set( $current_reply.contentobject_id ), $current_reply.contentobject_id|eq($reply.contentobject_id) )} alert alert-warning{/if}">
 
   <figure class="col-sm-1 col-md-1 col-md-offset-{$recursion}">
@@ -8,7 +9,7 @@
   <div class="col-sm-{10|sub($recursion)} col-md-{10|sub($recursion)}">
 
     <div class="comment_name">
-      {$owner.name|wash}
+      {if $owner}{$owner.name|wash}{else}?{/if}
 
 
       {if $comment_form|not()}
@@ -28,9 +29,16 @@
       {/foreach}
 
     </div>
-
     <div class="comment_date">
       <i class="fa fa-clock-o"></i> {$reply.object.published|datetime( 'custom', '%l, %d %F %Y %H:%i' )} {if $reply.object.current_version|gt(1)}<em> <i class="fa fa-pencil"></i> Modificato</em>{/if}
+      {if $post.current_moderation_status.identifier|eq('waiting')}
+        <span class="label label-{$post.current_moderation_status.css_class}">
+          {$post.current_moderation_status.name}
+          {if $reply.object.allowed_assign_state_id_list|contains( $post.moderation_states['moderation.accepted'].id )}
+            <a href="{concat('sensor/moderate/',$reply.contentobject_id)|ezurl(no))}" style="color:#fff"><i class="fa fa-close"></i></a>
+          {/if}
+        </span>
+      {/if}
     </div>
 
     <div class="the_comment">
