@@ -11,7 +11,7 @@
                 </tr>
                 <tr>
                     <td align='center' valign='top'>
-                        <h4 style='color: #f90f00 !important'>{'Ecco le informazione del tuo account SensorCivico'|i18n('openpa_sensor/mail/registration')}</h4>
+                        <h4 style='color: #f90f00 !important'>{'Ecco le informazione del tuo profilo'|i18n('openpa_sensor/mail/registration')}</h4>
                     </td>
                 </tr>
                 <tr>
@@ -26,15 +26,17 @@
                         </p>
                     </td>
                 </tr>                
+                {if is_set( $hash )}
                 <tr>
                     <td align='center' bgcolor='#f90f00' valign='top'>
                         <h3>                          
                           <a href="http://{$sensor.sensor_url}/sensor/activate/{$hash}/{$user.contentobject.main_node_id}" style="color: #ffffff !important">
-                            {'Click the following URL to confirm your account'|i18n('design/standard/user/register')}
+                            {'Clicca su questo link per confermare il tuo account'|i18n('openpa_sensor/mail/registration')}
                           </a>
                         </h3>
                     </td>
-                </tr>                
+                </tr>
+                {/if}
                 <tr>
                     <td align='center' valign='top'>
                         <p>                            

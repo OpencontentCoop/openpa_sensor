@@ -1,6 +1,6 @@
 <?php
 
-class SensorUser
+class SensorUserRegister
 {
     const MODE_ONLY_CAPTCHA = 1;
 
@@ -37,7 +37,15 @@ class SensorUser
 
     public static function getVerifyMode()
     {
-        return self::MODE_ONLY_CAPTCHA;
+        $mode = OpenPAINI::variable( 'SensorConfig', 'RegistrationMode', self::MODE_MAIL_WITH_MODERATION );
+        if ( in_array( $mode, array( self::MODE_MAIL_WITH_MODERATION, self::MODE_MAIL_BLOCK, self::MODE_ONLY_CAPTCHA ) ) )
+        {
+            return $mode;
+        }
+        else
+        {
+            return self::MODE_MAIL_WITH_MODERATION;
+        }
     }
 
     public function setName( $name )
@@ -77,9 +85,13 @@ class SensorUser
         }
         if ( eZUser::fetchByEmail( $email ) )
         {
+            $forgotUrl = 'user/forgotpassword';
+            eZURI::transformURI( $forgotUrl );
             throw new InvalidArgumentException( ezpI18n::tr(
                 'openpa_sensor/signup',
-                'Email già in uso'
+                'Email già in uso. Hai dimenticato la password? <a href="%forgot_url">Clicca qui</a>',
+                null,
+                array( '%forgot_url' => $forgotUrl )
             ) );
         }
         $this->email = $email;
@@ -175,16 +187,13 @@ class SensorUser
                     throw new Exception( eZError::KERNEL_ACCESS_DENIED );
                 }
             }
-            if ( self::getVerifyMode() == self::MODE_MAIL_BLOCK )
-            {
-                eZUserOperationCollection::setSettings( $objectID, 0, 0 );
-            }
+            eZUserOperationCollection::setSettings( $objectID, self::getVerifyMode() !== self::MODE_MAIL_BLOCK, 0 );
             self::setSessionUser( $objectID );
         }
         $db->commit();
     }
 
-    public static function checkCaptcha()
+    public static function captchaIsValid()
     {
         if ( self::getVerifyMode() == self::MODE_MAIL_BLOCK )
         {
@@ -197,9 +206,7 @@ class SensorUser
             $commentsIni = eZINI::instance( 'ezcomments.ini' );
             $privateKey = $commentsIni->variable( 'RecaptchaSetting', 'PrivateKey' );
             if ( $http->hasPostVariable( 'recaptcha_challenge_field' )
-                 && $http->hasPostVariable(
-                    'recaptcha_response_field'
-                )
+                 && $http->hasPostVariable( 'recaptcha_response_field' )
             )
             {
                 $ip = $_SERVER["REMOTE_ADDR"];
@@ -211,35 +218,22 @@ class SensorUser
                     $challengeField,
                     $responseField
                 );
-                if ( !$captchaResponse->is_valid )
-                {
-                    throw new InvalidArgumentException(
-                        ezpI18n::tr(
-                            'openpa_sensor/signup',
-                            'Il codice inserito non è corretto.'
-                        )
-                    );
-                }
-                else
-                {
-                    return true;
-                }
+                return $captchaResponse->is_valid;
             }
-            return false;
-        }
 
+        }
+        return false;
     }
 
-    public static function finish()
+    public static function finish( eZModule $Module )
     {
         $object = self::getSessionUserObject();
         if ( $object instanceof eZContentObject )
         {
             $operationResult = eZOperationHandler::execute( 'content', 'publish', array( 'object_id' => $object->attribute( 'id' ), 'version' => 1 ) );
-            if ( self::getVerifyMode() == self::MODE_MAIL_BLOCK )
-            {
-                eZUserOperationCollection::setSettings( $object->attribute( 'id' ), 0, 0 );
-            }
+
+            eZUserOperationCollection::setSettings( $object->attribute( 'id' ), self::getVerifyMode() !== self::MODE_MAIL_BLOCK, 0 );
+
             if ( ( array_key_exists( 'status', $operationResult ) && $operationResult['status'] != eZModuleOperationInfo::STATUS_CONTINUE ) )
             {
                 eZDebug::writeDebug( $operationResult, __FILE__ );
@@ -252,36 +246,40 @@ class SensorUser
                 /** @var eZUser $user */
                 $user = eZUser::fetch( $object->attribute( 'id' ) );
 
-                if ( $user === null )
+                if ( !$user instanceof eZUser )
                 {
+                    throw new Exception( eZError::KERNEL_NOT_FOUND );
+                }
+
+                $userSetting = eZUserSetting::fetch( $object->attribute( 'id' ) );
+                if ( $userSetting instanceof eZUserSetting )
+                {
+                    $hash = md5( mt_rand() . time() . $user->id() );
+                    $accountKey = eZUserAccountKey::createNew( $user->id(), $hash, time() );
+                    $accountKey->store();
+                }
+                else
+                {
+                    eZDebug::writeError( "UserSettings not found for user #" . $user->id(), __METHOD__ );
                     throw new Exception( eZError::KERNEL_NOT_FOUND );
                 }
 
                 if ( self::getVerifyMode() == self::MODE_MAIL_BLOCK )
                 {
-                    $userSetting = eZUserSetting::fetch( $object->attribute( 'id' ) );
-                    if ( $userSetting instanceof eZUserSetting
-                         && $user instanceof eZUser
-                    )
-                    {
-                        $hash = md5( mt_rand() . time() . $user->id() );
-                        $accountKey = eZUserAccountKey::createNew( $user->id(), $hash, time() );
-                        $accountKey->store();
-                    }
-                    else
-                    {
-                        throw new RuntimeException( "UserSettings not found for user #" . $user->id() );
-                    }
                     self::sendMail( $user, $hash );
                 }
                 elseif( self::getVerifyMode() == self::MODE_MAIL_WITH_MODERATION )
                 {
-                    //@todo attivare moderazione per user
-                    self::sendMail( $user );
+                    $sensorUserInfo = SensorUserInfo::instance( $user );
+                    $sensorUserInfo->setModerationMode( true );
+                    self::sendMail( $user, $hash );
+                    $user->loginCurrent();
                 }
                 elseif( self::getVerifyMode() == self::MODE_ONLY_CAPTCHA )
                 {
-                    //@todo serva qualcosa?
+                    self::sendMail( $user );
+                    $user->loginCurrent();
+                    $Module->redirectTo( '/sensor/home' );
                 }
 
                 $rule = eZCollaborationNotificationRule::create( OpenPASensorCollaborationHandler::TYPE_STRING, $user->id() );
@@ -290,14 +288,18 @@ class SensorUser
         }
         else
         {
-            throw new RuntimeException( "Session user not found" );
+            eZDebug::writeError( "Session user not found" );
+            throw new Exception( eZError::KERNEL_NOT_FOUND );
         }
     }
 
     protected static function sendMail( eZUser $user, $hash = null )
     {
         $tpl = eZTemplate::factory();
-        $tpl->setVariable( 'hash', $hash );
+        if ( $hash !== null )
+        {
+            $tpl->setVariable( 'hash', $hash );
+        }
         $tpl->setVariable( 'user', $user );
         $body = $tpl->fetch( 'design:sensor/mail/registrationinfo.tpl' );
 

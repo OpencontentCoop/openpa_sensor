@@ -650,7 +650,10 @@ $installDemoContent = false;
                     'ModuleName' => 'content',
                     'FunctionName' => 'read',
                     'Limitation' => array(
-                        'Class' => eZContentClass::classIDByIdentifier( 'sensor_post' ),
+                        'Class' => array(
+                            eZContentClass::classIDByIdentifier( 'sensor_post' ),
+                            eZContentClass::classIDByIdentifier( 'dimmi_forum_reply' )
+                        ),
                         'Owner' => 1,
                         'Section' => $section->attribute( 'id' )
                     )
@@ -697,12 +700,23 @@ $installDemoContent = false;
                     'ModuleName' => 'content',
                     'FunctionName' => 'read',
                     'Limitation' => array(
+                        'Class' => eZContentClass::classIDByIdentifier( 'dimmi_forum_reply' ),
+                        'Section' => $section->attribute( 'id' ),
+                        'StateGroup_moderation' => array(
+                            $states['moderation.skipped']->attribute( 'id' ),
+                            $states['moderation.accepted']->attribute( 'id' )
+                        )
+                    )
+                ),
+                array(
+                    'ModuleName' => 'content',
+                    'FunctionName' => 'read',
+                    'Limitation' => array(
                         'Class' => array(
                             eZContentClass::classIDByIdentifier( 'sensor_area' ),
                             eZContentClass::classIDByIdentifier( 'sensor_post_root' ),
                             eZContentClass::classIDByIdentifier( 'folder' ),
                             eZContentClass::classIDByIdentifier( 'dimmi_category' ),
-                            eZContentClass::classIDByIdentifier( 'dimmi_forum_reply' ),
                             eZContentClass::classIDByIdentifier( 'dimmi_forum_topic' ),
                             eZContentClass::classIDByIdentifier( 'dimmi_forum' ),
                             eZContentClass::classIDByIdentifier( 'dimmi_root' ),

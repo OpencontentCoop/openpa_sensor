@@ -40,20 +40,16 @@ if ( $accountKey )
     // Enable user account
     eZUserOperationCollection::activation( $userID, $hash, true );
 
-    if( $publishResult['status'] === eZModuleOperationInfo::STATUS_HALTED )
-    {
-        $isPending = true;
-    }
-    else
-    {
-        /** @var eZUser $user */
-        $user = eZUser::fetch( $userID );
+    /** @var eZUser $user */
+    $user = eZUser::fetch( $userID );
 
-        if ( $user === null )
-            return $Module->handleError( eZError::KERNEL_NOT_FOUND, 'kernel' );
+    if ( $user === null )
+        return $Module->handleError( eZError::KERNEL_NOT_FOUND, 'kernel' );
 
-        $user->loginCurrent();
-    }
+    $sensorUserInfo = SensorUserInfo::instance( $user );
+    $sensorUserInfo->setModerationMode( false );
+
+    $user->loginCurrent();
 }
 elseif( $mainNodeID )
 {

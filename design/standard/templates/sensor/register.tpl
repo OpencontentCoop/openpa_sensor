@@ -61,15 +61,15 @@
                         {/if}
                         {undef $bypass_captcha}
                     {elseif $check_mail}
-                      <div class="row">                        
-                        <div class="col-lg-12">
-                          <div class="alert alert-info">
-                            <h3>{'Your account was successfully created. An email will be sent to the specified
-email address. Follow the instructions in that mail to activate
-your account.'|i18n('design/standard/user')}</h3>
+                          <div class="alert alert-info text-center">
+                            <i class="fa fa-envelope-o fa-5x"></i>
+                            <h3>{"Ti è stata inviata un'e-mail all'indirizzo che hai specificato"|i18n('openpa_sensor')}</h3>
+                            <h4>{"Segui le istruzioni che troverai nel messaggio per attivare il tuo profilo"|i18n('openpa_sensor')}</h4>
+                            {if $verify_mode|eq(2)}
+                                <p>{"Finché non avrai attivato il tuo profilo, tutte le tue attività saranno moderate"|i18n('openpa_sensor')}</p>
+                                <a class="btn btn-info btn-lg" href="{'/'|ezurl(no)}">{"Inizia"|i18n('openpa_sensor')}</a>
+                            {/if}
                           </div>
-                        </div>                        
-                      </div>
                     {/if}
                 </form>
             </div>

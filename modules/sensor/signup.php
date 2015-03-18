@@ -12,51 +12,52 @@ $currentUser = eZUser::currentUser();
 
 $invalidForm = false;
 $errors = array();
-$showCaptcha = false;
+$captchaIsValid = false;
 
 $tpl->setVariable( 'name', false );
 $tpl->setVariable( 'email', false );
 
 if ( $http->hasPostVariable( 'RegisterButton' ) )
 {
-    $sensorUser = new SensorUser();
+    $sensorUserRegister = new SensorUserRegister();
     try
     {
-        $sensorUser->setName( $http->postVariable( 'Name' ) );
+        $sensorUserRegister->setName( $http->postVariable( 'Name' ) );
+        $tpl->setVariable( 'name', $http->postVariable( 'Name' ) );
+    }
+    catch( InvalidArgumentException $e )
+    {
+        $errors[] = $e->getMessage();
+        $invalidForm = true;
+        $tpl->setVariable( 'name', $sensorUserRegister->getName() );
+    }
+    try
+    {
+        $sensorUserRegister->setEmail( $http->postVariable( 'EmailAddress' ) );
+        $tpl->setVariable( 'email', $sensorUserRegister->getEmail() );
+    }
+    catch( InvalidArgumentException $e )
+    {
+        $errors[] = $e->getMessage();
+        $invalidForm = true;
+        $tpl->setVariable( 'email', $http->postVariable( 'EmailAddress' ) );
+    }
+    try
+    {
+        $sensorUserRegister->setPassword( $http->postVariable( 'Password' ) );
     }
     catch( InvalidArgumentException $e )
     {
         $errors[] = $e->getMessage();
         $invalidForm = true;
     }
-    try
-    {
-        $sensorUser->setEmail( $http->postVariable( 'EmailAddress' ) );
-    }
-    catch( InvalidArgumentException $e )
-    {
-        $errors[] = $e->getMessage();
-        $invalidForm = true;
-    }
-    try
-    {
-        $sensorUser->setPassword( $http->postVariable( 'Password' ) );
-    }
-    catch( InvalidArgumentException $e )
-    {
-        $errors[] = $e->getMessage();
-        $invalidForm = true;
-    }
-
-    $tpl->setVariable( 'name', $sensorUser->getName() );
-    $tpl->setVariable( 'email', $sensorUser->getEmail() );
 
     if ( !$invalidForm )
     {
         try
         {
-            $sensorUser->store();
-            $showCaptcha = !SensorUser::checkCaptcha();
+            $sensorUserRegister->store();
+            $captchaIsValid = SensorUserRegister::captchaIsValid();
         }
         catch ( InvalidArgumentException $e )
         {
@@ -74,18 +75,14 @@ if ( $http->hasPostVariable( 'RegisterButton' ) )
         }
     }
 }
-elseif ( SensorUser::hasSessionUser() )
+elseif ( SensorUserRegister::hasSessionUser() )
 {
-    try
+    $captchaIsValid = SensorUserRegister::captchaIsValid();
+    if ( $captchaIsValid )
     {
-        $showCaptcha = !SensorUser::checkCaptcha();
         try
         {
-            SensorUser::finish();
-        }
-        catch( RuntimeException $e )
-        {
-            $Module->redirectTo( '/sensor/signup' );
+            SensorUserRegister::finish( $Module );
         }
         catch ( Exception $e )
         {
@@ -97,20 +94,16 @@ elseif ( SensorUser::hasSessionUser() )
             );
         }
     }
-    catch( InvalidArgumentException $e )
-    {
-        $errors[] = $e->getMessage();
-        $showCaptcha = true;
-    }
 }
 else
 {
     $Module->redirectTo( '/sensor/home' );
 }
 
-$tpl->setVariable( 'check_mail', SensorUser::getVerifyMode() !== SensorUser::MODE_ONLY_CAPTCHA );
+$tpl->setVariable( 'verify_mode',  SensorUserRegister::getVerifyMode() );
+$tpl->setVariable( 'check_mail', ( SensorUserRegister::getVerifyMode() !== SensorUserRegister::MODE_ONLY_CAPTCHA ) );
 $tpl->setVariable( 'sensor_signup', true );
-$tpl->setVariable( 'show_captcha', $showCaptcha );
+$tpl->setVariable( 'show_captcha', !$captchaIsValid );
 $tpl->setVariable( 'invalid_form', $invalidForm );
 $tpl->setVariable( 'errors', $errors );
 $tpl->setVariable( 'current_user', $currentUser );
