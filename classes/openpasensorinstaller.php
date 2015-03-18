@@ -742,7 +742,7 @@ $installDemoContent = false;
 
         foreach( $roles as $roleName => $policies )
         {
-            OpenPABase::initRole( $roleName, $policies );
+            OpenPABase::initRole( $roleName, $policies, true );
         }
 
         $anonymousUserId = eZINI::instance()->variable( 'UserSettings', 'AnonymousUserID' );
