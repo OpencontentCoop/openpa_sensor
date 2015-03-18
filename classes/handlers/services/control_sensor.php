@@ -94,6 +94,9 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase
 
         $this->data['timed_moderation_is_enabled'] = self::TimedModerationIsEnabled();
 
+        $this->fnData['current_moderation_status'] = 'getCurrentModerationStatus';
+        $this->fnData['moderation_states'] = 'getModerationStates';
+
         // post
         $this->data['use_per_area_approver'] = false; //@todo impostare da ini?
 
@@ -107,7 +110,6 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase
         $this->fnData['type'] = 'getType';
         $this->fnData['current_status'] = 'getCurrentStatus';
         $this->fnData['current_privacy_status'] = 'getCurrentPrivacyStatus';
-        $this->fnData['current_moderation_status'] = 'getCurrentModerationStatus';
         $this->fnData['current_owner'] = 'getCurrentOwner'; //@todo rimuovere dal service correggere chiamate tpl
         $this->fnData['comment_count'] = 'getCommentCount'; //@todo rimuovere dal service correggere chiamate tpl
         $this->fnData['response_count'] = 'getResponseCount'; //@todo rimuovere dal service correggere chiamate tpl
@@ -406,6 +408,14 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase
             }
         }
         return array();
+    }
+
+    protected function getModerationStates()
+    {
+        return OpenPABase::initStateGroup(
+            self::$moderationStateGroupIdentifier,
+            self::$moderationStateIdentifiers
+        );
     }
 
     /**

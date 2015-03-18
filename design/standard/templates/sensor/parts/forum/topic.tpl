@@ -58,6 +58,7 @@
       {/if}
     </div>
   </div>
+  {/if}
 
 </article>
 
