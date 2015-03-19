@@ -350,3 +350,12 @@ article.post .post_content figure img{width: 100%}
 
 .like_rating{ padding: 9px 0;}
 .abstract{font-size: 1.2em}
+.noborder{border: none !important}
+.dark{color:#333}
+
+/* da rivedere */
+div.alert h1, div.alert h2, div.alert h3, div.alert h4, div.alert h5, div.alert h6{margin-top: 0}
+div.alert p{margin-bottom: 10px !important}
+.full_page_photo section.call_to_action h4.skincolored {
+    background: none repeat scroll 0 0 rgba(0, 141, 0, 0.6);
+}

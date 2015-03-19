@@ -17,7 +17,7 @@
 
     {set $related_objects = fetch( 'content', 'related_objects', hash( 'object_id', $topic.contentobject_id, 'all_relations', true() ) )}
     <div class="col-md-{$col-width}">
-      <div class="service_teaser vertical wow animated flipInX animated">
+      <div class="service_teaser vertical">
         {if $topic|has_attribute( 'image' )}
         <div class="service_photo hidden-xs hidden-sm">
           <figure style="background-image:url({$topic|attribute( 'image' ).content.original.full_path|ezroot(no)})"></figure>

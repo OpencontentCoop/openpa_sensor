@@ -7,5 +7,5 @@ if ( $node->attribute( 'children_count' ) > 1 )
 else
 {
     $children = $node->attribute( 'children' );
-    $module->redirectTo( $children[0]->attribute( 'url_alias' ) );
+    $module->redirectTo( $children[0]->attribute( 'url_alias' ) . '#partecipa' );
 }

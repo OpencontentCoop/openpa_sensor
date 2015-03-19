@@ -2,7 +2,7 @@
     {def $sensor = sensor_root_handler()}
 {/if}
 {if $sensor.banner}
-<div class="full_page_photo" style='background-image: url({$sensor.banner|ezroot()});'>
+<div class="full_page_photo hidden-xs" style='background-image: url({$sensor.banner|ezroot()});'>
     <div class="container">
         <section class="call_to_action">
             <h3 class="animated bounceInDown">{$sensor.banner_title}</h3>
