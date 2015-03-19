@@ -50,11 +50,4 @@
   {/if}
 {/if}
 
-{run-once}
-{ezcss_require( 'star_rating.css' )}
-{if and( $attribute.data_int|not, has_access_to_limitation( 'ezjscore', 'call', hash( 'FunctionList', 'ezstarrating_rate' ) ))}
-  {def $preferred_lib = 'jquery'}
-  {ezscript_require( array( 'ezjsc::jquery', 'ezjsc::jqueryio', 'ezstarrating_jquery.js' ) )}
-{/if}
-{/run-once}
 {undef $rating}

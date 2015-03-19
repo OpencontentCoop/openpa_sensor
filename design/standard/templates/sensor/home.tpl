@@ -12,7 +12,7 @@
 {/if}
 {if $count|gt(0)}
   {def $col = 12|div($count)}
-<section class="hgroup">
+<section class="hgroup noborder">
   <div class="row">
 
     {if $sensor.post_is_enabled}
