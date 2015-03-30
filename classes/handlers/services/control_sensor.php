@@ -92,6 +92,7 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase
         $this->data['forum_is_enabled'] = self::ForumIsEnable();
         $this->data['survey_is_enabled'] = self::SurveyIsEnabled();
 
+        $this->data['moderation_is_enabled'] = self::ModerationIsEnabled();
         $this->data['timed_moderation_is_enabled'] = self::TimedModerationIsEnabled();
 
         $this->fnData['current_moderation_status'] = 'getCurrentModerationStatus';
@@ -1173,6 +1174,12 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase
         {
             return true;
         }
+
+        if ( self::ModerationIsEnabled() )
+        {
+            return true;
+        }
+
         if ( self::TimedModerationIsEnabled() )
         {
             if ( !$timestamp )
@@ -1188,11 +1195,22 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase
         return false;
     }
 
+    public static function ModerationIsEnabled()
+    {
+        $node = self::rootNode();
+        $dataMap = $node->attribute( 'data_map' );
+        return isset( $dataMap['enable_moderation'] )
+               && $dataMap['enable_moderation']->attribute( 'data_int' ) == 1
+               && $dataMap['enable_moderation']->attribute( 'data_type_string' ) == 'ezboolean';
+    }
+
     public static function TimedModerationIsEnabled()
     {
         $node = self::rootNode();
         $dataMap = $node->attribute( 'data_map' );
-        return isset( $dataMap['office_timetable'] ) && $dataMap['office_timetable']->attribute( 'has_content' ) && $dataMap['office_timetable']->attribute( 'data_type_string' ) == 'ocrecurrence';
+        return isset( $dataMap['office_timetable'] )
+               && $dataMap['office_timetable']->attribute( 'has_content' )
+               && $dataMap['office_timetable']->attribute( 'data_type_string' ) == 'ocrecurrence';
     }
 
     /**
