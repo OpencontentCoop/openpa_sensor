@@ -24,7 +24,7 @@
   </td>
   <td>    
     <ul class="list-inline">
-    {if fetch( 'user', 'has_access_to', hash( 'module', 'sensor', 'function', 'config' ) )}
+    {if fetch( 'user', 'has_access_to', hash( 'module', 'sensor', 'function', 'manage' ) )}
       <li><strong>{$item.content.helper.object.id}</strong></li>
 	  {/if}
 	  <li>
@@ -41,8 +41,8 @@
     <ul class="list-inline">
       <li><small><strong>{"Creata"|i18n('openpa_sensor/dashboard')}</strong> {$item.created|l10n(shortdatetime)}</small></li>      
       {if $item.modified|ne($item.created)}<li><small><strong>{"Modificata"|i18n('openpa_sensor/dashboard')}</strong> {$item.modified|l10n(shortdatetime)}</small></li>{/if}
-      
-      {if and( $item.content.helper.can_do_something, $item.user_status.is_active )}
+
+      {if and( fetch( 'user', 'has_access_to', hash( 'module', 'sensor', 'function', 'manage' ) ), $item.user_status.is_active )}
         <li><small><strong>{"Scadenza"|i18n('openpa_sensor/dashboard')}</strong></small> <span class="label label-{$item.content.helper.expiring_date.label}">{$item.content.helper.expiring_date.text|wash()}</span></li>
       {/if}
     </ul>
@@ -59,8 +59,7 @@
         {if $post.current_owner}
           <li><small><strong>{"In carico a"|i18n('openpa_sensor/dashboard')}</strong> {$post.current_owner}</small></li>
         {/if}
-      </small>
-    </p>
+    </ul>
   </td>
   <td class="twìext-center"> 
       <p><a href={concat('sensor/posts/',$item.content.content_object_id)|ezurl()} class="btn btn-info btn-sm">{"Dettagli"|i18n('openpa_sensor/dashboard')}</a></p>
