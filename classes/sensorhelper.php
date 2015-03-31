@@ -261,9 +261,6 @@ class SensorHelper
                     return $this->getContentObject();
                 } break;
 
-            case 'human_message_count':
-                break;
-
             case 'public_message_count':
                 {
                     return eZCollaborationItemMessageLink::fetchItemCount(
@@ -301,6 +298,17 @@ class SensorHelper
                     null,
                     true );
             } break;
+
+            case 'human_message_count':
+                return eZCollaborationItemMessageLink::fetchItemCount(
+                    array(
+                        'item_id' => $this->collaborationItem->attribute( 'id' ),
+                        'conditions' => array(
+                            'message_type' => array( array( SensorHelper::MESSAGE_TYPE_PUBLIC, SensorHelper::MESSAGE_TYPE_RESPONSE, eZUser::currentUserID() ) )
+                        )
+                    )
+                );
+                break;
             
             case 'human_unread_message_count':
                 {
