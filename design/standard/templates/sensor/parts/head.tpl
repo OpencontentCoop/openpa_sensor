@@ -37,8 +37,16 @@
     <script src="{'javascript/respond.min.js'|ezdesign(no)}"></script>
     <![endif]-->
 
-    <link rel="apple-touch-icon-precomposed" sizes="114x114" href={$sensor.site_images["apple-touch-icon-114x114-precomposed"]}>
-    <link rel="apple-touch-icon-precomposed" sizes="72x72" href={$sensor.site_images["apple-touch-icon-72x72-precomposed"]}>
-    <link rel="apple-touch-icon-precomposed" href={$sensor.site_images["apple-touch-icon-57x57-precomposed"]}>
-    <link rel="shortcut icon" href={$sensor.site_images["favicon"]}>
+    {if $sensor.site_images["apple-touch-icon-114x114-precomposed"]}
+    <link rel="apple-touch-icon-precomposed" sizes="114x114" href="{$sensor.site_images["apple-touch-icon-114x114-precomposed"]}" />
+    {/if}
+    {if $sensor.site_images["apple-touch-icon-72x72-precomposed"]}
+    <link rel="apple-touch-icon-precomposed" sizes="72x72" href="{$sensor.site_images["apple-touch-icon-72x72-precomposed"]}" />
+    {/if}
+    {if $sensor.site_images["apple-touch-icon-57x57-precomposed"]}
+    <link rel="apple-touch-icon-precomposed" href="{$sensor.site_images["apple-touch-icon-57x57-precomposed"]}" />
+    {/if}
+    {if $sensor.site_images["favicon"]}
+    <link rel="shortcut icon" href="{$sensor.site_images["favicon"]}">
+    {/if}
 </head>
