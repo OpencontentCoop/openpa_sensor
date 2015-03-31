@@ -11,16 +11,17 @@
 
 <tr id="item-{$item.id}"{if $item.content.helper.human_unread_message_count} class="danger"{/if}>  
   <td style="vertical-align: middle;white-space: nowrap;" width="1">    
-    <p>      
-      {if $item.content.helper.human_message_count}
+    {if $item.content.helper.human_message_count}
+      <p>
         <i class="fa {if $item.content.helper.human_unread_message_count}fa-comments faa-tada animated{else}fa-comments-o{/if}"> </i> {*if $item.content.helper.human_unread_message_count}<strong>{$item.content.helper.human_unread_message_count}</strong>{/if} {$item.content.helper.human_message_count*}
-      {/if}
-    </p>
-    <p>
-      {if $item.content.helper.robot_unread_message_count}
-        <i class="fa fa-exclamation-triangle faa-tada animated"></i>
-      {/if}
-    </p>
+      </p>
+    {/if}
+
+    {if $item.content.helper.robot_unread_message_count}
+      <p>
+          <i class="fa fa-exclamation-triangle faa-tada animated"></i>
+      </p>
+    {/if}
   </td>
   <td>    
     <ul class="list-inline">
