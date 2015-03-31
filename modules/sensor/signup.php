@@ -58,6 +58,10 @@ if ( $http->hasPostVariable( 'RegisterButton' ) )
         {
             $sensorUserRegister->store();
             $captchaIsValid = SensorUserRegister::captchaIsValid();
+            if ( $captchaIsValid )
+            {
+                SensorUserRegister::finish( $Module );
+            }
         }
         catch ( InvalidArgumentException $e )
         {
