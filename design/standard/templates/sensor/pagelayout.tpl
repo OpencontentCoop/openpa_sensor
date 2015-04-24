@@ -33,6 +33,7 @@
 </header>
 <img alt="SensorCivico" src={"sensor_border.png"|ezimage()} style="position: absolute; top: 0; right: 0; border: 0;">
 
+{cache-block ignore_content_expiry keys=array( $module_result.uri )}
 {if is_set( $sensor )|not()}{def $sensor = sensor_root_handler()}{/if}
 
 {if is_set( $sensor_home )}
@@ -50,7 +51,7 @@
 {*if and( is_set( $module_result.content_info.class_identifier ), $module_result.content_info.class_identifier|eq( 'dimmi_forum' ) )}  
   {include uri='design:sensor/parts/forum/forum_slideshow.tpl' node_id=$module_result.node_id}  
 {/if*}
-
+{/cache-block}
 
 <div class="main">
     <div class="container">

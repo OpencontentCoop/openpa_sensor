@@ -9,6 +9,11 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase
      * @var eZContentObjectTreeNode
      */
     protected static $rootNode;
+    
+    /**
+     * @var eZContentObjectAttribute[]
+     */
+    protected static $rootNodeDataMap;
 
     // sensor/post
     /**
@@ -115,22 +120,22 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase
         $this->fnData['comment_count'] = 'getCommentCount'; //@todo rimuovere dal service correggere chiamate tpl
         $this->fnData['response_count'] = 'getResponseCount'; //@todo rimuovere dal service correggere chiamate tpl
 
-        $this->data['post_container_node'] = self::postContainerNode();
-        $this->data['post_categories_container_node'] = self::postCategoriesNode();
-        $this->data['post_class'] = self::postContentClass();
+        $this->fnData['post_container_node'] = 'postContainerNode';
+        $this->fnData['post_categories_container_node'] = 'postCategoriesNode';
+        $this->fnData['post_class'] = 'postContentClass';
                
-        $this->data['areas'] = self::postAreas();
-        $this->data['categories'] = self::postCategories();
-        $this->data['operators'] = self::operators();
+        $this->fnData['areas'] = 'postAreas';
+        $this->fnData['categories'] = 'postCategories';
+        $this->fnData['operators'] = 'operators';
 
         // forum
-        $this->data['forum_container_node'] = self::forumContainerNode();
-        $this->data['forums'] = self::forums();
+        $this->fnData['forum_container_node'] = 'forumContainerNode';
+        $this->fnData['forums'] = 'forums';
 
         // survey
-        $this->data['survey_container_node'] = self::surveyContainerNode();
-        $this->data['surveys'] = self::surveys();
-        $this->data['valid_surveys'] = self::validSurveys();
+        $this->fnData['survey_container_node'] = 'surveyContainerNode';
+        $this->fnData['surveys'] = 'surveys';
+        $this->fnData['valid_surveys'] = 'validSurveys';
     }
 
     /**
@@ -138,9 +143,8 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase
      * @return bool
      */
     public static function PostIsEnable()
-    {
-        $node = self::rootNode();
-        $dataMap = $node->attribute( 'data_map' );
+    {        
+        $dataMap = self::rootNodeDataMap();
         return isset( $dataMap['post_enabled'] ) && $dataMap['post_enabled']->attribute( 'data_int' ) == 1;
     }
 
@@ -150,8 +154,7 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase
      */
     public static function ForumIsEnable()
     {
-        $node = self::rootNode();
-        $dataMap = $node->attribute( 'data_map' );
+        $dataMap = self::rootNodeDataMap();
         return isset( $dataMap['forum_enabled'] ) && $dataMap['forum_enabled']->attribute( 'data_int' ) == 1;
     }
 
@@ -161,8 +164,7 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase
      */
     public static function SurveyIsEnabled()
     {
-        $node = self::rootNode();
-        $dataMap = $node->attribute( 'data_map' );
+        $dataMap = self::rootNodeDataMap();
         return isset( $dataMap['survey_enabled'] ) && $dataMap['survey_enabled']->attribute( 'data_int' ) == 1;
     }
 
@@ -206,8 +208,7 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase
      */
     protected function getPrivacy()
     {
-        $node = self::rootNode();
-        $dataMap = $node->attribute( 'data_map' );
+        $dataMap = self::rootNodeDataMap();
         return $dataMap['privacy'];
     }
 
@@ -217,8 +218,7 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase
      */
     protected function getFaq()
     {
-        $node = self::rootNode();
-        $dataMap = $node->attribute( 'data_map' );
+        $dataMap = self::rootNodeDataMap();
         return $dataMap['faq'];
     }
 
@@ -228,8 +228,7 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase
      */
     protected function getTerms()
     {
-        $node = self::rootNode();
-        $dataMap = $node->attribute( 'data_map' );
+        $dataMap = self::rootNodeDataMap();
         return $dataMap['terms'];
     }
 
@@ -290,7 +289,7 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase
         }
         if ( empty( $data ) )
         {
-            $areas = self::postAreas();
+            $areas = $this->postAreas();
             $area = isset( $areas['tree'][0]['node'] ) ? $areas['tree'][0]['node'] : false;
             if ( $area instanceof eZContentObjectTreeNode )
             {
@@ -532,7 +531,7 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase
     {
         $data = false;
         if ( $this->container->hasAttribute( 'banner' ) )
-        {
+        {            
             $attribute = $this->container->attribute( 'banner' )->attribute( 'contentobject_attribute' );
             if ( $attribute instanceof eZContentObjectAttribute && $attribute->hasContent() )
             {
@@ -668,7 +667,7 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase
         {
             if ( !isset( $GLOBALS['SensorRootNode'] ) )
             {
-                $root =eZContentObject::fetchByRemoteID( self::sensorRootRemoteId() );
+                $root = eZContentObject::fetchByRemoteID( self::sensorRootRemoteId() );
                 if ( $root instanceof eZContentObject )
                 {
                     $GLOBALS['SensorRootNode'] = $root->attribute( 'main_node' );
@@ -677,6 +676,16 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase
             self::$rootNode = $GLOBALS['SensorRootNode'];
         }
         return self::$rootNode;
+    }
+    
+    public static function rootNodeDataMap()
+    {
+        if ( self::$rootNodeDataMap == null )
+        {
+            $node = self::rootNode();
+            self::$rootNodeDataMap = $node->attribute( 'data_map' );
+        }
+        return self::$rootNodeDataMap;
     }
 
     /**
@@ -1283,5 +1292,16 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase
             }                
         }
         return $data;
+    }
+    
+    public static function rootHandler()
+    {
+        if ( !isset( $GLOBALS['SensorRootHandler'] ) )
+        {
+            $root = eZContentObject::fetchByRemoteID( ObjectHandlerServiceControlSensor::sensorRootRemoteId() );
+            $rootHandler = OpenPAObjectHandler::instanceFromContentObject( $root );
+            $GLOBALS['SensorRootHandler'] = $rootHandler->attribute( 'control_sensor' );
+        }
+        return $GLOBALS['SensorRootHandler'];
     }
 }
