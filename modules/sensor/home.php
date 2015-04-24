@@ -15,7 +15,7 @@ if ( $viewCacheEnabled )
 
     $cacheFilePath = SensorModuleFunctions::sensorGlobalCacheFilePath( $currentUser->isAnonymous() ? 'home-anon' : 'home' );
     $cacheFile = eZClusterFileHandler::instance( $cacheFilePath );
-    $Result = $cacheFile->processCache( array( 'SensorModuleFunctions', 'sensorGlobalRetrieve' ),
+    $Result = $cacheFile->processCache( array( 'SensorModuleFunctions', 'sensorCacheRetrieve' ),
                                         array( 'SensorModuleFunctions', 'sensorHomeGenerate' ),
                                         null,
                                         null,

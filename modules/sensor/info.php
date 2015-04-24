@@ -11,7 +11,7 @@ if ( $viewCacheEnabled )
 {
     $cacheFilePath = SensorModuleFunctions::sensorGlobalCacheFilePath( 'info-' . $identifier );
     $cacheFile = eZClusterFileHandler::instance( $cacheFilePath );
-    $Result = $cacheFile->processCache( array( 'SensorModuleFunctions', 'sensorGlobalRetrieve' ),
+    $Result = $cacheFile->processCache( array( 'SensorModuleFunctions', 'sensorCacheRetrieve' ),
                                         array( 'SensorModuleFunctions', 'sensorInfoGenerate' ),
                                         null,
                                         null,

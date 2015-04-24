@@ -19,8 +19,7 @@ else
     
     $viewParameters = array( 'offset' => $Offset );
     $user = eZUser::currentUser();
-    $cacheFilePath = SensorModuleFunctions::sensorPostCacheFilePath( $user, $postId, $viewParameters );
-    
+    $cacheFilePath = SensorModuleFunctions::sensorPostCacheFilePath( $user, $postId, $viewParameters );    
     $localVars = array( "cacheFilePath", "postId", "module", "tpl", 'viewParameters' );        
     $cacheFile = eZClusterFileHandler::instance( $cacheFilePath );
     $args = compact( $localVars );
@@ -28,7 +27,7 @@ else
     $viewCacheEnabled = ( $ini->variable( 'ContentSettings', 'ViewCaching' ) == 'enabled' );    
     if ( $viewCacheEnabled )
     {
-        $Result = $cacheFile->processCache( array( 'SensorModuleFunctions', 'sensorPostRetrieve' ),
+        $Result = $cacheFile->processCache( array( 'SensorModuleFunctions', 'sensorCacheRetrieve' ),
                                             array( 'SensorModuleFunctions', 'sensorPostGenerate' ),
                                             null,
                                             null,

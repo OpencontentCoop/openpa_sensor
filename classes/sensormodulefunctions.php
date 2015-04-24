@@ -119,6 +119,25 @@ class SensorModuleFunctions
                            'store'   => false );
         }
         return $retval;
+    }    
+    
+    public static function sensorPostPopupGenerate( $file, $args )
+    {        
+        $object = eZContentObject::fetch( $args );
+        if ( $object instanceof eZContentObject && $object->attribute( 'can_read' ) )
+        {
+            $tpl = eZTemplate::factory();
+            $tpl->setVariable( 'object', $object );
+            $Result = $tpl->fetch( 'design:sensor/parts/post/marker_popup.tpl' );
+            $data = array( 'content' => $result );
+        }
+        else
+        {
+            $Result = '<em>Private</em>';
+        }
+        $retval = array( 'content' => $Result,
+                         'scope'   => 'sensor' );
+        return $retval;
     }
     
     public static function sensorPostGenerate( $file, $args )
@@ -200,32 +219,35 @@ class SensorModuleFunctions
         return array( 'content' => $Result,
                       'scope'   => 'sensor' );
     }
-    
-    public static function sensorPostRetrieve( $file, $mtime, $args )
-    {
-        //if ( !isset( $expiryReason ) )
-        //    $expiryReason = 'Content cache is expired';
-        //return new eZClusterFileFailure( 1, $expiryReason );
-        $Result = include( $file );        
-        return $Result;        
-    }
 
-    public static function sensorGlobalRetrieve( $file, $mtime, $args )
+    public static function sensorCacheRetrieve( $file, $mtime, $args )
     {
         $Result = include( $file );        
         return $Result;
     }
     
-    public static function sensorPostCacheFilePath( $user, $postId, $viewParameters )
+    public static function sensorPostCacheFilePath( $user, $postId, $viewParameters, $cacheNameExtra = '' )
     {
-        $cacheNameExtra = '';
+        $cacheHashArray = array();
         
-        $cacheHashArray = array();        
-        $cacheHashArray[] = implode( '.', $user->roleIDList() );
-        
-        $limitValueList = implode( '.', $user->limitValueList() );
-        if ( !empty( $limitValueList ) )
-            $cacheHashArray[] = $limitValueList;
+        if ( $user instanceof eZUser )
+        {            
+            $cacheHashArray[] = implode( '.', $user->roleIDList() );
+            
+            $limitValueList = implode( '.', $user->limitValueList() );
+            if ( !empty( $limitValueList ) )
+            {
+                $cacheHashArray[] = $limitValueList;
+            }
+            if ( !$user->isAnonymous()  )
+            {
+                $activePartecipants = SensorHelper::getStoredActivesPartecipantsByPostId( $postId );
+                if ( in_array( $user->id(), $activePartecipants ) )
+                {
+                    $cacheHashArray[] = 'ap:' .$user->id();
+                }
+            }
+        }
         
         //@todo? al momento non serve mettere in cache i viewparameters perché non vengono usati
         //$vpString = '';
@@ -237,12 +259,6 @@ class SensorModuleFunctions
         //    $vpString .= 'vp:' . $key . '=' . $value;
         //}
         //$cacheHashArray[] = $vpString;
-        
-        $activePartecipants = SensorHelper::getStoredActivesPartecipantsByPostId( $postId );
-        if ( in_array( $user->id(), $activePartecipants ) )
-        {
-            $cacheHashArray[] = 'ap:' .$user->id();
-        }
         
         $currentSiteAccess = $GLOBALS['eZCurrentAccess']['name'];
         $cacheFile = $postId . '-' . $cacheNameExtra . md5( implode( '-', $cacheHashArray ) ) . '.cache';
