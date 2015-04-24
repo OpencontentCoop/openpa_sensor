@@ -9,4 +9,7 @@ ExtensionAutoloadPath[]=openpa_sensor
 [RoleSettings]
 PolicyOmitList[]=sensor/use
 
+[Event]
+Listeners[]=content/cache@SensorModuleFunctions::onClearObjectCache
+
 */ ?>

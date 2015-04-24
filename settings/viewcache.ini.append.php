@@ -17,4 +17,9 @@ ClearCacheMethod[]=parent
 ClearCacheMethod[]=relating
 ClearCacheMethod[]=siblings
 
+[sensor_post]
+DependentClassIdentifier[]=sensor_post_root
+ClearCacheMethod[]=object
+ClearCacheMethod[]=parent
+
 */ ?>
