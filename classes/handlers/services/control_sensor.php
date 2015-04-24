@@ -289,7 +289,7 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase
         }
         if ( empty( $data ) )
         {
-            $areas = $this->postAreas();
+            $areas = self::postAreas();
             $area = isset( $areas['tree'][0]['node'] ) ? $areas['tree'][0]['node'] : false;
             if ( $area instanceof eZContentObjectTreeNode )
             {
