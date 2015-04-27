@@ -218,8 +218,8 @@ $(document).ready(function(){
               {include name=forumtree uri='design:sensor/parts/walk_item_table.tpl' item=$forum recursion=0 insert_child_class=true() redirect_if_discarded='/sensor/config/dimmi' redirect_after_publish='/sensor/config/dimmi'  redirect_if_cancel='/sensor/config/dimmi' redirect_after_remove='/sensor/config/dimmi'}
             {/foreach}
           </table>
-		  <div class="pull-left"><a class="btn btn-info" href="{concat('exportas/csv/dimmi_forum/',$forums[0].node.parent_node_id)|ezurl(no)}">{'Esporta in CSV'|i18n('openpa_sensor/config')}</a></div>
-          <div class="pull-right"><a class="btn btn-danger" href="{concat('openpa/add/dimmi_forum/?parent=',$forums[0].node.parent_node_id)|ezurl(no)}"><i class="fa fa-plus"></i> {'Aggiungi discussione'|i18n('openpa_sensor/config')}</a></div>
+		  <div class="pull-left"><a class="btn btn-info" href="{concat('exportas/csv/dimmi_forum/',$sensor.forum_container_node.node_id)|ezurl(no)}">{'Esporta in CSV'|i18n('openpa_sensor/config')}</a></div>
+          <div class="pull-right"><a class="btn btn-danger" href="{concat('openpa/add/dimmi_forum/?parent=',$sensor.forum_container_node.node_id)|ezurl(no)}"><i class="fa fa-plus"></i> {'Aggiungi discussione'|i18n('openpa_sensor/config')}</a></div>
         </div>
       {/if}
 
