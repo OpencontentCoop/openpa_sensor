@@ -90,9 +90,7 @@ class OpenPASensorOperator
 
             case 'sensor_root_handler':
             {
-                $root = eZContentObject::fetchByRemoteID( ObjectHandlerServiceControlSensor::sensorRootRemoteId() );
-                $rootHandler = OpenPAObjectHandler::instanceFromContentObject( $root );
-                return $operatorValue = $rootHandler->attribute( 'control_sensor' );
+                return $operatorValue = ObjectHandlerServiceControlSensor::rootHandler();
             } break;
                         
             case 'sensor_postcontainer':

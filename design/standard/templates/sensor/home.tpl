@@ -36,4 +36,5 @@
 	</div>
 </section>
 {/if}
+
 {undef $sensor}

@@ -25,6 +25,8 @@ class SensorHelper
     const STATUS_FIXED = 4;
 
     const STATUS_REOPENED = 6;
+    
+    const FIELD_PREFIX = 'sensorpost_';
 
     /**
      * @var eZCollaborationItem
@@ -143,7 +145,8 @@ class SensorHelper
                        || $this->canClose()
                        || $this->canFix()
                        || $this->attribute( 'can_add_category' )
-                       || $this->attribute( 'can_add_area' ) );
+                       || $this->attribute( 'can_add_area' )
+                       || $this->canModerate() );
                 break;
 
             case 'can_add_category':
@@ -1262,8 +1265,80 @@ class SensorHelper
         {
             $object->setAttribute( 'modified', $timestamp );
             $object->store();
+            $this->storePostActivesPartecipants();
             eZContentCacheManager::clearContentCacheIfNeeded( $id );
         }        
+    }
+    
+    protected function getPostActivesPartecipants()
+    {
+        $activePartecipants = array();        
+        $conditions = array( 'collaboration_id' => $this->collaborationItem->attribute( 'id' ),
+                             'is_active' => 1 );        
+        $resources = eZPersistentObject::fetchObjectList(
+            eZCollaborationItemStatus::definition(),
+            array( 'user_id' ),
+            $conditions,
+            null,
+            null,
+            false
+        );
+        
+        foreach( $resources as $row )
+        {
+            $activePartecipants[] = $row['user_id'];
+        }
+        sort( $activePartecipants );
+        return $activePartecipants;
+    }    
+    
+    public static function getStoredActivesPartecipantsByPostId( $id )
+    {
+        $name = self::FIELD_PREFIX . $id;
+        $siteData = eZSiteData::fetchByName( $name );
+        $activePartecipants = array();
+        if ( $siteData instanceof eZSiteData)
+        {
+            $activePartecipants = unserialize( $siteData->attribute( 'value' ) );
+        }
+        return $activePartecipants;
+    }
+    
+    public function storePostActivesPartecipants()
+    {    
+        $activePartecipants = $this->getPostActivesPartecipants();
+        $content = $this->collaborationItem->content();
+        $id = $content['content_object_id'];
+        $name = self::FIELD_PREFIX . $id;
+        $siteData = eZSiteData::fetchByName( $name );
+        $removeIfNeeded = false;
+        if ( !$siteData instanceof eZSiteData)
+        {
+            $row = array(
+                'name' => $name,
+                'value' => serialize( array() )
+            );
+            $siteData = new eZSiteData( $row );
+            $currentActivePartecipants = array();
+        }
+        else
+        {
+            $currentActivePartecipants = unserialize( $siteData->attribute( 'value' ) );
+            $removeIfNeeded = true;
+        }
+        
+        if ( count( $activePartecipants ) > 0 )
+        {
+            if ( serialize( $currentActivePartecipants ) != serialize( $activePartecipants ) )
+            {
+                $siteData->setAttribute( 'value', serialize( $activePartecipants ) );
+                $siteData->store();
+            }            
+        }
+        elseif( $removeIfNeeded )
+        {
+            $siteData->remove();
+        }
     }
 
     protected function getCommentMessage( $status, $name = null )
@@ -1868,4 +1943,5 @@ class SensorHelper
         );
         return SensorHelper::fetchListTool( $itemParameters, true, $filters );
     }
+    
 }

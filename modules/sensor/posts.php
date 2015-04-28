@@ -15,78 +15,28 @@ if ( !is_numeric( $postId ) )
 }
 else
 {
-    try
+    eZPreferences::sessionCleanup();
+    
+    $viewParameters = array( 'offset' => $Offset );
+    $user = eZUser::currentUser();
+    $cacheFilePath = SensorModuleFunctions::sensorPostCacheFilePath( $user, $postId, $viewParameters );    
+    $localVars = array( "cacheFilePath", "postId", "module", "tpl", 'viewParameters' );        
+    $cacheFile = eZClusterFileHandler::instance( $cacheFilePath );
+    $args = compact( $localVars );
+    $ini = eZINI::instance();
+    $viewCacheEnabled = ( $ini->variable( 'ContentSettings', 'ViewCaching' ) == 'enabled' );    
+    if ( $viewCacheEnabled )
     {
-        eZPreferences::sessionCleanup();
-        
-        $object = eZContentObject::fetch( $postId );
-        //SensorHelper::createCollaborationItem($postId);die();
-        if ( !$object instanceof eZContentObject )
-        {
-            return $module->handleError( eZError::KERNEL_NOT_AVAILABLE, 'kernel' );
-        }
-
-        if ( !$object->attribute( 'can_read' ) )
-        {
-            return $module->handleError( eZError::KERNEL_ACCESS_DENIED, 'kernel' );
-        }
-
-        /** @var ObjectHandlerServiceControlSensor $sensor */
-        $post = OpenPAObjectHandler::instanceFromContentObject( $object )->attribute( 'control_sensor' );
-
-        /** @var SensorHelper $helper */
-        $helper = $post->attribute( 'helper' );
-
-        /** @var eZCollaborationItem $collaborationItem */
-        $collaborationItem = $helper->attribute( 'collaboration_item' );
-
-        /** @var OpenPASensorCollaborationHandler $collaborationHandler */
-        $collaborationHandler = $collaborationItem->handler();
-
-        $collaborationItem->handleView( 'full' );
-
-        $viewParameters = array( 'offset' => $Offset );
-
-        $tpl->setVariable( 'view_parameters', $viewParameters );
-        $tpl->setVariable( 'post', $post );
-        $tpl->setVariable( 'helper', $helper );
-        $tpl->setVariable( 'object', $object );
-        $tpl->setVariable( 'collaboration_item', $collaborationItem );
-
-        $currentParticipant = eZFunctionHandler::execute(
-            "collaboration",
-            "participant",
-            array(  "item_id" => $collaborationItem->attribute( 'id' ) )
-        );
-
-        $participantList = $helper->fetchParticipantMap();
-
-        $tpl->setVariable( 'current_participant', $currentParticipant );
-        $tpl->setVariable( 'participant_list', $participantList );
-
-        $tpl->setVariable( 'sensor_post', true );
-        $tpl->setVariable( 'post_geo_array_js', $post->attribute( 'geo_js_array' ) );
-
-        $collaborationHandler->readItem( $collaborationItem );
+        $Result = $cacheFile->processCache( array( 'SensorModuleFunctions', 'sensorCacheRetrieve' ),
+                                            array( 'SensorModuleFunctions', 'sensorPostGenerate' ),
+                                            null,
+                                            null,
+                                            $args );
     }
-    catch( Exception $e )
-    {
-        $tpl->setVariable( 'error', $e->getMessage() );
+    else
+    {    
+        $data = SensorModuleFunctions::sensorPostGenerate( false, $args );
+        $Result = $data['content']; 
     }
-
-    $Result = array();
-    $Result['persistent_variable'] = $tpl->variable( 'persistent_variable' );
-    $Result['pagelayout'] = 'design:sensor/pagelayout.tpl';
-    $Result['content'] = $tpl->fetch( 'design:sensor/parts/post/full.tpl' );
-    $Result['node_id'] = 0;
-
-    $contentInfoArray = array( 'url_alias' => 'sensor/post/' . $postId );
-    $contentInfoArray['persistent_variable'] = false;
-    if ( $tpl->variable( 'persistent_variable' ) !== false )
-    {
-        $contentInfoArray['persistent_variable'] = $tpl->variable( 'persistent_variable' );
-    }
-    $Result['content_info'] = $contentInfoArray;
-    $Result['path'] = array();
-
+    return $Result;
 }
