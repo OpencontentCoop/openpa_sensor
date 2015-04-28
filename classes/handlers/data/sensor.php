@@ -18,19 +18,26 @@ class DataHandlerSensor implements OpenPADataHandlerInterface
         }
         elseif ( $this->contentType == 'marker' )
         {
-            $id = eZHTTPTool::instance()->getVariable( 'id', $this->contentType );
-            $object = eZContentObject::fetch( $id );
-            if ( $object instanceof eZContentObject && $object->attribute( 'can_read' ) )
+            $postId = eZHTTPTool::instance()->getVariable( 'id', $this->contentType );
+            $cacheFilePath = SensorModuleFunctions::sensorPostCacheFilePath( null, $postId, array(), 'popup' );
+            $cacheFile = eZClusterFileHandler::instance( $cacheFilePath );            
+            $ini = eZINI::instance();
+            $viewCacheEnabled = ( $ini->variable( 'ContentSettings', 'ViewCaching' ) == 'enabled' );    
+            if ( $viewCacheEnabled )
             {
-                $tpl = eZTemplate::factory();
-                $tpl->setVariable( 'object', $object );
-                $result = $tpl->fetch( 'design:sensor/parts/post/marker_popup.tpl' );
-                $data = array( 'content' => $result );
+                $Result = $cacheFile->processCache( array( 'SensorModuleFunctions', 'sensorCacheRetrieve' ),
+                                                    array( 'SensorModuleFunctions', 'sensorPostPopupGenerate' ),
+                                                    null,
+                                                    null,
+                                                    $postId );
             }
             else
-            {
-                $data = array( 'content' => '<em>Private</em>' );
+            {    
+                $data = SensorModuleFunctions::sensorPostPopupGenerate( false, $postId );
+                $Result = $data['content']; 
             }
+            
+            $data = array( 'content' => $Result );
         }
         return $data;        
     }

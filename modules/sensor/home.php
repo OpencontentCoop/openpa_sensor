@@ -1,26 +1,29 @@
 <?php
 
 $module = $Params['Module'];
-$tpl = eZTemplate::factory();
+
+$tpl = eZTemplate::factory();        
+$tpl->setVariable( 'sensor_home', true );
 
 $currentUser = eZUser::currentUser();
 
-$tpl->setVariable( 'current_user', $currentUser );
-$tpl->setVariable( 'persistent_variable', array() );
-$tpl->setVariable( 'sensor_home', true );
+$ini = eZINI::instance();
+$viewCacheEnabled = ( $ini->variable( 'ContentSettings', 'ViewCaching' ) == 'enabled' );
 
-$Result = array();
-
-$Result['persistent_variable'] = $tpl->variable( 'persistent_variable' );
-$Result['pagelayout'] = 'design:sensor/pagelayout.tpl';
-$Result['content'] = $tpl->fetch( 'design:sensor/home.tpl' );
-$Result['node_id'] = 0;
-
-$contentInfoArray = array( 'url_alias' => 'sensor/home' );
-$contentInfoArray['persistent_variable'] = false;
-if ( $tpl->variable( 'persistent_variable' ) !== false )
+if ( $viewCacheEnabled )
 {
-    $contentInfoArray['persistent_variable'] = $tpl->variable( 'persistent_variable' );
+
+    $cacheFilePath = SensorModuleFunctions::sensorGlobalCacheFilePath( $currentUser->isAnonymous() ? 'home-anon' : 'home' );
+    $cacheFile = eZClusterFileHandler::instance( $cacheFilePath );
+    $Result = $cacheFile->processCache( array( 'SensorModuleFunctions', 'sensorCacheRetrieve' ),
+                                        array( 'SensorModuleFunctions', 'sensorHomeGenerate' ),
+                                        null,
+                                        null,
+                                        compact( 'Params' ) );
 }
-$Result['content_info'] = $contentInfoArray;
-$Result['path'] = array();
+else
+{    
+    $data = SensorModuleFunctions::sensorHomeGenerate( false, compact( 'Params' ) );
+    $Result = $data['content']; 
+}
+return $Result;
