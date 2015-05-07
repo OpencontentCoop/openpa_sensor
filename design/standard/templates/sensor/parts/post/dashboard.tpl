@@ -43,6 +43,17 @@
             </a>
           </li>
         {/foreach}
+        <li role="presentation" class="pull-right">
+            <a href="{concat('sensor/dashboard/post/default/csv/',$filters_query)|ezurl(no)}">
+              <small><i class="fa fa-download"></i>
+              {if $filters_query|eq('')}
+                {"Esporta CSV"|i18n('openpa_sensor/dashboard')}
+              {else}
+                {"Esporta risultati CSV"|i18n('openpa_sensor/dashboard')}
+              {/if}
+              </small>
+            </a>
+          </li>
       </ul>
       <div class="tab-pane active">
         {include name=navigator
