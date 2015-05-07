@@ -108,9 +108,9 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase
 
         $this->fnData['helper'] = 'getHelper';
 
-        $this->fnData['post_author_name'] = 'getPostAuthorName';
-        $this->fnData['post_category_name'] = 'getPostCategoryName';
-        
+        $this->fnData['author_name'] = 'getPostAuthorName';
+        $this->fnData['category_name'] = 'getPostCategoryName';
+
         $this->fnData['author_id'] = 'getAuthorId';
         $this->fnData['approver_id_array'] = 'getApproverIdArray';
 

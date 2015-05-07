@@ -163,7 +163,21 @@
             </div>
             </div>
           {/if}
-		
+
+          {if $helper.can_set_expiry}
+            <h4>{'Scadenza'|i18n('openpa_sensor/post')} <small>{'in giorni'|i18n('openpa_sensor/post')}</small></h4>
+            <div class="form-group">
+              <div class="row">
+                <div class="col-xs-8">
+                  <input type="text" class="form-control" name="Collaboration_OpenPASensorItemExpiry" value="{$helper.expiration_days|wash()}" />
+                </div>
+                <div class="col-xs-4">
+                  <input class="btn btn-info btn-block" type="submit" name="CollaborationAction_SetExpiry" value="{'Imposta'|i18n('openpa_sensor/post')}" />
+                </div>
+              </div>
+            </div>
+          {/if}
+
           <h4>{'Azioni'|i18n('openpa_sensor/post')}</h4>
         
           {if $helper.can_assign}

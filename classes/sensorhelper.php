@@ -8,6 +8,8 @@ class SensorHelper
     
     const ITEM_LAST_CHANGE = 'data_int2';
 
+    const ITEM_EXPIRY = 'data_text3';
+
     const MESSAGE_TYPE_ROBOT = 0;
 
     const MESSAGE_TYPE_PUBLIC = 1;
@@ -37,19 +39,34 @@ class SensorHelper
     {
         $this->collaborationItem = $collaborationItem;
     }
-    
+
     /**
+     * @param int $days
+     *
      * @return DateInterval
+     * @throws Exception
      */
-    public static function expiringInterval()
+    public static function expiringInterval( $days )
     {
-        $expiringIntervalString = 'P15D'; //@todo mettere valore in ini
+        $expiringIntervalString = 'P' . intval( $days ) . 'D';
         $expiringInterval = new DateInterval( $expiringIntervalString ); 
         if ( !$expiringInterval instanceof DateInterval )
         {
             throw new Exception( "Invalid interval {$expiringIntervalString}" );
         }
         return $expiringInterval;
+    }
+
+    protected function expiryTimestamp( $creationTimestamp, $days = null )
+    {
+        if ( !$days )
+        {
+            $days = OpenPAINI::variable( 'SensorConfig', 'DefaultPostExpirationDaysInterval', 15 );
+        }
+        $creation = new DateTime();
+        $creation->setTimestamp( $creationTimestamp );
+        $creation->add( self::expiringInterval( $days ) );
+        return $creation->format( 'U' );
     }
 
     /**
@@ -103,6 +120,7 @@ class SensorHelper
             'can_add_area',
             'can_change_privacy',
             'can_moderate',
+            'can_set_expiry',
             'participants',
             'has_owner',
             'owner_id',
@@ -119,6 +137,7 @@ class SensorHelper
             'robot_message_count',
             'robot_messages',
             'expiring_date',
+            'expiration_days',
             'resolution_time'
         );
     }
@@ -142,13 +161,16 @@ class SensorHelper
                 break;
 
             case 'can_do_something':
-                return ( $this->canAssign()
-                       || $this->canAddObserver()
-                       || $this->canClose()
-                       || $this->canFix()
-                       || $this->attribute( 'can_add_category' )
-                       || $this->attribute( 'can_add_area' )
-                       || $this->canModerate() );
+                return (
+                    $this->canAssign()
+                    || $this->canAddObserver()
+                    || $this->canClose()
+                    || $this->canFix()
+                    || $this->attribute( 'can_add_category' )
+                    || $this->attribute( 'can_add_area' )
+                    || $this->canModerate()
+                    || $this->canSetExpiry()
+                );
                 break;
 
             case 'can_add_category':
@@ -177,6 +199,10 @@ class SensorHelper
 
             case 'can_moderate':
                 return $this->canModerate();
+                break;
+
+            case 'can_set_expiry':
+                return $this->canSetExpiry();
                 break;
             
             case 'can_close':
@@ -398,6 +424,26 @@ class SensorHelper
             case 'expiring_date':
                 return $this->getExpiringDate();
                 break;
+
+            case 'expiration_days':
+                $expiryTimestamp = intval( $this->collaborationItem->attribute( self::ITEM_EXPIRY ) );
+                if ( $expiryTimestamp <= 15 ) //bc compat
+                {
+                    return OpenPAINI::variable( 'SensorConfig', 'DefaultPostExpirationDaysInterval', 15 );
+                }
+                else
+                {
+                    $start = new DateTime();
+                    $start->setTimestamp( $this->collaborationItem->attribute( 'created' ) );
+                    $end = new DateTime();
+                    $end->setTimestamp( $expiryTimestamp );
+                    $diff = $end->diff( $start );
+                    if ( $diff instanceof DateInterval )
+                    {
+                        return $diff->days;
+                    }
+                }
+                break;
             
             case 'resolution_time':
                 return $this->getResolutionTime();
@@ -407,6 +453,7 @@ class SensorHelper
                 eZDebug::writeError( "Attribute $key not found", get_called_class() );
                 return false;
         }
+        return false;
     }
     
     public function getResolutionTime()
@@ -421,8 +468,10 @@ class SensorHelper
             if ( count( $responses ) >= 1 )
             {
                 $response = array_pop( $responses );
-                $start = DateTime::createFromFormat( 'U', $this->collaborationItem->attribute( "created" ) );
-                $end = DateTime::createFromFormat( 'U', $response->attribute( "created" ) );
+                $start = new DateTime();
+                $start->setTimestamp( $this->collaborationItem->attribute( "created" ) );
+                $end = new DateTime();
+                $end->setTimestamp( $response->attribute( "created" ) );
                 if ( $start instanceof DateTime )
                 {
                     $diff = self::getDateDiff( $start, $end );
@@ -445,10 +494,15 @@ class SensorHelper
         );
         try
         {
-            $date = DateTime::createFromFormat( 'U', $this->collaborationItem->attribute( "created" ) );
+            $date = new DateTime();
+            $expiryTimestamp = intval( $this->collaborationItem->attribute( self::ITEM_EXPIRY ) );
+            if ( $expiryTimestamp <= 15 ) //bc compat
+            {
+                $expiryTimestamp = self::expiryTimestamp( $this->collaborationItem->attribute( 'created' ) );
+            }
+            $date->setTimestamp( $expiryTimestamp );
             if ( $date instanceof DateTime )
-            {                
-                $date->add( self::expiringInterval() );
+            {
                 $data['timestamp'] = $date->format( 'U' );                
                 $diff = self::getDateDiff( $date );
                 $interval = $diff['interval'];
@@ -645,6 +699,7 @@ class SensorHelper
             $collaborationItem->setAttribute( 'data_text1', get_called_class() );
             $collaborationItem->setAttribute( self::ITEM_STATUS, false );
             $collaborationItem->setAttribute( self::ITEM_LAST_CHANGE, 0 );
+            $collaborationItem->setAttribute( self::ITEM_EXPIRY, self::expiryTimestamp( $collaborationItem->attribute( 'created' ) ) );
             $collaborationItem->store();
     
             $handler = self::instanceFromCollaborationItem( $collaborationItem );
@@ -782,7 +837,6 @@ class SensorHelper
         }
         return array_unique( $userIds );
     }
-    
 
     public function addObserver( $userId )
     {
@@ -895,6 +949,25 @@ class SensorHelper
     public function canModerate()
     {
         return $this->userIsA( eZCollaborationItemParticipantLink::ROLE_APPROVER );
+    }
+
+    public function canSetExpiry()
+    {
+        return $this->userIsA( eZCollaborationItemParticipantLink::ROLE_APPROVER );
+    }
+
+    public function setExpiry( $value )
+    {
+        $value = intval( $value );
+        if ( $value > 0 )
+        {
+            $this->collaborationItem->setAttribute(
+                self::ITEM_EXPIRY,
+                self::expiryTimestamp( $this->collaborationItem->attribute( 'created' ), $value )
+            );
+            $this->collaborationItem->store();
+            $this->setStatus();
+        }
     }
 
     public function canChangePrivacy()
@@ -1312,14 +1385,14 @@ class SensorHelper
         {
             $object->setAttribute( 'modified', $timestamp );
             $object->store();
-            $this->storePostActivesPartecipants();
+            $this->storePostActivesParticipants();
             eZContentCacheManager::clearContentCacheIfNeeded( $id );
         }        
     }
     
-    protected function getPostActivesPartecipants()
+    protected function getPostActivesParticipants()
     {
-        $activePartecipants = array();        
+        $activeParticipants = array();
         $conditions = array( 'collaboration_id' => $this->collaborationItem->attribute( 'id' ),
                              'is_active' => 1 );        
         $resources = eZPersistentObject::fetchObjectList(
@@ -1333,27 +1406,27 @@ class SensorHelper
         
         foreach( $resources as $row )
         {
-            $activePartecipants[] = $row['user_id'];
+            $activeParticipants[] = $row['user_id'];
         }
-        sort( $activePartecipants );
-        return $activePartecipants;
+        sort( $activeParticipants );
+        return $activeParticipants;
     }    
     
-    public static function getStoredActivesPartecipantsByPostId( $id )
+    public static function getStoredActivesParticipantsByPostId( $id )
     {
         $name = self::FIELD_PREFIX . $id;
         $siteData = eZSiteData::fetchByName( $name );
-        $activePartecipants = array();
+        $activeParticipants = array();
         if ( $siteData instanceof eZSiteData)
         {
-            $activePartecipants = unserialize( $siteData->attribute( 'value' ) );
+            $activeParticipants = unserialize( $siteData->attribute( 'value' ) );
         }
-        return $activePartecipants;
+        return $activeParticipants;
     }
     
-    public function storePostActivesPartecipants()
+    public function storePostActivesParticipants()
     {    
-        $activePartecipants = $this->getPostActivesPartecipants();
+        $activeParticipants = $this->getPostActivesParticipants();
         $content = $this->collaborationItem->content();
         $id = $content['content_object_id'];
         $name = self::FIELD_PREFIX . $id;
@@ -1366,19 +1439,19 @@ class SensorHelper
                 'value' => serialize( array() )
             );
             $siteData = new eZSiteData( $row );
-            $currentActivePartecipants = array();
+            $currentActiveParticipants = array();
         }
         else
         {
-            $currentActivePartecipants = unserialize( $siteData->attribute( 'value' ) );
+            $currentActiveParticipants = unserialize( $siteData->attribute( 'value' ) );
             $removeIfNeeded = true;
         }
         
-        if ( count( $activePartecipants ) > 0 )
+        if ( count( $activeParticipants ) > 0 )
         {
-            if ( serialize( $currentActivePartecipants ) != serialize( $activePartecipants ) )
+            if ( serialize( $currentActiveParticipants ) != serialize( $activeParticipants ) )
             {
-                $siteData->setAttribute( 'value', serialize( $activePartecipants ) );
+                $siteData->setAttribute( 'value', serialize( $activeParticipants ) );
                 $siteData->store();
             }            
         }
@@ -1610,11 +1683,11 @@ class SensorHelper
                         {
                             case 'created':
                             {
-                                $sortingFields .= 'ezcollab_item.created';
+                                $sortingFields .= 'ci.created';
                             } break;
                             case 'modified':
                             {
-                                $sortingFields .= 'ezcollab_item.modified';
+                                $sortingFields .= 'ci.modified';
                             } break;
                             default:
                             {
@@ -1632,7 +1705,7 @@ class SensorHelper
             }
             if ( $sortCount == 0 )
             {
-                $sortingFields = ' ezcollab_item_group_link.modified DESC';
+                $sortingFields = ' cigl.modified DESC';
             }
             $sortText = "ORDER BY $sortingFields";
         }
@@ -1640,32 +1713,21 @@ class SensorHelper
         $parentGroupText = '';
         if ( $parentGroupID > 0 )
         {
-            $parentGroupText = "ezcollab_item_group_link.group_id = '$parentGroupID' AND";
+            $parentGroupText = "cigl.group_id = '$parentGroupID' AND";
         }
 
         $isReadText = '';
         if ( $isRead !== null )
         {
             $isReadValue = $isRead ? 1 : 0;
-            $isReadText = "ezcollab_item_status.is_read = '$isReadValue' AND";
+            $isReadText = "cis.is_read = '$isReadValue' AND";
         }
 
         $isActiveText = '';
         if ( $isActive !== null )
         {
             $isActiveValue = $isActive ? 1 : 0;
-            $isActiveText = "ezcollab_item_status.is_active = '$isActiveValue' AND";
-        }
-
-        $isExpiringTest = '';
-        if ( $isExpiring == true )
-        {
-            $date = new DateTime();
-            $date->sub( self::expiringInterval() );            
-            $bound = clone $date;
-            $bound->add( new DateInterval( 'P7D' ) );
-            $bound->setTime( 23, 59 );
-            $isExpiringTest = "ezcollab_item.created < " . $bound->format( 'U' ) . " AND ";
+            $isActiveText = "cis.is_active = '$isActiveValue' AND";
         }
         
         $lastChangeText = '';
@@ -1689,8 +1751,8 @@ class SensorHelper
             $ownerId = intval( $filters['owner'] );
             $roleId = eZCollaborationItemParticipantLink::ROLE_OWNER;
             $ownerFilter = array(
-                'table' => ", ezcollab_item_participant_link",
-                'where' => "ezcollab_item.id = ezcollab_item_participant_link.collaboration_id AND ezcollab_item_participant_link.participant_id = '{$ownerId}' AND ezcollab_item_participant_link.participant_role = '{$roleId}' AND "
+                'table' => ", ezcollab_item_participant_link cipl",
+                'where' => "ci.id = cipl.collaboration_id AND cipl.participant_id = '{$ownerId}' AND cipl.participant_role = '{$roleId}' AND "
             );
         }
 
@@ -1704,28 +1766,36 @@ class SensorHelper
         $statusText = implode( ', ', $statusTypes );
 
         if ( $asCount )
-            $selectText = 'count( ezcollab_item.id ) as count';
+            $selectText = 'count( ci.id ) as count';
         else
-            $selectText = 'ezcollab_item.*, ezcollab_item_status.is_read, ezcollab_item_status.is_active, ezcollab_item_status.last_read';
+            $selectText = 'ci.*, cis.is_read, cis.is_active, cis.last_read';
+
+        $isExpiringTest = '';
+        if ( $isExpiring == true )
+        {
+            $expiryField = self::ITEM_EXPIRY;
+            $secondsLimit = 60 * 60 * 24 * OpenPAINI::variable( 'SensorConfig', 'DefaultPostExpirationDaysLimit', 7 );
+            $isExpiringTest = " CAST( ci.{$expiryField} AS integer ) - ci.created <= $secondsLimit  AND ";
+        }
 
         $sql = "SELECT $selectText
                 FROM
-                       ezcollab_item,
-                       ezcollab_item_status,
-                       ezcollab_item_group_link
+                       ezcollab_item ci,
+                       ezcollab_item_status cis,
+                       ezcollab_item_group_link cigl
                        {$ownerFilter['table']}
-                WHERE  ezcollab_item.status IN ( $statusText ) AND
+                WHERE  ci.status IN ( $statusText ) AND
                        $isReadText
                        $isActiveText
                        $isExpiringTest
                        $lastChangeText
                        $filterText
                        {$ownerFilter['where']}
-                       ezcollab_item.id = ezcollab_item_status.collaboration_id AND
-                       ezcollab_item.id = ezcollab_item_group_link.collaboration_id AND
+                       ci.id = cis.collaboration_id AND
+                       ci.id = cigl.collaboration_id AND
                        $parentGroupText
-                       ezcollab_item_status.user_id = '$userID' AND
-                       ezcollab_item_group_link.user_id = '$userID'
+                       cis.user_id = '$userID' AND
+                       cigl.user_id = '$userID'
                 $sortText";
         //eZDebug::writeNotice($sql);
         $db = eZDB::instance();
@@ -1764,7 +1834,7 @@ class SensorHelper
         $filterText = '';
         if ( isset( $filters['id'] ) && is_numeric( $filters['id'] ) )
         {
-            $filterText .= "ezcollab_item.data_int1 = " . intval( $filters['id'] ) . " AND ";
+            $filterText .= "ci.data_int1 = " . intval( $filters['id'] ) . " AND ";
         }
 
         if ( isset( $filters['subject'] ) && !empty( $filters['subject']  ) )
@@ -1785,11 +1855,11 @@ class SensorHelper
             }            
             if ( !empty( $itemIdArray ) )
             {
-                $filterText .= "ezcollab_item.data_int1 IN (" . implode( ', ', $itemIdArray ) . ") AND ";
+                $filterText .= "ci.data_int1 IN (" . implode( ', ', $itemIdArray ) . ") AND ";
             }
             else
             {
-                $filterText .= "ezcollab_item.id = 0  AND ";
+                $filterText .= "ci.id = 0  AND ";
             }
         }
         
@@ -1823,11 +1893,11 @@ class SensorHelper
                 }            
                 if ( !empty( $itemIdArray ) )
                 {
-                    $filterText .= "ezcollab_item.data_int1 IN (" . implode( ', ', $itemIdArray ) . ") AND ";
+                    $filterText .= "ci.data_int1 IN (" . implode( ', ', $itemIdArray ) . ") AND ";
                 }
                 else
                 {
-                    $filterText .= "ezcollab_item.id = 0  AND ";
+                    $filterText .= "ci.id = 0  AND ";
                 }
             }
         }
@@ -1857,11 +1927,11 @@ class SensorHelper
             }
             if ( !empty( $creatorIdArray ) )
             {
-                $filterText .= "ezcollab_item.creator_id IN (" . implode( ', ', $creatorIdArray ) . ") AND ";
+                $filterText .= "ci.creator_id IN (" . implode( ', ', $creatorIdArray ) . ") AND ";
             }
             else
             {
-                $filterText .= "ezcollab_item.id = 0  AND ";
+                $filterText .= "ci.id = 0  AND ";
             }
         }
 
@@ -1881,11 +1951,11 @@ class SensorHelper
                 }
                 $from->setTime( 00, 00 );
                 $to->setTime( 23, 59 );
-                $filterText .= "ezcollab_item.created BETWEEN " . $from->format( 'U' ) . " AND " . $to->format( 'U' ) . " AND ";
+                $filterText .= "ci.created BETWEEN " . $from->format( 'U' ) . " AND " . $to->format( 'U' ) . " AND ";
             }
             else
             {
-                $filterText .= "ezcollab_item.id = 0  AND ";
+                $filterText .= "ci.id = 0  AND ";
             }
         }
 
