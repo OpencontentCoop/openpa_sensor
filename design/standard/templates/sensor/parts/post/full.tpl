@@ -191,7 +191,16 @@
             </div>
           {/if}
 
-          <h4>{'Azioni'|i18n('openpa_sensor/post')}</h4>
+          {if or(
+            $helper.can_assign,
+            $helper.can_add_observer,
+            $helper.can_fix,
+            $helper.can_close,
+            and( $post.current_privacy_status.identifier|ne('private'), $helper.can_change_privacy ),
+            and( $post.current_moderation_status.identifier|eq('waiting'), $helper.can_moderate )
+          )}
+            <h4>{'Azioni'|i18n('openpa_sensor/post')}</h4>
+          {/if}
         
           {if $helper.can_assign}
           <div class="form-group">
