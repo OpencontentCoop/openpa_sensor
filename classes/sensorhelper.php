@@ -1775,7 +1775,9 @@ class SensorHelper
         {
             $expiryField = self::ITEM_EXPIRY;
             $secondsLimit = 60 * 60 * 24 * OpenPAINI::variable( 'SensorConfig', 'DefaultPostExpirationDaysLimit', 7 );
-            $isExpiringTest = " CAST( ci.{$expiryField} AS integer ) - ci.created <= $secondsLimit  AND ";
+            $nowDate = new DateTime();
+            $now = $nowDate->getTimestamp();
+            $isExpiringTest = "( CAST( ci.{$expiryField} AS integer ) - {$now} <= $secondsLimit OR {$now} >= CAST( ci.{$expiryField} AS integer ) )  AND ";
         }
 
         $sql = "SELECT $selectText
