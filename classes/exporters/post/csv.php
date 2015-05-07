@@ -18,21 +18,21 @@ class SensorPostCsvExporter
         $this->filters = $filters;
         $this->group = $group;
         $this->CSVheaders = array(
-            'id' => 'ID',
-            'privacy' => 'Privacy',
-            'moderation' => 'Moderazione',
-            'type' => 'Tipo',
-            'current_status' => 'Stato corrente',
-            'created' => 'Creato il',
-            'modified'  => 'Ultima modifica del',
-            'expiring_date' => 'Scadenza',
-            'resolution_time' => 'Data risoluzione',
-            'resolution_diff' => 'Tempo di risoluzione',
-            'title' => 'Titolo',
-            'author' => 'Autore',
-            'category' => 'Area tematica',
-            'current_owner' => 'Assegnatario',
-            'human_message_count' => 'Commenti'
+            'id'                => ezpI18n::tr( 'openpa_sensor/export', 'ID' ),
+            'privacy'           => ezpI18n::tr( 'openpa_sensor/export', 'Privacy' ),
+            'moderation'        => ezpI18n::tr( 'openpa_sensor/export', 'Moderazione' ),
+            'type'              => ezpI18n::tr( 'openpa_sensor/export', 'Tipo' ),
+            'current_status'    => ezpI18n::tr( 'openpa_sensor/export', 'Stato corrente' ),
+            'created'           => ezpI18n::tr( 'openpa_sensor/export', 'Creato il' ),
+            'modified'          => ezpI18n::tr( 'openpa_sensor/export', 'Ultima modifica del' ),
+            'expiring_date'     => ezpI18n::tr( 'openpa_sensor/export', 'Scadenza' ),
+            'resolution_time'   => ezpI18n::tr( 'openpa_sensor/export', 'Data risoluzione' ),
+            'resolution_diff'   => ezpI18n::tr( 'openpa_sensor/export', 'Tempo di risoluzione' ),
+            'title'             => ezpI18n::tr( 'openpa_sensor/export', 'Titolo' ),
+            'author'            => ezpI18n::tr( 'openpa_sensor/export', 'Autore' ),
+            'category'          => ezpI18n::tr( 'openpa_sensor/export', 'Area tematica' ),
+            'current_owner'     => ezpI18n::tr( 'openpa_sensor/export', 'Assegnatario' ),
+            'human_messages'    => ezpI18n::tr( 'openpa_sensor/export', 'Commenti' )
         );
         $this->filename = 'posts'; //@todo
     }
@@ -111,7 +111,7 @@ class SensorPostCsvExporter
         $data['author'] = $post->attribute( 'post_author_name' );
         $data['category'] = $post->attribute( 'post_category_name' );
         $data['current_owner'] = $post->attribute( 'current_owner' ) ? $post->attribute( 'current_owner' ) : '';
-        $data['human_message_count'] = $helper->attribute( 'human_message_count' );
+        $data['human_messages'] = $helper->attribute( 'human_message_count' );
         
         return $data;
     }
