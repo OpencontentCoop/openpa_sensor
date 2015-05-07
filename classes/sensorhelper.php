@@ -953,7 +953,7 @@ class SensorHelper
 
     public function canSetExpiry()
     {
-        return $this->userIsA( eZCollaborationItemParticipantLink::ROLE_APPROVER );
+        return !$this->is( self::STATUS_CLOSED ) && $this->userIsA( eZCollaborationItemParticipantLink::ROLE_APPROVER );
     }
 
     public function setExpiry( $value )
