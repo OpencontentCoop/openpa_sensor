@@ -1686,10 +1686,11 @@ class SensorHelper
         );
         if ( isset( $filters['owner'] ) && is_numeric( $filters['owner'] ) )
         {
+            $ownerId = intval( $filters['owner'] );
             $roleId = eZCollaborationItemParticipantLink::ROLE_OWNER;
             $ownerFilter = array(
                 'table' => ", ezcollab_item_participant_link",
-                'where' => "ezcollab_item.id = ezcollab_item_participant_link.collaboration_id AND ezcollab_item_participant_link.participant_id = '{$filters['owner']}' AND ezcollab_item_participant_link.participant_role = '{$roleId}' AND "
+                'where' => "ezcollab_item.id = ezcollab_item_participant_link.collaboration_id AND ezcollab_item_participant_link.participant_id = '{$ownerId}' AND ezcollab_item_participant_link.participant_role = '{$roleId}' AND "
             );
         }
 
