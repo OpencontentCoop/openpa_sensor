@@ -110,6 +110,15 @@
                 {include name=cattree uri='design:sensor/parts/walk_item_option.tpl' item=$category recursion=0 attribute=$fake_attribute}
               {/foreach}
             </select>
+          </div>          
+          <div class="form-group">
+            <label class="" for="searchowner">Cerca per assegnatario</label>
+            <select data-placeholder="{'Cerca per assegnatario'|i18n('openpa_sensor/post')}" name="filters[owner]" class="chosen form-control" id='searchowner'>
+              <option value="">{'Cerca per assegnatario'|i18n('openpa_sensor/post')}</option>		
+              {foreach sensor_root_handler().operators as $user}                
+                <option value="{$user.contentobject_id}" {if and( is_set( $filters.owner ), $user.contentobject_id|eq( $filters.owner ) )} selected="selected"{/if}>{include uri='design:content/view/sensor_person.tpl' sensor_person=$user.object}</option>                
+              {/foreach}              
+            </select>
           </div>
           <div class="form-group">
             <label for="from" class="">Data creazione (inizio)</label>

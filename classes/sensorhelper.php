@@ -1680,9 +1680,21 @@ class SensorHelper
             $filterText = self::parseFetchFilters( $filters );
         }
 
+        $ownerFilter = array(
+            'table' => '',
+            'where' => ''
+        );
+        if ( isset( $filters['owner'] ) && is_numeric( $filters['owner'] ) )
+        {
+            $roleId = eZCollaborationItemParticipantLink::ROLE_OWNER;
+            $ownerFilter = array(
+                'table' => ", ezcollab_item_participant_link",
+                'where' => "ezcollab_item.id = ezcollab_item_participant_link.collaboration_id AND ezcollab_item_participant_link.participant_id = '{$filters['owner']}' AND ezcollab_item_participant_link.participant_role = '{$roleId}' AND "
+            );
+        }
+
         $userID = eZUser::currentUserID();
 
-        $statusText = '';
         if ( $statusTypes === false )
         {
             $statusTypes = array( eZCollaborationItem::STATUS_ACTIVE,
@@ -1700,12 +1712,14 @@ class SensorHelper
                        ezcollab_item,
                        ezcollab_item_status,
                        ezcollab_item_group_link
+                       {$ownerFilter['table']}
                 WHERE  ezcollab_item.status IN ( $statusText ) AND
                        $isReadText
                        $isActiveText
                        $isExpiringTest
                        $lastChangeText
                        $filterText
+                       {$ownerFilter['where']}
                        ezcollab_item.id = ezcollab_item_status.collaboration_id AND
                        ezcollab_item.id = ezcollab_item_group_link.collaboration_id AND
                        $parentGroupText
