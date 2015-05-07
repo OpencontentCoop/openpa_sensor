@@ -97,7 +97,7 @@ else
             {
                 $listTypes = SensorHelper::availableListTypes();
                 $filters = $http->hasGetVariable( 'filters' ) ? $http->getVariable( 'filters' ) : array();                
-                $availableFilters = array( 'id', 'subject', 'category', 'creator_id', 'creation_range' );                
+                $availableFilters = array( 'id', 'subject', 'category', 'creator_id', 'creation_range', 'owner' );                
                 foreach( $filters as $key => $filter )
                 {
                     if ( !in_array( $key, $availableFilters ) || empty( $filter ) )
