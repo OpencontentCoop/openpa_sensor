@@ -79,8 +79,10 @@ class SensorPostCsvExporter
     protected function transformItem( eZCollaborationItem $item )
     {        
         $content = $item->attribute( 'content' );
+        /** @var SensorHelper $helper */
         $helper = $content['helper'];
-        $post = $helper->attribute( 'sensor' );     
+        /** @var ObjectHandlerServiceControlSensor $post */
+        $post = $helper->attribute( 'sensor' );
         $data = array_fill_keys( array_keys( $this->CSVheaders ), '');
         $data['id'] = $helper->attribute( 'object' )->attribute( 'id' );
         
