@@ -111,6 +111,7 @@ class SensorHelper
             'object',
             'public_message_count',
             'response_message_count',
+            'response_messages',
             'human_unread_message_count',
             'human_message_count',
             'human_messages',
@@ -118,6 +119,7 @@ class SensorHelper
             'robot_message_count',
             'robot_messages',
             'expiring_date',
+            'resolution_time'
         );
     }
 
@@ -288,6 +290,20 @@ class SensorHelper
                 );
             } break;
             
+            case 'response_messages':
+            {                
+                return eZPersistentObject::fetchObjectList(
+                    eZCollaborationItemMessageLink::definition(),
+                    null,
+                    array(
+                        'collaboration_id' => $this->collaborationItem->attribute( 'id' ),
+                        'message_type' => SensorHelper::MESSAGE_TYPE_RESPONSE
+                    ),
+                    array( 'created' => 'asc' ),
+                    null,
+                    true );
+            } break;
+            
             case 'human_messages':
             {
                 return eZPersistentObject::fetchObjectList(
@@ -383,10 +399,41 @@ class SensorHelper
                 return $this->getExpiringDate();
                 break;
             
+            case 'resolution_time':
+                return $this->getResolutionTime();
+                break;
+            
             default:
                 eZDebug::writeError( "Attribute $key not found", get_called_class() );
                 return false;
         }
+    }
+    
+    public function getResolutionTime()
+    {
+        $data = array(            
+            'text' => null,
+            'timestamp' => null
+        );
+        if ( $this->is( self::STATUS_CLOSED ) )
+        {
+            $responses = $this->attribute( 'robot_messages' );
+            if ( count( $responses ) >= 1 )
+            {
+                $response = array_pop( $responses );
+                $start = DateTime::createFromFormat( 'U', $this->collaborationItem->attribute( "created" ) );
+                $end = DateTime::createFromFormat( 'U', $response->attribute( "created" ) );
+                if ( $start instanceof DateTime )
+                {
+                    $diff = self::getDateDiff( $start, $end );
+                    $interval = $diff['interval'];
+                    $format = $diff['format'];
+                    $data['text'] = $interval->format( $format );
+                    $data['timestamp'] = $end->format( 'U' );
+                }
+            }
+        }
+        return $data;
     }
     
     public function getExpiringDate()
@@ -401,7 +448,7 @@ class SensorHelper
             $date = DateTime::createFromFormat( 'U', $this->collaborationItem->attribute( "created" ) );
             if ( $date instanceof DateTime )
             {                
-                $date->add( self::expiringInterval() );                
+                $date->add( self::expiringInterval() );
                 $data['timestamp'] = $date->format( 'U' );                
                 $diff = self::getDateDiff( $date );
                 $interval = $diff['interval'];
@@ -1511,7 +1558,7 @@ class SensorHelper
      * @param bool $asCount
      * @param array $filters
      *
-     * @return array
+     * @return eZCollaborationItem[]|array
      */
     public static function fetchListTool( $parameters = array(), $asCount, array $filters = array() )
     {
@@ -1944,4 +1991,38 @@ class SensorHelper
         return SensorHelper::fetchListTool( $itemParameters, true, $filters );
     }
     
+    public static function instantiateExporter( $exportType, array $filters, eZCollaborationGroup $group, $selectedList )
+    {
+        //@todo
+        if ( $exportType == 'csv' )
+        {
+            return new SensorPostCsvExporter( $filters, $group, $selectedList );
+        }
+        throw new Exception( "$export format not handled" );
+    }
+    
+    public static function availableListTypes()
+    {
+        $listTypes = array(
+            array(
+                'identifier' => 'unread',
+                'name' => ezpI18n::tr( 'openpa_sensor/dashboard', "Da leggere" ),
+                'count_function' => array( 'SensorHelper', 'fetchUnreadItemsCount' ),
+                'list_function' => array( 'SensorHelper', 'fetchUnreadItems' )
+            ),
+            array(
+                'identifier' => 'active',
+                'name' => ezpI18n::tr( 'openpa_sensor/dashboard', "In corso" ),
+                'count_function' => array( 'SensorHelper', 'fetchActiveItemsCount' ),
+                'list_function' => array( 'SensorHelper', 'fetchActiveItems' )
+            ),
+            array(
+                'identifier' => 'unactive',
+                'name' => ezpI18n::tr( 'openpa_sensor/dashboard', "Chiuse" ),
+                'count_function' => array( 'SensorHelper', 'fetchUnactiveItemsCount' ),
+                'list_function' => array( 'SensorHelper', 'fetchUnactiveItems' )
+            )
+        );
+        return $listTypes;
+    }
 }
