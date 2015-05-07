@@ -11,5 +11,7 @@ MoveMarkerOnSelectArea=disabled
 AuthorCanReopen=disabled
 CategoryCount=unique
 CategoryAutomaticAssign=disabled
+DefaultPostExpirationDaysInterval=15
+DefaultPostExpirationDaysLimit=7
 
 */ ?>

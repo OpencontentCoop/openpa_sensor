@@ -110,8 +110,8 @@ class SensorPostCsvExporter
         
         $data['title'] = $helper->attribute( 'object' )->attribute( 'name' );        
         
-        $data['author'] = $post->attribute( 'post_author_name' );
-        $data['category'] = $post->attribute( 'post_category_name' );
+        $data['author'] = $post->attribute( 'author_name' );
+        $data['category'] = $post->attribute( 'category_name' );
         $data['current_owner'] = $post->attribute( 'current_owner' ) ? $post->attribute( 'current_owner' ) : '';
         $data['human_messages'] = $helper->attribute( 'human_message_count' );
         
