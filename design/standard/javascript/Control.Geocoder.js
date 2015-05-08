@@ -426,7 +426,8 @@
 					results[i] = {
 						name: resource.name,
 						bbox: L.latLngBounds([bbox[0], bbox[1]], [bbox[2], bbox[3]]),
-						center: L.latLng(resource.point.coordinates)
+						center: L.latLng(resource.point.coordinates),
+						detail: {code: resource.address.postalCode, locality: resource.address.locality}
 					};
 				}
 				cb.call(context, results);
@@ -444,7 +445,8 @@
 					results[i] = {
 						name: resource.name,
 						bbox: L.latLngBounds([bbox[0], bbox[1]], [bbox[2], bbox[3]]),
-						center: L.latLng(resource.point.coordinates)
+						center: L.latLng(resource.point.coordinates),
+						detail: {code: resource.address.postalCode, locality: resource.address.locality}
 					};
 				}
 				cb.call(context, results);
@@ -689,16 +691,26 @@
 					var results = [],
 							loc,
 							latLng,
-							latLngBounds;
+							latLngBounds,
+							code,
+							locality;
 					if (data.results && data.results.length) {
 						for (var i = 0; i <= data.results.length - 1; i++) {
 							loc = data.results[i];
 							latLng = L.latLng(loc.geometry.location);
 							latLngBounds = L.latLngBounds(L.latLng(loc.geometry.viewport.northeast), L.latLng(loc.geometry.viewport.southwest));
+							for (var a = 0; a <= loc.address_components.length - 1; a++) {
+								var address_component = loc.address_components[a];
+								for (var t = 0; t <= address_component.types.length - 1; t++) {
+									if(address_component.types[t] == 'postal_code') code = address_component.long_name;
+									if(address_component.types[t] == 'locality') locality = address_component.long_name;
+								}
+							}
 							results[i] = {
 									name: loc.formatted_address,
 									bbox: latLngBounds,
-									center: latLng
+									center: latLng,
+									detail: {code: code, locality: locality}
 							};
 						}
 					}
@@ -719,16 +731,26 @@
 				var results = [],
 						loc,
 						latLng,
-						latLngBounds;
+						latLngBounds,
+						code,
+						locality;
 				if (data.results && data.results.length) {
 					for (var i = 0; i <= data.results.length - 1; i++) {
 						loc = data.results[i];
 						latLng = L.latLng(loc.geometry.location);
 						latLngBounds = L.latLngBounds(L.latLng(loc.geometry.viewport.northeast), L.latLng(loc.geometry.viewport.southwest));
+						for (var a = 0; a <= loc.address_components.length - 1; a++) {
+							var address_component = loc.address_components[a];
+							for (var t = 0; t <= address_component.types.length - 1; t++) {
+								if(address_component.types[t] == 'postal_code') code = address_component.long_name;
+								if(address_component.types[t] == 'locality') locality = address_component.long_name;
+							}
+						}
 						results[i] = {
 							name: loc.formatted_address,
 							bbox: latLngBounds,
-							center: latLng
+							center: latLng,
+							detail: {code: code, locality: locality}
 						};
 					}
 				}
