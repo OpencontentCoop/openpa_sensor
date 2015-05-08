@@ -477,7 +477,8 @@ class SensorHelper
                     $diff = self::getDateDiff( $start, $end );
                     $interval = $diff['interval'];
                     $format = $diff['format'];
-                    $data['text'] = $interval->format( $format );
+                    if ( $interval instanceof DateInterval )
+                        $data['text'] = $interval->format( $format );
                     $data['timestamp'] = $end->format( 'U' );
                 }
             }
