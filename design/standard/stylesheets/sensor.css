@@ -362,4 +362,5 @@ div.alert p{margin-bottom: 10px !important}
 
 .collapsing ul.nav li {
     text-align: center;
+    width: 100%;
 }
