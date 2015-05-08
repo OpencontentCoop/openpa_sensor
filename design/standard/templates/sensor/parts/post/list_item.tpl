@@ -4,9 +4,7 @@
 	<section class="hgroup">
 	  <h2 class="section_header skincolored" style="margin-bottom: 0;border: none">
 	  <a href={concat('sensor/posts/',$node.contentobject_id)|ezurl()}>
-		{if fetch( 'user', 'has_access_to', hash( 'module', 'sensor', 'function', 'config' ) )}
 		<span class="label label-primary">{$node.object.id}</span>
-		{/if}
 		{$node.name|wash()}
 	  </a>
 	  <small>{$node.object.owner.name|wash()} {if $node.object|has_attribute('on_behalf_of')}[{$node.object|attribute('on_behalf_of').contentclass_attribute_name|wash()} {$node.object|attribute('on_behalf_of').content|wash()}]{/if}</small>

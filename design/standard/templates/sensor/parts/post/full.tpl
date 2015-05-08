@@ -10,6 +10,7 @@
 
 <section class="hgroup">
   <h1>
+    <span class="label label-primary">{$object.id}</span>
     {$object.name|wash()} <small>{$object.owner.name|wash()} {if $object|has_attribute('on_behalf_of')}[{$object|attribute('on_behalf_of').contentclass_attribute_name|wash()} {$object|attribute('on_behalf_of').content|wash()}]{/if}</small>
     {if $object.can_edit}
       <a class="btn btn-warning btn-sm" href="{concat('sensor/edit/',$object.id)|ezurl(no)}"><i class="fa fa-edit"></i></a>
