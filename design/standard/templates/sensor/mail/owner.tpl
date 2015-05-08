@@ -1,6 +1,7 @@
 {def $sensor = sensor_root_handler()}
+{set-block scope=root variable=message_id}{concat('<post.',$node.contentobject_id,'.sensor','@',$sensor.sensor_url,'>')}{/set-block}
 {if $collaboration_item_status|eq(2)} {* ASSIGNED *}
-{set-block scope=root variable=subject}{'Ti è stata assegnata una segnalazione'|i18n('openpa_sensor/mail/post')}{/set-block}
+{set-block scope=root variable=subject}[{$sensor.site_title}] #{$node.contentobject_id}: {'Ti è stata assegnata una segnalazione'|i18n('openpa_sensor/mail/post')}{/set-block}
 {set-block scope=root variable=body}
 <table border='0' cellpadding='30' cellspacing='0' style='margin-left: auto;margin-right: auto;width:600px;text-align:center;' width='600'>
     <tr>
@@ -19,6 +20,7 @@
                 </tr>
                 <tr>
                     <td align='left' style='border-top: 1px solid #dce1e5;border-bottom: 1px solid #dce1e5;' valign='top'>
+                        <p><strong>ID:</strong> {$node.contentobject_id}</p>
                         <p><strong>{$node.data_map.subject.contentclass_attribute_name}:</strong> {$node.name|wash()}</p>
                         <p><strong>{$node.data_map.type.contentclass_attribute_name}:</strong> {attribute_view_gui attribute=$node.data_map.type}</p>
                         {if $node|has_attribute('geo')}

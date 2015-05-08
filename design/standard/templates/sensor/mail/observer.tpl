@@ -1,6 +1,7 @@
 {def $sensor = sensor_root_handler()}
+{set-block scope=root variable=message_id}{concat('<post.',$node.contentobject_id,'.sensor','@',$sensor.sensor_url,'>')}{/set-block}
 {if $collaboration_item_status|eq(4)} {* FIXED *}
-{set-block scope=root variable=subject}{'Segnalazione chiusa da operatore'|i18n('openpa_sensor/mail/post')}{/set-block}
+{set-block scope=root variable=subject}[{$sensor.site_title}] #{$node.contentobject_id}: {'Segnalazione chiusa da operatore'|i18n('openpa_sensor/mail/post')}{/set-block}
 {set-block scope=root variable=body}
 <table border='0' cellpadding='30' cellspacing='0' style='margin-left: auto;margin-right: auto;width:600px;text-align:center;' width='600'>
     <tr>
@@ -36,7 +37,7 @@
 {/set-block}
 
 {elseif $collaboration_item_status|eq(3)} {* CLOSED *}
-{set-block scope=root variable=subject}{'Segnalazione risolta'|i18n('openpa_sensor/mail/post')}{/set-block}
+{set-block scope=root variable=subject}[{$sensor.site_title}] #{$node.contentobject_id}: {'Segnalazione risolta'|i18n('openpa_sensor/mail/post')}{/set-block}
 {set-block scope=root variable=body}
 <table border='0' cellpadding='30' cellspacing='0' style='margin-left: auto;margin-right: auto;width:600px;text-align:center;' width='600'>
     <tr>
