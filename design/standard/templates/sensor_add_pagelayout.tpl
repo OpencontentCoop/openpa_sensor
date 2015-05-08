@@ -217,7 +217,7 @@ if ( PointsOfInterest.length > 0 ) {
  				.on('locationerror', function(e){
 					icon.removeClass( 'fa-spin' );
 					map.loadingControl.removeLoader('lc');
-					alert("Location access denied.");
+					alert(e.message);
 				});
 			});
 }
