@@ -95,7 +95,7 @@
 {/set-block}
 
 {elseif $collaboration_item_status|eq(3)} {* CLOSED *}
-{set-block scope=root variable=subject}{'La tua segnalazione è stata risolta'|i18n('openpa_sensor/mail/post')}{/set-block}
+{set-block scope=root variable=subject}[{$sensor.site_title}] #{$node.contentobject_id}: {'La tua segnalazione è stata risolta'|i18n('openpa_sensor/mail/post')}{/set-block}
 {set-block scope=root variable=body}
 <table border='0' cellpadding='30' cellspacing='0' style='margin-left: auto;margin-right: auto;width:600px;text-align:center;' width='600'>
     <tr>
