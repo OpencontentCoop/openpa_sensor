@@ -19,7 +19,7 @@
 		  <a class="navbar-brand" href="{'sensor/home'|ezurl(no)}">
 			  <img src="{$sensor.logo|ezroot(no)}" alt="{$sensor.site_title}" height="90" width="90">
 			  <span class="logo_title" style="font-size: 1em">{$sensor.logo_title}</span>
-			  <span class="logo_subtitle" style="font-size: 1em">{$sensor.logo_subtitle}</span>
+			  <span class="logo_subtitle">{$sensor.logo_subtitle}</span>
 		  </a>
 	  </div>
 
