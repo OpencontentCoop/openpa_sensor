@@ -216,6 +216,12 @@ class OpenPASensorCollaborationHandler extends eZCollaborationItemHandler
             $handler->addArea( $this->customInput( 'OpenPASensorItemArea' ) );
         }
 
+        if ( $this->isCustomAction( 'SetExpiry' ) && $this->hasCustomInput( 'OpenPASensorItemExpiry' )
+             && $handler->attribute( 'can_set_expiry' ) )
+        {
+            $handler->setExpiry( $this->customInput( 'OpenPASensorItemExpiry' ) );
+        }
+
         if ( $this->hasCustomInput( 'OpenPASensorItemComment' ) || $this->isCustomAction( 'Comment' ) )
         {
             $messageText = $this->customInput( 'OpenPASensorItemComment' );

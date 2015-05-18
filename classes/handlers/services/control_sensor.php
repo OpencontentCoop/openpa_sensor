@@ -108,6 +108,9 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase
 
         $this->fnData['helper'] = 'getHelper';
 
+        $this->fnData['author_name'] = 'getPostAuthorName';
+        $this->fnData['category_name'] = 'getPostCategoryName';
+
         $this->fnData['author_id'] = 'getAuthorId';
         $this->fnData['approver_id_array'] = 'getApproverIdArray';
 
@@ -380,6 +383,48 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase
     {
         return $this->getHelper()->attribute( 'current_owner' );
 
+    }
+    
+    protected function getPostAuthorName()
+    {                
+        $name = '?';
+        if ( $this->container->getContentObject() instanceof eZContentObject )
+        {
+            $owner = $this->container->getContentObject()->attribute( 'owner' );
+            if ( $owner )
+            {
+                $name = $owner->attribute( 'name' );
+                if ( $this->container->hasAttribute( 'on_behalf_of' )
+                    && $this->container->attribute( 'on_behalf_of' ) instanceof OpenPAAttributeHandler
+                    && $this->container->attribute( 'on_behalf_of' )->attribute( 'has_content' ) )
+                {
+                    $name .= ' (' . $this->container->attribute( 'on_behalf_of' )->attribute( 'contentobject_attribute' )->toString() . ')';
+                }
+            }
+        }
+        return $name;
+    }
+    
+    protected function getPostCategoryName()
+    {
+        $name = '';
+        if ( $this->container->hasAttribute( 'category' )
+             && $this->container->attribute( 'category' ) instanceof OpenPAAttributeHandler
+             && $this->container->attribute( 'category' )->attribute( 'has_content' ) )
+        {
+            $names = array();
+            $categoryIds = explode( '-', $this->container->attribute( 'category' )->attribute( 'contentobject_attribute' )->toString() );
+            foreach( $categoryIds as $categoryId )
+            {
+                $category = eZContentObject::fetch( $categoryId );
+                if ( $category instanceof eZContentObject )
+                {
+                    $names[] = $category->attribute( 'name' );
+                }
+            }
+            $name = implode( ' - ', $names );
+        }
+        return $name;
     }
 
     /**

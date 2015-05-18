@@ -2,8 +2,8 @@
 <html class="no-js" lang="en">
 {def $sensor = sensor_root_handler()}
 {include uri='design:sensor/parts/head.tpl'}
-{ezcss_require(array('leaflet.0.7.2.css'))}
-{ezscript_require(array('leaflet.0.7.2.js', 'ezjsc::jquery', 'leaflet.activearea.js', 'Leaflet.MakiMarkers.js','Control.Geocoder.js'))}
+{ezcss_require(array('leaflet.0.7.2.css','Control.Loading.css'))}
+{ezscript_require(array('leaflet.0.7.2.js', 'ezjsc::jquery', 'leaflet.activearea.js', 'Leaflet.MakiMarkers.js','Control.Geocoder.js','Control.Loading.js'))}
 
 {literal}
 <style>
@@ -55,132 +55,173 @@
 <div id="sensor_full_map" class="hidden-xs"></div>
 
 {literal}
-    <script type="text/javascript">
-	  if ( PointsOfInterest.length > 0 ) {
-        var CenterMap = new L.latLng(PointsOfInterest[0].coords[0],PointsOfInterest[0].coords[1]);
+<script type="text/javascript">
+if ( PointsOfInterest.length > 0 ) {
+	var CenterMap = new L.latLng(PointsOfInterest[0].coords[0],PointsOfInterest[0].coords[1]);
+	var control = new L.Control.Geocoder({ geocoder: null });
 
-		var control = new L.Control.Geocoder({ geocoder: null });
-    if (window.XDomainRequest) {
-      control.options.geocoder = L.Control.Geocoder.bing('Ahmnz1XxcrJXgiVWzx6W8ewWeqLGztZRIB1hysjaoHI5nV38WXxywjh6vj0lyl4u'); 
-    }else{
-      control.options.geocoder = L.Control.Geocoder.google('AIzaSyDVnxoH2lLysFsPPQcwxZ0ROYNVCBkmQZk'); 
-    }    
-		var map = new L.Map('sensor_full_map').setActiveArea('viewport');
-		map.scrollWheelZoom.disable();
+	if (window.XDomainRequest) { control.options.geocoder = L.Control.Geocoder.bing('Ahmnz1XxcrJXgiVWzx6W8ewWeqLGztZRIB1hysjaoHI5nV38WXxywjh6vj0lyl4u');}
+	else{ control.options.geocoder = L.Control.Geocoder.google('AIzaSyDVnxoH2lLysFsPPQcwxZ0ROYNVCBkmQZk');}
 
-		var markers = L.featureGroup();
-    var userMarker;
-    var setUserMarker = function(latlng) {
-      if( typeof( userMarker ) === 'undefined' ){
-          var customIcon = L.MakiMarkers.icon({icon: "star", color: "#f00", size: "l"});
-          userMarker = new L.marker(latlng,{icon:customIcon});
-          userMarker.addTo(map);
-          markers.addLayer(userMarker);
-      }else{
-          userMarker.setLatLng(latlng);
-      }
-      setContent(latlng);            
-    };
-    var setContent = function(latlng) {
-      $('input#latitude').val( latlng.lat );
-      $('input#longitude').val( latlng.lng );
-      control.options.geocoder.reverse( latlng, 0, function(result) {
-          $container = $('#input-results');
-          $container.empty();
-          $('input#input-address').val(result[0].name);
-          map.setView(latlng, 17);
-      }, this );
-    };
-    setUserMarker(CenterMap);
-		/*if ( typeof PointsOfInterest != 'undefined' ) {
-		  $.each(PointsOfInterest, function (i,element) {			  
-			  var customIcon = L.MakiMarkers.icon({icon: "heart", color: "#b0b", size: "m"});
-			  markers.addLayer(L.marker(element.coords,{icon:customIcon}));
-		  });
+	var map = new L.Map('sensor_full_map',{loadingControl: true}).setActiveArea('viewport');
+	map.scrollWheelZoom.disable();
+
+	var alreadyAddressButton = false;
+	var markers = L.featureGroup();
+	var userMarker;
+	var setUserMarker = function(latlng,name) {
+		if( typeof( userMarker ) === 'undefined' ){
+  			var customIcon = L.MakiMarkers.icon({icon: "star", color: "#f00", size: "l"});
+  			userMarker = new L.marker(latlng,{icon:customIcon, draggable: true});
+			userMarker.on('dragend', function(event){
+				var marker = event.target;
+				var position = marker.getLatLng();
+				marker.setLatLng(position);
+				setContent(position);
+			});
+			userMarker.addTo(map);
+  			markers.addLayer(userMarker);
+		}else{
+  			userMarker.setLatLng(latlng);
 		}
-		markers.addTo(map);
-		map.setView(CenterMap, 13);*/
+		setContent(latlng,name);
+		alreadyAddressButton = false;
+		var $container = $('#input-results');
+		$container.empty();
+	};
 
-		L.tileLayer('//{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-			attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
-		}).addTo(map);
+	var setContent = function(latlng,name) {
+		$('input#latitude').val( latlng.lat );
+		$('input#longitude').val( latlng.lng );
+		if(typeof name == 'undefined') {
+			var name = latlng.toString();
+			map.loadingControl.addLoader('sc');
+			control.options.geocoder.reverse(latlng, 0, function (result) {
+				if( result.length > 0 ) name = result[0].name;
+				$container = $('#input-results');
+				$container.empty();
+				$('input#input-address').val(name);
+				map.setView(latlng, 17);
+				userMarker.bindPopup(name).openPopup();
+				map.loadingControl.removeLoader('sc');
+			}, this);
+		}else{
+			$('input#input-address').val(name);
+			map.setView(latlng, 17);
+			userMarker.bindPopup(name).openPopup();
+		}
+	};
+	setUserMarker(CenterMap);
+	/*if ( typeof PointsOfInterest != 'undefined' ) {
+	  $.each(PointsOfInterest, function (i,element) {
+		  var customIcon = L.MakiMarkers.icon({icon: "heart", color: "#b0b", size: "m"});
+		  markers.addLayer(L.marker(element.coords,{icon:customIcon}));
+	  });
+	}
+	markers.addTo(map);
+	map.setView(CenterMap, 13);*/
 
-		$('#poi').on( 'change', function(e){
-		  var id = $('#poi option:selected').val();
-		  $.each(PointsOfInterest, function (i,element) {
-			  if (id == element.id) {
-				var latLng = new L.latLng(element.coords[0],element.coords[1]);
-				setUserMarker(latLng);
-			  }
-		  });
-		});		
-		$('.zoomIn').on( 'click', function(e){
-		  e.stopPropagation();
-		  e.preventDefault();
-		  map.setZoom(map.getZoom() < map.getMaxZoom() ? map.getZoom() + 1 : map.getMaxZoom());
-		});
-		
-		$('.zoomOut').on( 'click', function(e){
-		  e.stopPropagation();
-		  e.preventDefault();
-		  map.setZoom(map.getZoom() > map.getMinZoom() ? map.getZoom() - 1 : map.getMinZoom());
-		});
+	L.tileLayer('//{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+		attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
+	}).addTo(map);
 
-		$('.fitbounds').on( 'click', function(e){
-		  e.stopPropagation();
-		  e.preventDefault();
-		  map.fitBounds(markers.getBounds(), {padding: [10, 10]});
-		});
+	$('#poi').on( 'change', function(e){
+	  var id = $('#poi option:selected').val();
+	  $.each(PointsOfInterest, function (i,element) {
+		  if (id == element.id) {
+			var latLng = new L.latLng(element.coords[0],element.coords[1]);
+			setUserMarker(latLng);
+		  }
+	  });
+	});
 
-		map.on('click', function(e){		  
-		  setUserMarker(e.latlng);
-		});
-		
-    $('#input-address').on( 'click', function(e){
-      $(this).select();
-    }).on( 'keypress', function(e){
-      if(e.which == 13) {
-        $('#input-address-button').trigger('click');
-        e.preventDefault();
-      }
-    });
-		$('#input-address-button').on( 'click', function(e){
-		  $query = $('#input-address').val();		  
-		  //console.log($query);		  
-		  control.options.geocoder.geocode( $query, function(result) {			
-			if (result.length > 0){
-			  $container = $('#input-results');
-			  $container.empty();
-			  if (result.length > 1) {				
-				$.each(result,function(i,o){				  
-				  var item = $('<li><span class="latitude hide">'+o.center.lat+'</span><span class="longitude hide">'+o.center.lng+'</span>'+o.name+'</li>');				  
-				  item.on( 'click', function(e){															
-            var lat = $(e.target).find('.latitude').text();
-            var lng = $(e.target).find('.longitude').text();            
-            setUserMarker( new L.latLng(lat,lng) );            
-				  });
-				  item.appendTo($container);
-				});
-			  }else{
-          var latlng = new L.latLng(result[0].center.lat,result[0].center.lng);
-          setUserMarker( latlng );				
-			  }
+	$('.zoomIn').on( 'click', function(e){
+	  e.stopPropagation();
+	  e.preventDefault();
+	  map.setZoom(map.getZoom() < map.getMaxZoom() ? map.getZoom() + 1 : map.getMaxZoom());
+	});
+
+	$('.zoomOut').on( 'click', function(e){
+	  e.stopPropagation();
+	  e.preventDefault();
+	  map.setZoom(map.getZoom() > map.getMinZoom() ? map.getZoom() - 1 : map.getMinZoom());
+	});
+
+	$('.fitbounds').on( 'click', function(e){
+	  e.stopPropagation();
+	  e.preventDefault();
+	  map.fitBounds(markers.getBounds(), {padding: [10, 10]});
+	});
+
+	map.on('click', function(e){
+	  setUserMarker(e.latlng);
+	});
+
+	$('#input-address')
+		.on( 'click', function(e){
+			$(this).select();
+		})
+		.on( 'keypress', function(e){
+			if(e.which == 13) {
+				$('#input-address-button').trigger('click');
+				e.preventDefault();
 			}
-		  }, this );
+		})
+		.on( 'focusout', function(e){
+			if(!alreadyAddressButton)
+				$('#input-address-button').trigger('click');
 		});
-		
-		$('#mylocation-button').on( 'click', function(e){		  
-		  map.locate({setView: true, watch: false})
-		  .on('locationfound', function(e){			   
-			  setUserMarker(new L.latLng(e.latitude, e.longitude));
-		  })
-		 .on('locationerror', function(e){
-			  console.log(e);
-			  alert("Location access denied.");
-		  });
+
+	$('#input-address-button')
+		.on( 'click', function(e){
+			alreadyAddressButton = true;
+			map.loadingControl.addLoader('gc');
+			$query = $('#input-address').val();
+  			control.options.geocoder.geocode( $query, function(result) {
+			if (result.length > 0){
+	  			$container = $('#input-results');
+	  			$container.empty();
+	  			if (result.length > 1) {
+					$.each(result,function(i,o){
+		  				var item = $('<li style="cursor:pointer"><span class="latitude hide">'+o.center.lat+'</span><span class="longitude hide">'+o.center.lng+'</span><span class="name">'+o.name+'</span></li>');
+		  				item.appendTo($container);
+						item.on( 'click', function(e){
+							var lat = $(e.target).parents('li').find('.latitude').text();
+							var lng = $(e.target).parents('li').find('.longitude').text();
+							var name = $(e.target).parents('li').find('.name').text();
+							map.loadingControl.removeLoader('gc');
+							setUserMarker( new L.latLng(lat,lng), name );
+						});
+					});
+	  			}else{
+  					var latlng = new L.latLng(result[0].center.lat,result[0].center.lng);
+					map.loadingControl.removeLoader('gc');
+  					setUserMarker( latlng, result[0].name );
+	  			}
+			}
+			}, this );
+			map.loadingControl.removeLoader('gc');
 		});
-	  }
-    </script>
+
+	$('#mylocation-button')
+		.on( 'click', function(e){
+			var icon = $(e.currentTarget).find('i');
+			icon.addClass( 'fa-spin' );
+			map.loadingControl.addLoader('lc');
+			map.locate({setView: true, watch: false})
+  				.on('locationfound', function(e){
+					map.loadingControl.removeLoader('lc');
+					icon.removeClass( 'fa-spin' );
+					setUserMarker(new L.latLng(e.latitude, e.longitude));
+				})
+ 				.on('locationerror', function(e){
+					icon.removeClass( 'fa-spin' );
+					map.loadingControl.removeLoader('lc');
+					alert(e.message);
+				});
+			});
+}
+</script>
 {/literal}
 
 

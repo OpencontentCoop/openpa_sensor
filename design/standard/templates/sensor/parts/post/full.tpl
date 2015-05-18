@@ -6,29 +6,43 @@
   <div class="alert alert-danger">{$error}</div>
 {else}
 
-<form method="post" action={"collaboration/action/"|ezurl} xmlns="http://www.w3.org/1999/html">
 
-  <section class="hgroup">
-    <h1>
-      {$object.name|wash()} <small>{$object.owner.name|wash()} {if $object|has_attribute('on_behalf_of')}[{$object|attribute('on_behalf_of').contentclass_attribute_name|wash()} {$object|attribute('on_behalf_of').content|wash()}]{/if}</small>
-    </h1>
-      <ul class="breadcrumb pull-right">
-        <li>
+
+<section class="hgroup">
+  <h1>
+    <span class="label label-primary">{$object.id}</span>
+    {$object.name|wash()} <small>{$object.owner.name|wash()} {if $object|has_attribute('on_behalf_of')}[{$object|attribute('on_behalf_of').contentclass_attribute_name|wash()} {$object|attribute('on_behalf_of').content|wash()}]{/if}</small>
+    {if $object.can_edit}
+      <a class="btn btn-warning btn-sm" href="{concat('sensor/edit/',$object.id)|ezurl(no)}"><i class="fa fa-edit"></i></a>
+    {/if}
+    {if $object.can_remove}
+    <form method="post" action={"content/action"|ezurl} style="display: inline">
+        <input type="hidden" name="ContentObjectID" value="{$object.id}" />
+        <input type="hidden" name="ContentNodeID" value="{$object.main_node_id}" />
+        <input type="hidden" name="RedirectURIAfterRemove" value="/sensor/dashboard" />
+        <input type="hidden" name="RedirectIfCancel" value="/sensor/dashboard" />
+        <button type="submit" class="btn btn-danger btn-sm" name="ActionRemove"><i class="fa fa-trash"></i></button>
+    </form>
+    {/if}
+  </h1>
+    <ul class="breadcrumb pull-right">
+      <li>
+        <span class="label
+        label-{$post.type.css_class}">{$post.type.name}</span> <span
+        class="label
+        label-{$post.current_status.css_class}">{$post.current_status.name}</span>
+        {if $post.current_privacy_status.identifier|eq('private')}
           <span class="label
-          label-{$post.type.css_class}">{$post.type.name}</span> <span
-          class="label
-          label-{$post.current_status.css_class}">{$post.current_status.name}</span>
-          {if $post.current_privacy_status.identifier|eq('private')}
-            <span class="label
-            label-{$post.current_privacy_status.css_class}">{$post.current_privacy_status.name}</span>
-          {/if}
-          {if $post.current_moderation_status.identifier|eq('waiting')}
-            <span class="label label-{$post.current_moderation_status.css_class}">{$post.current_moderation_status.name}</span>
-          {/if}
-        </li>
-      </ul>
-  </section>
+          label-{$post.current_privacy_status.css_class}">{$post.current_privacy_status.name}</span>
+        {/if}
+        {if $post.current_moderation_status.identifier|eq('waiting')}
+          <span class="label label-{$post.current_moderation_status.css_class}">{$post.current_moderation_status.name}</span>
+        {/if}
+      </li>
+    </ul>
+</section>
 
+<form method="post" action={"collaboration/action/"|ezurl} xmlns="http://www.w3.org/1999/html">
   <div class="row">
     <div class="col-md-8">
     
@@ -118,7 +132,7 @@
         
       {if $helper.can_do_something}
         <aside class="widget well well-sm">      
-        
+
           {if $helper.can_add_area}
             <h4>{'Quartiere/Zona'|i18n('openpa_sensor/post')}</h4>
             <div class="form-group">
@@ -163,8 +177,31 @@
             </div>
             </div>
           {/if}
-		
-          <h4>{'Azioni'|i18n('openpa_sensor/post')}</h4>
+
+          {if $helper.can_set_expiry}
+            <h4>{'Scadenza'|i18n('openpa_sensor/post')} <small>{'in giorni'|i18n('openpa_sensor/post')}</small></h4>
+            <div class="form-group">
+              <div class="row">
+                <div class="col-xs-8">
+                  <input type="text" class="form-control" name="Collaboration_OpenPASensorItemExpiry" value="{$helper.expiration_days|wash()}" />
+                </div>
+                <div class="col-xs-4">
+                  <input class="btn btn-info btn-block" type="submit" name="CollaborationAction_SetExpiry" value="{'Imposta'|i18n('openpa_sensor/post')}" />
+                </div>
+              </div>
+            </div>
+          {/if}
+
+          {if or(
+            $helper.can_assign,
+            $helper.can_add_observer,
+            $helper.can_fix,
+            $helper.can_close,
+            and( $post.current_privacy_status.identifier|ne('private'), $helper.can_change_privacy ),
+            and( $post.current_moderation_status.identifier|eq('waiting'), $helper.can_moderate )
+          )}
+            <h4>{'Azioni'|i18n('openpa_sensor/post')}</h4>
+          {/if}
         
           {if $helper.can_assign}
           <div class="form-group">
@@ -235,13 +272,12 @@
               <input class="btn btn-default btn-lg btn-block" type="submit" name="CollaborationAction_Moderate" value="{'Elimina moderazione'|i18n('openpa_sensor/post')}" />
             </div>
           {/if}
-    
+
         </aside>
       {/if}
     
     </div>
   </div>
-
   <input type="hidden" name="CollaborationActionCustom" value="custom" />
   <input type="hidden" name="CollaborationTypeIdentifier" value="openpasensor" />
   <input type="hidden" name="CollaborationItemID" value="{$collaboration_item.id}" />

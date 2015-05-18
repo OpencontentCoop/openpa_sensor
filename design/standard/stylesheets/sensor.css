@@ -359,3 +359,10 @@ div.alert p{margin-bottom: 10px !important}
 .full_page_photo section.call_to_action h4.skincolored {
     background: none repeat scroll 0 0 rgba(0, 141, 0, 0.6);
 }
+.collapsing ul.nav {
+    width: 100%;
+}
+.collapsing ul.nav li {
+    text-align: center;
+    width: 100%;
+}
