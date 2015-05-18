@@ -61,6 +61,9 @@ class SensorHelper
         );
     }
 
+<<<<<<< HEAD
+    public static function expiringInterval()
+=======
     /**
      * @param int $days
      *
@@ -68,6 +71,7 @@ class SensorHelper
      * @throws Exception
      */
     public static function expiringInterval( $days )
+>>>>>>> master
     {
         $expiringIntervalString = 'P' . intval( $days ) . 'D';
         $expiringInterval = new DateInterval( $expiringIntervalString ); 

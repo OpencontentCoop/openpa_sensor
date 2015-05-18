@@ -43,6 +43,17 @@
             </a>
           </li>
         {/foreach}
+        <li role="presentation" class="pull-right">
+            <a href="{concat('sensor/dashboard/post/default/csv/',$filters_query)|ezurl(no)}">
+              <small><i class="fa fa-download"></i>
+              {if $filters_query|eq('')}
+                {"Esporta CSV"|i18n('openpa_sensor/dashboard')}
+              {else}
+                {"Esporta risultati CSV"|i18n('openpa_sensor/dashboard')}
+              {/if}
+              </small>
+            </a>
+          </li>
       </ul>
       <div class="tab-pane active">
         {include name=navigator
@@ -99,6 +110,15 @@
                 {include name=cattree uri='design:sensor/parts/walk_item_option.tpl' item=$category recursion=0 attribute=$fake_attribute}
               {/foreach}
             </select>
+          </div>          
+          <div class="form-group">
+            <label class="" for="searchowner">Cerca per assegnatario</label>
+            <select data-placeholder="{'Cerca per assegnatario'|i18n('openpa_sensor/post')}" name="filters[owner]" class="chosen form-control" id='searchowner'>
+              <option value="">{'Cerca per assegnatario'|i18n('openpa_sensor/post')}</option>		
+              {foreach sensor_root_handler().operators as $user}                
+                <option value="{$user.contentobject_id}" {if and( is_set( $filters.owner ), $user.contentobject_id|eq( $filters.owner ) )} selected="selected"{/if}>{include uri='design:content/view/sensor_person.tpl' sensor_person=$user.object}</option>                
+              {/foreach}              
+            </select>
           </div>
           <div class="form-group">
             <label for="from" class="">Data creazione (inizio)</label>
@@ -113,10 +133,11 @@
         </form>
       </div>
       
+
+      {def $expiring_items = fetch( 'sensor', 'items', hash( 'type', 'expiring', 'limit', 100 ) )}
+      {if count( $expiring_items )|gt(0)}
       <aside class="widget" style="height: 570px;overflow-y: auto">
         <h4 class="section_header">In scadenza</h4>
-        {def $expiring_items = fetch( 'sensor', 'items', hash( 'type', 'expiring', 'limit', 100 ) )}
-        {if count( $expiring_items )|gt(0)}
           <ul class="media-list">
           {foreach $expiring_items as $item}              
             <li class="media">
@@ -132,8 +153,8 @@
             </li>              
           {/foreach}
           </ul>
-        {/if}
       </aside>
+      {/if}
       
     </div>    
   </div>

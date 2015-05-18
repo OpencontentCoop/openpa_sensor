@@ -194,7 +194,7 @@ class SensorModuleFunctions
             $tpl->setVariable( 'post_geo_array_js', $post->attribute( 'geo_js_array' ) );
     
             $collaborationHandler->readItem( $collaborationItem );
-            $helper->storePostActivesPartecipants();
+            $helper->storePostActivesParticipants();
         }
         catch( Exception $e )
         {
@@ -241,8 +241,8 @@ class SensorModuleFunctions
             }
             if ( !$user->isAnonymous()  )
             {
-                $activePartecipants = SensorHelper::getStoredActivesPartecipantsByPostId( $postId );
-                if ( in_array( $user->id(), $activePartecipants ) )
+                $activeParticipants = SensorHelper::getStoredActivesParticipantsByPostId( $postId );
+                if ( in_array( $user->id(), $activeParticipants ) )
                 {
                     $cacheHashArray[] = 'ap:' .$user->id();
                 }

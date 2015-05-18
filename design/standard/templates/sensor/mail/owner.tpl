@@ -1,6 +1,7 @@
 {def $sensor = sensor_root_handler()}
+{set-block scope=root variable=message_id}{concat('<post.',$node.contentobject_id,'.sensor','@',$sensor.sensor_url,'>')}{/set-block}
 {if $collaboration_item_status|eq(2)} {* ASSIGNED *}
-{set-block scope=root variable=subject}{'Ti è stata assegnata una segnalazione'|i18n('openpa_sensor/mail/post')}{/set-block}
+{set-block scope=root variable=subject}[{$sensor.site_title}] #{$node.contentobject_id}: {'Ti è stata assegnata una segnalazione'|i18n('openpa_sensor/mail/post')}{/set-block}
 {set-block scope=root variable=body}
 <table border='0' cellpadding='30' cellspacing='0' style='margin-left: auto;margin-right: auto;width:600px;text-align:center;' width='600'>
     <tr>
@@ -13,12 +14,24 @@
                     </td>
                 </tr>
                 <tr>
-                    <td align='center' valign='top'>
-                        <h4 style='color: #f90f00 !important'>{'Dettagli della segnalazione'|i18n('openpa_sensor/mail/post')}</h4>
+                    <td align='left' style='border-top: 1px solid #dce1e5;border-bottom: 1px solid #dce1e5;' valign='top'>
+                      <p><strong>ID:</strong> <a href="http://{$sensor.sensor_url}/sensor/posts/{$object.id}">{$node.contentobject_id}</a></p>
+                      <p><strong>{$node.data_map.subject.contentclass_attribute_name}:</strong> {$node.name|wash()}</p>
+                      <p><strong>{$node.data_map.type.contentclass_attribute_name}:</strong> {attribute_view_gui attribute=$node.data_map.type}</p>
+                      {if $node|has_attribute('geo')}
+                          <p><strong>{$node.data_map.geo.contentclass_attribute_name}:</strong> {$node.data_map.geo.content.address}</p>
+                      {elseif $node|has_attribute('area')}
+                          <p><strong>{$node.data_map.area.contentclass_attribute_name}:</strong> {attribute_view_gui attribute=$node.data_map.area}</p>
+                      {/if}
+                      <p><strong>{$node.data_map.description.contentclass_attribute_name}:</strong> <small>{attribute_view_gui attribute=$node.data_map.description}</small></p>
+                      {if $node|has_attribute('attachment')}
+                      <p><strong>{$node.data_map.attachment.contentclass_attribute_name}:</strong> {$node.data_map.attachment.content.original_filename|wash()}</p>
+                      {/if}
                     </td>
                 </tr>
                 <tr>
                     <td align='left' style='border-top: 1px solid #dce1e5;border-bottom: 1px solid #dce1e5;' valign='top'>
+                        <p><strong>ID:</strong> {$node.contentobject_id}</p>
                         <p><strong>{$node.data_map.subject.contentclass_attribute_name}:</strong> {$node.name|wash()}</p>
                         <p><strong>{$node.data_map.type.contentclass_attribute_name}:</strong> {attribute_view_gui attribute=$node.data_map.type}</p>
                         {if $node|has_attribute('geo')}

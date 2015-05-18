@@ -17,11 +17,7 @@ $http = eZHTTPTool::instance();
 $part = !is_string( $Params['Part'] ) ? false : $Params['Part'];
 $offset = !is_numeric( $Params['Offset'] ) ? 0 : $Params['Offset'];
 $groupId = !is_numeric( $Params['Group'] ) ? false : $Params['Group'];
-$listTypes = array(
-    array( 'identifier' => 'unread', 'name' => ezpI18n::tr( 'openpa_sensor/dashboard', "Da leggere" ) ),
-    array( 'identifier' => 'active', 'name' => ezpI18n::tr( 'openpa_sensor/dashboard', "In corso" ) ),
-    array( 'identifier' => 'unactive', 'name' => ezpI18n::tr( 'openpa_sensor/dashboard', "Chiuse" ) )
-);
+$export = !is_string( $Params['Export'] ) ? false : strtolower( $Params['Export'] ); 
 
 $currentPart = false;
 $availableParts = array();
@@ -99,8 +95,9 @@ else
             }
             else
             {
+                $listTypes = SensorHelper::availableListTypes();
                 $filters = $http->hasGetVariable( 'filters' ) ? $http->getVariable( 'filters' ) : array();                
-                $availableFilters = array( 'id', 'subject', 'category', 'creator_id', 'creation_range' );                
+                $availableFilters = array( 'id', 'subject', 'category', 'creator_id', 'creation_range', 'owner' );                
                 foreach( $filters as $key => $filter )
                 {
                     if ( !in_array( $key, $availableFilters ) || empty( $filter ) )
@@ -108,58 +105,44 @@ else
                         unset( $filters[$key] );
                     }                    
                 }
-                $filtersQuery = count( $filters ) > 0 ? '?' . http_build_query( array( 'filters' => $filters ) ) : '';
-                $currentList = false;
-                foreach( $listTypes as $key => $type )
+                
+                if ( $export )
                 {
-                    if ( $type['identifier'] == 'unread' )
+                    try
                     {
-                        $count = SensorHelper::fetchUnreadItemsCount( $filters, $group );
-                        $listTypes[$key]['count'] = $count;
-                        if ( $selectedList == 'unread' || ( !$selectedList && $count > 0 && $currentList == false ) )
+                        $exporter = SensorHelper::instantiateExporter( $export, $filters, $group, $selectedList );
+                        ob_get_clean(); //chiudo l'ob_start dell'index.php
+                        $exporter->handleDownload();                        
+                        eZExecution::cleanExit();
+                    }
+                    catch( Exception $e )
+                    {
+                        $module->redirectTo( 'sensor/home' );
+                        return;
+                    }
+                }
+                else
+                {
+                    
+                    $filtersQuery = count( $filters ) > 0 ? '?' . http_build_query( array( 'filters' => $filters ) ) : '';
+                    $currentList = false;
+                    foreach( $listTypes as $key => $type )
+                    {
+                        $count = call_user_func( $type['count_function'], $filters, $group );
+                        $listTypes[$key]['count'] = call_user_func( $type['count_function'], $filters, $group );
+                        if ( $selectedList == $type['identifier'] || ( !$selectedList && $count > 0 && $currentList == false ) )
                         {
                             $currentList = $listTypes[$key];
                         }
                     }
-                    elseif ( $type['identifier'] == 'active' )
+    
+                    if ( $currentList == false )
                     {
-                        $count = SensorHelper::fetchActiveItemsCount( $filters, $group );
-                        $listTypes[$key]['count'] = $count;
-                        if ( $selectedList == 'active' || ( !$selectedList && $count > 0 && $currentList == false  ) )
-                        {
-                            $currentList = $listTypes[$key];
-                        }
+                        $currentList = $listTypes[0];
                     }
-                    elseif ( $type['identifier'] == 'unactive' )
-                    {
-                        $count = SensorHelper::fetchUnactiveItemsCount( $filters, $group );
-                        $listTypes[$key]['count'] = $count;
-                        if ( $selectedList == 'unactive' || ( !$selectedList && $count > 0 && $currentList == false  ) )
-                        {
-                            $currentList = $listTypes[$key];
-                        }
-                    }
-                }
-
-                if ( $currentList == false )
-                {
-                    $currentList = $listTypes[0];
-                }
-
-                if ( $currentList['identifier'] == 'unread' )
-                {
-                    $unreadItems = SensorHelper::fetchUnreadItems( $filters, $group, $limit, $offset );
-                    $tpl->setVariable( 'items', $unreadItems );
-                }
-                elseif ( $currentList['identifier'] == 'active' )
-                {
-                    $activeItems = SensorHelper::fetchActiveItems( $filters, $group, $limit, $offset );
-                    $tpl->setVariable( 'items', $activeItems );
-                }
-                elseif ( $currentList['identifier'] == 'unactive' )
-                {
-                    $unactiveItems = SensorHelper::fetchUnactiveItems( $filters, $group, $limit, $offset );
-                    $tpl->setVariable( 'items', $unactiveItems );
+                    
+                    $items = call_user_func( $currentList['list_function'], $filters, $group, $limit, $offset );
+                    $tpl->setVariable( 'items', $items );
                 }
 
                 $tpl->setVariable( 'filters', $filters );

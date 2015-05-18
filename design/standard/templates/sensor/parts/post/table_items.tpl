@@ -25,9 +25,7 @@
   </td>
   <td>    
     <ul class="list-inline">
-    {if fetch( 'user', 'has_access_to', hash( 'module', 'sensor', 'function', 'manage' ) )}
       <li><strong>{$item.content.helper.object.id}</strong></li>
-	  {/if}
 	  <li>
         {if $post.current_privacy_status.identifier|eq('private')}
           <span class="label label-{$post.current_privacy_status.css_class}">{$post.current_privacy_status.name}</span>
