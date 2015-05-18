@@ -38,6 +38,14 @@ class SensorUserInfo
         return new static( $user );
     }
 
+    /**
+     * @return eZUser
+     */
+    public function user()
+    {
+        return $this->user;
+    }
+
     public function setModerationMode( $enable = true )
     {
         $this->setInfo( 'moderate', intval( $enable ) );
