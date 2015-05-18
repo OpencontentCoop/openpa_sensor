@@ -33,14 +33,32 @@ class SensorHelper
      */
     protected $collaborationItem;
 
+    /**
+     * @var SensorPost
+     */
+    protected $currentSensorPost;
+
+    /**
+     * @var SensorUserInfo
+     */
+    protected $currentSensorUser;
+
+    /**
+     * @var SensorUserPostRoles
+     */
+    protected $currentSensorUserRoles;
+
     protected function __construct( eZCollaborationItem $collaborationItem )
     {
         $this->collaborationItem = $collaborationItem;
+        $this->currentSensorPost = SensorPost::instance( $this->collaborationItem );
+        $this->currentSensorUser = SensorUserInfo::current();
+        $this->currentSensorUserRoles = SensorUserPostRoles::instance(
+            $this->currentSensorPost,
+            $this->currentSensorUser
+        );
     }
-    
-    /**
-     * @return DateInterval
-     */
+
     public static function expiringInterval()
     {
         $expiringIntervalString = 'P15D'; //@todo mettere valore in ini
