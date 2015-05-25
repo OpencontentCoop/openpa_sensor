@@ -2,6 +2,16 @@
 
 class SensorUserPostRoles
 {
+    const ROLE_STANDARD = 1;
+
+    const ROLE_OBSERVER = 2;
+
+    const ROLE_OWNER = 3;
+
+    const ROLE_APPROVER = 4;
+
+    const ROLE_AUTHOR = 5;
+
     /**
      * @var SensorPost
      */
@@ -12,16 +22,32 @@ class SensorUserPostRoles
      */
     protected $userInfo;
 
-    public function __construct( SensorPost $post, SensorUserInfo $userInfo )
+    /**
+     * @var SensorPostActionHandler
+     */
+    protected $actionHandler;
+
+    protected function __construct( SensorPost $post, SensorUserInfo $userInfo )
     {
         $this->post = $post;
         $this->userInfo = $userInfo;
+        $this->actionHandler = SensorPostActionHandler::instance( $this );
     }
 
     final public static function instance( SensorPost $post, SensorUserInfo $userInfo )
     {
         //@todo customize handler
         return new SensorUserPostRoles( $post, $userInfo );
+    }
+
+    public function getPost()
+    {
+        return $this->post;
+    }
+
+    public function getUserInfo()
+    {
+        return $this->userInfo;
     }
 
     public function attributes()
@@ -38,7 +64,8 @@ class SensorUserPostRoles
             'can_close',
             'can_fix',
             'can_send_private_message',
-            'can_add_observer'
+            'can_add_observer',
+            'can_set_expiry'
         );
     }
 
@@ -98,47 +125,59 @@ class SensorUserPostRoles
             case 'can_add_observer':
                 return $this->canAddObserver();
                 break;
+
+            case 'can_set_expiry':
+                return $this->canSetExpiry();
+                break;
         }
         eZDebug::writeError( "Attribute $key not found", get_called_class() );
 
         return false;
     }
 
-    protected function userIsA( $roleId )
+    public function handleAction( $actionName, $actionParameters = array() )
     {
-        $list = $this->post->participantIds( $roleId );
-        return in_array( $this->userInfo->user()->id(), $list );
+        $this->actionHandler->handleAction( $actionName, $actionParameters );
     }
 
-    protected function isApprover()
+    public function isApprover()
     {
         return $this->userIsA( eZCollaborationItemParticipantLink::ROLE_APPROVER );
     }
 
-    protected function isObserver()
+    public function isObserver()
     {
         return $this->userIsA( eZCollaborationItemParticipantLink::ROLE_OBSERVER );
     }
 
-    protected function isAuthor()
+    public function isAuthor()
     {
         return $this->userIsA( eZCollaborationItemParticipantLink::ROLE_AUTHOR );
     }
 
-    protected function isOwner()
+    public function isOwner()
     {
         return $this->userIsA( eZCollaborationItemParticipantLink::ROLE_OWNER );
     }
 
+    protected function userIsA( $roleId )
+    {
+        $list = $this->post->getParticipants( $roleId );
+        return in_array( $this->userInfo->user()->id(), $list );
+    }
+
     protected function canDoSomething()
     {
-        return ( $this->canAssign()
-                 || $this->canAddObserver()
-                 || $this->canClose()
-                 || $this->canFix()
-                 || $this->canAddCategory()
-                 || $this->canAddArea()
-                 || $this->canModerate() );
+        return (
+            $this->canAssign()
+            || $this->canAddObserver()
+            || $this->canClose()
+            || $this->canFix()
+            || $this->canAddCategory()
+            || $this->canAddArea()
+            || $this->canModerate()
+            || $this->canSetExpiry()
+        );
     }
 
     protected function canAddCategory()
@@ -154,10 +193,10 @@ class SensorUserPostRoles
     protected function canAssign()
     {
         return
-            !$this->post->is( SensorPost::STATUS_CLOSED )
+            !$this->post->isClosed()
             && (
                 $this->isApprover()
-                || ( $this->isOwner() && $this->post->is( SensorPost::STATUS_ASSIGNED ) )
+                || ( $this->isOwner() && $this->post->isAssigned() )
             );
     }
 
@@ -168,37 +207,47 @@ class SensorUserPostRoles
 
     protected function canComment()
     {
-
+        return ! (bool) $this->userInfo->hasDenyCommentMode();
     }
 
     protected function canChangePrivacy()
     {
+        return $this->isApprover();
+    }
 
+    protected function canSetExpiry()
+    {
+        return !$this->post->isClosed()
+               && $this->isApprover();
     }
 
     protected function canModerate()
     {
-
+        return $this->isApprover();
     }
 
     protected function canClose()
     {
-
+        return $this->isApprover()
+               && !$this->post->isClosed()
+               && !$this->post->isAssigned();
     }
 
     protected function canFix()
     {
-
+        return $this->isOwner() && $this->post->isAssigned();
     }
 
     protected function canSendPrivateMessage()
     {
-
+        return $this->isOwner()
+               || $this->isObserver()
+               || $this->isApprover();
     }
 
     protected function canAddObserver()
     {
-
+        return !$this->post->isClosed() && $this->isApprover();
     }
 
 }

@@ -1,16 +1,14 @@
 <?php
 
-class OpenPASensorCollaborationHandler extends eZCollaborationItemHandler
+class SensorCollaborationHandler extends eZCollaborationItemHandler
 {
-    const TYPE_STRING = 'openpasensor';
-
     /*!
      Initializes the handler
     */
-    function OpenPASensorCollaborationHandler()
+    function SensorCollaborationHandler()
     {
         $this->eZCollaborationItemHandler(
-            OpenPASensorCollaborationHandler::TYPE_STRING,
+            SensorHelper::getSensorCollaborationHandlerTypeString(),
             ezpI18n::tr( 'openpa_sensor/settings', 'Notifiche SensorCivico' ),
             array(
                 'use-messages' => true,
@@ -37,9 +35,9 @@ class OpenPASensorCollaborationHandler extends eZCollaborationItemHandler
     {
         return array(
             "content_object_id" => $collaborationItem->attribute( "data_int1" ),
-            "last_change" => $collaborationItem->attribute( SensorHelper::ITEM_LAST_CHANGE ),
-            "helper" => self::handler( $collaborationItem ),
-            "item_status" => $collaborationItem->attribute( SensorHelper::ITEM_STATUS )
+            "last_change" => $collaborationItem->attribute( SensorPost::COLLABORATION_FIELD_LAST_CHANGE),
+            "helper" => self::helper( $collaborationItem ),
+            "item_status" => $collaborationItem->attribute( SensorPost::COLLABORATION_FIELD_STATUS)
         );
     }
 
@@ -70,15 +68,9 @@ class OpenPASensorCollaborationHandler extends eZCollaborationItemHandler
      * @return SensorHelper
      * @throws Exception
      */
-    static function handler( $collaborationItem )
+    static function helper( $collaborationItem )
     {
-        $className = $collaborationItem->attribute( "data_text1" );
-        if ( $className == 'SensorHelper' )
-        {
-            /** @var SensorHelper $className */
-            return $className::instanceFromCollaborationItem( $collaborationItem );
-        }
-        throw new Exception( "Handler class $className not found or not implement SensorHelper" );
+        return SensorHelper::instanceFromCollaborationItem( $collaborationItem );
     }
 
     /**
@@ -98,7 +90,7 @@ class OpenPASensorCollaborationHandler extends eZCollaborationItemHandler
     function readItem( $collaborationItem, $viewMode = false )
     {
         $collaborationItem->setLastRead();
-        self::handler( $collaborationItem )->onRead();
+        self::helper( $collaborationItem )->onRead();
     }
 
     /**
@@ -107,14 +99,8 @@ class OpenPASensorCollaborationHandler extends eZCollaborationItemHandler
      */
     function messageCount( $collaborationItem )
     {
-        return eZCollaborationItemMessageLink::fetchItemCount(
-            array(
-                'item_id' => $collaborationItem->attribute( 'id' ),
-                'conditions' => array(
-                    'message_type' => array( array( SensorHelper::MESSAGE_TYPE_ROBOT, SensorHelper::MESSAGE_TYPE_PUBLIC, SensorHelper::MESSAGE_TYPE_RESPONSE, eZUser::currentUserID() ) )
-                )
-            )
-        );
+        $post = SensorPost::instance( $collaborationItem );
+        return $post->commentHelper->count();
     }
 
     /**
@@ -123,22 +109,8 @@ class OpenPASensorCollaborationHandler extends eZCollaborationItemHandler
      */
     function unreadMessageCount( $collaborationItem )
     {
-        $lastRead = 0;
-        /** @var eZCollaborationItemStatus $status */
-        $status = $collaborationItem->attribute( 'user_status' );
-        if ( $status )
-        {
-            $lastRead = $status->attribute( 'last_read' );
-        }
-        return eZCollaborationItemMessageLink::fetchItemCount(
-            array(
-                'item_id' => $collaborationItem->attribute( 'id' ),
-                'conditions' => array(
-                    'message_type' => array( array( SensorHelper::MESSAGE_TYPE_ROBOT, SensorHelper::MESSAGE_TYPE_PUBLIC, SensorHelper::MESSAGE_TYPE_RESPONSE, eZUser::currentUserID() ) ),
-                    'modified' => array( '>', $lastRead )
-                )
-            )
-        );
+        $post = SensorPost::instance( $collaborationItem );
+        return $post->commentHelper->unreadCount();
     }
 
     /**
@@ -163,106 +135,10 @@ class OpenPASensorCollaborationHandler extends eZCollaborationItemHandler
      */
     function handleCustomAction( $module, $collaborationItem )
     {
-        $handler = self::handler( $collaborationItem );
-
-        if ( $this->isCustomAction( 'Assign' )
-             && $this->hasCustomInput( 'OpenPASensorItemAssignTo' )
-             && $handler->canAssign() )
-        {
-            $userIds = (array) $this->customInput( 'OpenPASensorItemAssignTo' );
-            $handler->assignTo( $userIds );
-        }
-
-        if ( $this->isCustomAction( 'Fix' )
-             && $handler->canFix() )
-        {
-            $handler->fix();
-        }
-
-        if ( $this->isCustomAction( 'Close' )
-             && $handler->canClose() )
-        {
-            $handler->close();
-        }
-        
-        if ( $this->isCustomAction( 'MakePrivate' )
-             && $handler->canChangePrivacy() )
-        {
-            $handler->makePrivate();
-        }
-
-        if ( $this->isCustomAction( 'Moderate' )
-             && $handler->canModerate() )
-        {
-            $handler->moderate( $this->hasCustomInput( 'OpenPASensorItemModerationIdentifier' ) ? $this->customInput( 'OpenPASensorItemModerationIdentifier' ) : 'accepted' );
-        }
-
-        if ( $this->isCustomAction( 'AddObserver' ) && $this->hasCustomInput( 'OpenPASensorItemAddObserver' )
-             && $handler->canAddObserver() )
-        {
-            $handler->addObserver( $this->customInput( 'OpenPASensorItemAddObserver' ) );
-        }
-        
-        if ( $this->isCustomAction( 'AddCategory' ) && $this->hasCustomInput( 'OpenPASensorItemCategory' )
-             && $handler->attribute( 'can_add_category' ) )
-        {
-            $handler->addCategory( $this->customInput( 'OpenPASensorItemCategory' ),
-                                   $this->hasCustomInput( 'OpenPASensorItemAssignToCategoryApprover' ) ? $this->customInput( 'OpenPASensorItemAssignToCategoryApprover' ) : false );
-        }
-        
-        if ( $this->isCustomAction( 'AddArea' ) && $this->hasCustomInput( 'OpenPASensorItemArea' )
-             && $handler->attribute( 'can_add_area' ) )
-        {
-            $handler->addArea( $this->customInput( 'OpenPASensorItemArea' ) );
-        }
-
-        if ( $this->isCustomAction( 'SetExpiry' ) && $this->hasCustomInput( 'OpenPASensorItemExpiry' )
-             && $handler->attribute( 'can_set_expiry' ) )
-        {
-            $handler->setExpiry( $this->customInput( 'OpenPASensorItemExpiry' ) );
-        }
-
-        if ( $this->hasCustomInput( 'OpenPASensorItemComment' ) || $this->isCustomAction( 'Comment' ) )
-        {
-            $messageText = $this->customInput( 'OpenPASensorItemComment' );
-            $privateReceiver = SensorHelper::MESSAGE_TYPE_PUBLIC;
-            if ( $this->hasCustomInput( 'OpenPASensorItemCommentPrivateReceiver' ) )
-            {
-                $privateReceiverPost = $this->customInput( 'OpenPASensorItemCommentPrivateReceiver' );
-                if ( $privateReceiverPost > 2 )
-                {
-                    $privateReceiver = $privateReceiverPost;
-                }
-            }
-            $handler->addComment( $messageText, eZUser::currentUserID(), $privateReceiver );
-        }
-        
-        if ( $this->hasCustomInput( 'OpenPASensorItemResponse' ) || $this->isCustomAction( 'Respond' )
-             && $handler->attribute( 'can_respond' ) )
-        {
-            $messageText = $this->customInput( 'OpenPASensorItemResponse' );            
-            $handler->addResponse( $messageText );
-        }
-
-//        $redirectView = 'item';
-//        $redirectParameters = array( 'full', $collaborationItem->attribute( 'id' ) );
-//
-//        if ( $handler->is( SensorHelper::STATUS_CLOSED ) )
-//        {
-//            $redirectView = 'view';
-//            $redirectParameters = array( 'summary' );
-//        }
-
-        if ( $handler->hasRedirect( $module ) )
-        {
-            return $handler->redirect( $module );
-        }
-        else
-        {
-            $redirectView = 'view';
-            $redirectParameters = array( 'summary' );
-            return $module->redirectToView( $redirectView, $redirectParameters );
-        }
+        $helper = self::helper( $collaborationItem );
+        $helper->handleHttpAction();
+        $module->redirectTo( 'sensor/posts/' . $collaborationItem->attribute( 'data_int1' ) );
+        return;
     }
 
     /**

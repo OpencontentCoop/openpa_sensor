@@ -1112,25 +1112,25 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase
                     {
                         if ( $node->attribute( 'class_identifier' ) == 'dimmi_forum_reply' )
                         {
-                            $redirectUrlAlias = $node->attribute( 'parent' )->attribute( 'url_alias' );                            
+                            $redirectUrlAlias = $node->attribute( 'parent' )->attribute( 'url_alias' );
                         }
                         else
                         {
                             $redirectUrlAlias = $node->attribute( 'url_alias' );
                         }
                     }
-                    
+
                     if ( $redirectUrlAlias )
                     {
                         $sensorSA = OpenPABase::getCustomSiteaccessName( 'sensor' );
                         $path = "settings/siteaccess/{$sensorSA}/";
                         $iniFile = "site.ini";
-                        $ini = new eZINI( $iniFile . '.append', $path, null, null, null, true, true );  
+                        $ini = new eZINI( $iniFile . '.append', $path, null, null, null, true, true );
                         $redirectUrl = 'http://' . $ini->variable( 'SiteSettings', 'SiteURL' ) . '/' . $redirectUrlAlias;
                     }
                 }
             }
-            
+
             if ( $redirectUrl )
             {
                 eZDebug::writeNotice($redirectUrl);
@@ -1147,7 +1147,30 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase
                 {
                     if ( $object->attribute( 'current_version') == 1  )
                     {
-                        SensorHelper::createCollaborationItem( $id );
+                        $sensor = OpenPAObjectHandler::instanceFromContentObject( $object )->attribute(
+                            'control_sensor'
+                        );
+
+                        $struct = new SensorPostCreateStruct();
+                        $struct->contentObjectId = $object->attribute( 'id');
+                        $struct->authorUserId = $sensor->attribute( 'author_id' );
+                        $approverIDArray = $sensor->attribute( 'approver_id_array' );
+                        if ( empty( $approverIDArray ) )
+                        {
+                            $admin = eZUser::fetchByName( 'admin' );
+                            if ( $admin instanceof eZUser )
+                            {
+                                $approverIDArray[] = $admin->attribute( 'contentobject_id' );
+                                eZDebug::writeNotice(
+                                    "Add admin user as fallback empty participant list",
+                                    __METHOD__
+                                );
+                            }
+                        }
+                        $struct->approverUserIdArray = $approverIDArray;
+                        $struct->configParams = SensorHelper::getSensorConfigParams();
+
+                        SensorPost::create( $struct );
                         $dataMap = $object->attribute( 'data_map' );
                         if ( isset( $dataMap['privacy'] ) )
                         {
@@ -1215,7 +1238,7 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase
                     }
                     catch( Exception $e )
                     {
-                        
+
                     }
                 }
             }
@@ -1348,5 +1371,71 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase
             $GLOBALS['SensorRootHandler'] = $rootHandler->attribute( 'control_sensor' );
         }
         return $GLOBALS['SensorRootHandler'];
+    }
+
+    public static function onMakePrivate( $object )
+    {
+        if ( $object instanceof eZContentObject )
+        {
+            OpenPABase::sudo(
+                function () use ( $object )
+                {
+                    ObjectHandlerServiceControlSensor::setState( $object, 'privacy', 'private' );
+                }
+            );
+        }
+    }
+
+    public static function onModerate( $object, $identifier )
+    {
+        if ( $object instanceof eZContentObject )
+        {
+            OpenPABase::sudo(
+                function() use( $object, $identifier ){
+                    ObjectHandlerServiceControlSensor::setState( $object, 'moderation', $identifier );
+                }
+            );
+        }
+    }
+
+    public static function onSetStatus( $object, $status )
+    {
+        if ( $object instanceof eZContentObject )
+        {
+            if ( $status == SensorPost::STATUS_READ )
+            {
+                OpenPABase::sudo(
+                    function() use( $object ){
+                        ObjectHandlerServiceControlSensor::setState( $object, 'sensor', 'open' );
+                    }
+                );
+            }
+        }
+        elseif ( $status == SensorPost::STATUS_CLOSED )
+        {
+            OpenPABase::sudo(
+                function() use( $object ){
+                    ObjectHandlerServiceControlSensor::setState( $object, 'sensor', 'close' );
+                }
+            );
+        }
+        elseif ( $status == SensorPost::STATUS_REOPENED )
+        {
+            OpenPABase::sudo(
+                function() use( $object ){
+                    ObjectHandlerServiceControlSensor::setState( $object, 'sensor', 'pending' );
+                }
+            );
+        }
+    }
+
+    public static function onConfigParams()
+    {
+        return array(
+            'DefaultPostExpirationDaysInterval' => OpenPAINI::variable( 'SensorConfig', 'DefaultPostExpirationDaysInterval', 15 ),
+            'UniqueCategoryCount' => OpenPAINI::variable( 'SensorConfig', 'CategoryCount', 'unique' ) == 'unique',
+            'CategoryAutomaticAssign' => OpenPAINI::variable( 'SensorConfig', 'CategoryAutomaticAssign', 'disabled' ) == 'enabled',
+            'AuthorCanReopen' => OpenPAINI::variable( 'SensorConfig', 'AuthorCanReopen', 'disabled' ) == 'enabled'
+        );
     }
 }
