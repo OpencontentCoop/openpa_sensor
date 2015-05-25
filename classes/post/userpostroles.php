@@ -25,7 +25,7 @@ class SensorUserPostRoles
     /**
      * @var SensorPostActionHandler
      */
-    protected $actionHandler;
+    public $actionHandler;
 
     protected function __construct( SensorPost $post, SensorUserInfo $userInfo )
     {
@@ -36,7 +36,6 @@ class SensorUserPostRoles
 
     final public static function instance( SensorPost $post, SensorUserInfo $userInfo )
     {
-        //@todo customize handler
         return new SensorUserPostRoles( $post, $userInfo );
     }
 

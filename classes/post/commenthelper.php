@@ -24,7 +24,6 @@ class SensorPostCommentHelper
 
     final public static function instance( SensorPost $post )
     {
-        //@todo customize handler
         return new SensorPostCommentHelper( $post );
     }
 

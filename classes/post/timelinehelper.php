@@ -24,7 +24,6 @@ class SensorPostTimelineHelper
 
     final public static function instance( SensorPost $post )
     {
-        //@todo customize handler
         return new SensorPostTimelineHelper( $post );
     }
 
@@ -184,9 +183,13 @@ class SensorPostTimelineHelper
             $name = $parts[1];
             if ( is_numeric( $name ) )
             {
-                $name = SensorHelper::instanceFromCollaborationItem(
-                    $this->post->getCollaborationItem()
-                )->decorateUserName( $name );
+                $user = eZUser::fetch( $name );
+                if ( $user instanceof eZUser )
+                {
+                    $tpl = eZTemplate::factory();
+                    $tpl->setVariable( 'sensor_person', $user->attribute( 'contentobject' ) );
+                    $name = $tpl->fetch( 'design:content/view/sensor_person.tpl' );
+                }
             }
             switch( $parts[0] )
             {

@@ -173,7 +173,7 @@ class OpenPASensorOperator
                     }
                 }
                 $operatorValue = $result;
-            }
+            } break;
         }
     }
 } 

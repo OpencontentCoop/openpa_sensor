@@ -9,4 +9,8 @@ class SensorPostCreateStruct
     public $approverUserIdArray = array();
 
     public $configParams = array();
+
+    public $privacy;
+
+    public $moderation;
 }

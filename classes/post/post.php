@@ -85,68 +85,7 @@ class SensorPost
 
     final public static function instance( eZCollaborationItem $collaborationItem, $configParameters = array() )
     {
-        //@todo customize handler
         return new SensorPost( $collaborationItem, $configParameters );
-    }
-
-    public static function create( SensorPostCreateStruct $struct )
-    {
-        $object = eZContentObject::fetch( $struct->contentObjectId );
-        if ( !$object instanceof eZContentObject )
-        {
-            throw new Exception( "Object {$struct->contentObjectId} not found" );
-        }
-
-        $db = eZDB::instance();
-        $res = (array) $db->arrayQuery( "SELECT * FROM ezcollab_item WHERE data_int1 = " . $struct->contentObjectId );
-        if ( count( $res ) > 0 )
-        {
-            $collaborationID = $res[0]['id'];
-            $collaborationItem = eZCollaborationItem::fetch( $collaborationID );
-            $post = SensorPost::instance( $collaborationItem, $struct->configParams );
-            $post->restoreFormTrash();
-            $post->eventHelper->handleEvent( 'on_restore' );
-            return $post;
-        }
-
-        $struct = ezpEvent::getInstance()->filter( 'sensor/create_struct', $struct );
-
-        $collaborationItem = eZCollaborationItem::create(
-            SensorHelper::getSensorCollaborationHandlerTypeString(),
-            $struct->authorUserId
-        );
-        $collaborationItem->setAttribute( self::COLLABORATION_FIELD_OBJECT_ID, $struct->contentObjectId );
-        $collaborationItem->setAttribute( self::COLLABORATION_FIELD_HANDLER, 'SensorHelper' );
-        $collaborationItem->setAttribute( self::COLLABORATION_FIELD_STATUS, false );
-        $collaborationItem->setAttribute( self::COLLABORATION_FIELD_LAST_CHANGE, 0 );
-        $collaborationItem->setAttribute( self::COLLABORATION_FIELD_EXPIRY, self::expiryTimestamp( $collaborationItem->attribute( 'created' ) ) );
-        $collaborationItem->store();
-
-        $post = self::instance( $collaborationItem, $struct->configParams );
-
-        $participantList = array(
-            array(
-                'id' => array( $struct->authorUserId ),
-                'role' => SensorUserPostRoles::ROLE_AUTHOR
-            ),
-            array(
-                'id' => $struct->approverUserIdArray,
-                'role' => SensorUserPostRoles::ROLE_APPROVER
-            )
-        );
-        foreach ( $participantList as $participantItem )
-        {
-            foreach( $participantItem['id'] as $participantID )
-            {
-                $participantRole = $participantItem['role'];
-                $post->addParticipant( $participantID, $participantRole );
-            }
-        }
-
-        $post->setStatus( self::STATUS_WAITING );
-        $post->eventHelper->handleEvent( 'on_create' );
-
-        return $post;
     }
 
     public function restoreFormTrash()
@@ -470,7 +409,7 @@ class SensorPost
             if ( $date instanceof DateTime )
             {
                 $data['timestamp'] = $date->format( 'U' );
-                $diff = SensorHelper::getDateDiff( $date );
+                $diff = self::getDateDiff( $date );
                 /** @var DateInterval $interval */
                 $interval = $diff['interval'];
                 $format = $diff['format'];
@@ -512,7 +451,7 @@ class SensorPost
                 $end->setTimestamp( $response->attribute( "created" ) );
                 if ( $start instanceof DateTime )
                 {
-                    $diff = SensorHelper::getDateDiff( $start, $end );
+                    $diff = self::getDateDiff( $start, $end );
                     $interval = $diff['interval'];
                     $format = $diff['format'];
                     if ( $interval instanceof DateInterval )
@@ -803,6 +742,155 @@ class SensorPost
             throw new Exception( "Invalid interval {$expiringIntervalString}" );
         }
         return $expiringInterval;
+    }
+
+    public static function getDateDiff( $start, $end = null )
+    {
+        if ( !( $start instanceof DateTime ) )
+        {
+            $start = new DateTime( $start );
+        }
+
+        if ( $end === null )
+        {
+            $end = new DateTime();
+        }
+
+        if ( !( $end instanceof DateTime ) )
+        {
+            $end = new DateTime( $start );
+        }
+
+        $interval = $end->diff( $start );
+        $translate = function ( $nb, $str )
+        {
+            $string = $nb > 1 ? $str . 's' : $str;
+            switch ( $string )
+            {
+                case 'year';
+                    $string = ezpI18n::tr( 'openpa_sensor/expiring', 'anno' );
+                    break;
+                case 'years';
+                    $string = ezpI18n::tr( 'openpa_sensor/expiring', 'anni' );
+                    break;
+                case 'month';
+                    $string = ezpI18n::tr( 'openpa_sensor/expiring', 'mese' );
+                    break;
+                case 'months';
+                    $string = ezpI18n::tr( 'openpa_sensor/expiring', 'mesi' );
+                    break;
+                case 'day';
+                    $string = ezpI18n::tr( 'openpa_sensor/expiring', 'giorno' );
+                    break;
+                case 'days';
+                    $string = ezpI18n::tr( 'openpa_sensor/expiring', 'giorni' );
+                    break;
+                case 'hour';
+                    $string = ezpI18n::tr( 'openpa_sensor/expiring', 'ora' );
+                    break;
+                case 'hours';
+                    $string = ezpI18n::tr( 'openpa_sensor/expiring', 'ore' );
+                    break;
+                case 'minute';
+                    $string = ezpI18n::tr( 'openpa_sensor/expiring', 'minuto' );
+                    break;
+                case 'minutes';
+                    $string = ezpI18n::tr( 'openpa_sensor/expiring', 'minuti' );
+                    break;
+                case 'second';
+                    $string = ezpI18n::tr( 'openpa_sensor/expiring', 'secondo' );
+                    break;
+                case 'seconds';
+                    $string = ezpI18n::tr( 'openpa_sensor/expiring', 'secondi' );
+                    break;
+            }
+            return $string;
+        };
+
+        $format = array();
+        if ( $interval->y !== 0 )
+        {
+            $format[] = "%y " . $translate( $interval->y, "year" );
+        }
+        if ( $interval->m !== 0 )
+        {
+            $format[] = "%m " . $translate( $interval->m, "month" );
+        }
+        if ( $interval->d !== 0 )
+        {
+            $format[] = "%d " . $translate( $interval->d, "day" );
+        }
+        if ( $interval->h !== 0 )
+        {
+            $format[] = "%h " . $translate( $interval->h, "hour" );
+        }
+        if ( $interval->i !== 0 )
+        {
+            $format[] = "%i " . $translate( $interval->i, "minute" );
+        }
+        if ( $interval->s !== 0 )
+        {
+            if ( !count( $format ) )
+            {
+                return ezpI18n::tr( 'openpa_sensor/expiring', 'meno di un minuto' );
+            }
+            else
+            {
+                $format[] = "%s " . $translate( $interval->s, "second" );
+            }
+        }
+
+        // We use the two biggest parts
+        if ( count( $format ) > 1 )
+        {
+            $format = array_shift( $format ) . " " . ezpI18n::tr( 'openpa_sensor/expiring', 'e' ) . " " . array_shift( $format );
+        }
+        else
+        {
+            $format = array_pop( $format );
+        }
+
+        return array( 'interval' => $interval, 'format' => $format );
+    }
+
+    public function delete()
+    {
+        $itemId = $this->collaborationItem->attribute( 'id' );
+        self::deleteCollaborationStuff( $itemId );
+    }
+
+    public static function deleteCollaborationStuff( $itemId )
+    {
+        $db = eZDB::instance();
+        $db->begin();
+        $db->query( "DELETE FROM ezcollab_item WHERE id = $itemId" );
+        $db->query( "DELETE FROM ezcollab_item_group_link WHERE collaboration_id = $itemId" );
+        $res = $db->arrayQuery( "SELECT message_id FROM ezcollab_item_message_link WHERE collaboration_id = $itemId" );
+        foreach( $res as $r )
+        {
+            $db->query( "DELETE FROM ezcollab_simple_message WHERE id = {$r['message_id']}" );
+        }
+        $db->query( "DELETE FROM ezcollab_item_message_link WHERE collaboration_id = $itemId" );
+        $db->query( "DELETE FROM ezcollab_item_participant_link WHERE collaboration_id = $itemId" );
+        $db->query( "DELETE FROM ezcollab_item_status WHERE collaboration_id = $itemId" );
+        $db->commit();
+    }
+
+    public static function getCollaborationStuff( $itemId )
+    {
+        $db = eZDB::instance();
+        $res['ezcollab_item'] = $db->arrayQuery( "SELECT * FROM ezcollab_item WHERE id = $itemId" );
+        $res['ezcollab_item_group_link'] = $db->arrayQuery( "SELECT * FROM ezcollab_item_group_link WHERE collaboration_id = $itemId" );
+        $tmp = $db->arrayQuery( "SELECT message_id FROM ezcollab_item_message_link WHERE collaboration_id = $itemId" );
+        $res['ezcollab_simple_message'] = array();
+        foreach( $tmp as $r )
+        {
+            $res['ezcollab_simple_message'][] = $db->arrayQuery( "SELECT * FROM ezcollab_simple_message WHERE id = {$r['message_id']}" );
+        }
+        $res['ezcollab_item_message_link'] = $db->arrayQuery( "SELECT * FROM ezcollab_item_message_link WHERE collaboration_id = $itemId" );
+        $res['ezcollab_item_participant_link'] = $db->arrayQuery( "SELECT * FROM ezcollab_item_participant_link WHERE collaboration_id = $itemId" );
+        $res['ezcollab_item_status'] = $db->arrayQuery( "SELECT * FROM ezcollab_item_status WHERE collaboration_id = $itemId" );
+        return $res;
     }
 
 }

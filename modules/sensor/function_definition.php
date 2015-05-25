@@ -32,39 +32,3 @@ $FunctionList['survey_data'] = array(
         )
     )
 );
-
-$FunctionList['items'] = array(
-    'name' => 'items',
-    'operation_types' => array( 'read' ),
-    'call_method' => array(
-        'class' => 'OpenPASensorFunctionCollection',
-        'method' => 'fetchItems'
-    ),
-    'parameter_type' => 'standard',
-    'parameters' => array(
-        array(
-            'name' => 'type',
-            'type' => 'string',
-            'required' => false,
-            'default' => 'all'
-        ),
-        array(
-            'name' => 'group_id',
-            'type' => 'integer',
-            'required' => false,
-            'default' => false
-        ),
-        array(
-            'name' => 'limit',
-            'type' => 'integer',
-            'required' => false,
-            'default' => 10
-        ),
-        array(
-            'name' => 'offset',
-            'type' => 'integer',
-            'required' => false,
-            'default' => 0
-        )
-    )
-);
