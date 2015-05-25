@@ -41,28 +41,6 @@ class SensorCollaborationHandler extends eZCollaborationItemHandler
         );
     }
 
-    function notificationParticipantTemplate( $participantRole )
-    {
-        if ( $participantRole == eZCollaborationItemParticipantLink::ROLE_APPROVER )
-        {
-            return 'approver.tpl';
-        }
-        else if ( $participantRole == eZCollaborationItemParticipantLink::ROLE_AUTHOR )
-        {
-            return 'author.tpl';
-        }
-        else if ( $participantRole == eZCollaborationItemParticipantLink::ROLE_OBSERVER )
-        {
-            return 'observer.tpl';
-        }
-        else if ( $participantRole == eZCollaborationItemParticipantLink::ROLE_OWNER )
-        {
-            return 'owner.tpl';
-        }
-        else
-            return false;
-    }
-
     /**
      * @param eZCollaborationItem $collaborationItem
      * @return SensorHelper
@@ -163,32 +141,6 @@ class SensorCollaborationHandler extends eZCollaborationItemHandler
             $userIDList[] = $participant->attribute( 'participant_id' );
             $participantMap[$participant->attribute('participant_id' )] = $participant;
         }
-        
-        //$authorLanguage = false;
-        //foreach( $participantMap as $contentObjectID => $participant )
-        //{
-        //    if ( !$authorLanguage && $participant->attribute( 'participant_role' ) == eZCollaborationItemParticipantLink::ROLE_AUTHOR )
-        //    {
-        //        $authorObject = eZContentObject::fetch( $contentObjectID );                
-        //        if ( $authorObject instanceof eZContentObject )
-        //        {
-        //            $language = eZContentLanguage::fetch( $authorObject->attribute( 'initial_language_id' ) );
-        //            if ( $language )
-        //            {
-        //                $authorLanguage = $language->attribute( 'locale' );
-        //            }
-        //        }                
-        //    }
-        //}
-        //
-        //if ( $authorLanguage != eZINI::instance()->variable( 'RegionalSettings', 'ContentObjectLocale' ) )
-        //{                                    
-        //    $authorLanguageParts = explode( '-', $authorLanguage );            
-        //    $siteaccess = OpenPABase::getCurrentSiteaccessIdentifier() . '_' . $authorLanguageParts[0] . '_sensor';            
-        //    $access = array( 'name' => $siteaccess,
-        //                     'type' => eZSiteAccess::TYPE_STATIC );
-        //    eZSiteAccess::change( $access );
-        //}
 
         $collaborationIdentifier = $event->attribute( 'data_text1' );
         $ruleList = eZCollaborationNotificationRule::fetchItemTypeList( $collaborationIdentifier, $userIDList, false );
@@ -207,7 +159,7 @@ class SensorCollaborationHandler extends eZCollaborationItemHandler
         else
             return eZNotificationEventHandler::EVENT_SKIPPED;
 
-        /** @var OpenPASensorCollaborationHandler $itemHandler */
+        /** @var SensorCollaborationHandler $itemHandler */
         $itemHandler = $item->attribute( 'handler' );
 
         $db = eZDB::instance();

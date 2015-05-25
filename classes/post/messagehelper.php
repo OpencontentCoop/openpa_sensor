@@ -24,7 +24,6 @@ class SensorPostMessageHelper
 
     final public static function instance( SensorPost $post )
     {
-        //@todo customize handler
         return new SensorPostMessageHelper( $post );
     }
 

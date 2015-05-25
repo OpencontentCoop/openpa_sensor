@@ -1170,24 +1170,20 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase
                         $struct->approverUserIdArray = $approverIDArray;
                         $struct->configParams = SensorHelper::getSensorConfigParams();
 
-                        SensorPost::create( $struct );
                         $dataMap = $object->attribute( 'data_map' );
                         if ( isset( $dataMap['privacy'] ) )
                         {
                             if ( $dataMap['privacy']->attribute( 'data_int' ) == 0 )
                             {
-                                OpenPABase::sudo( function() use( $object ){
-                                    ObjectHandlerServiceControlSensor::setState( $object, 'privacy', 'private' );
-                                });
+                                $struct->privacy = 'private';
                             }
                         }
                         if ( self::needModeration() )
                         {
-                            OpenPABase::sudo( function() use( $object ){
-                                ObjectHandlerServiceControlSensor::setState( $object, 'moderation', 'waiting' );
-                            });
+                            $struct->moderation = 'waiting';
                         }
-                        // force reindex object in solr
+
+                        SensorHelper::createSensorPost( $struct );
                         eZSearch::addObject( $object, true );
                     }
                     else
@@ -1195,8 +1191,8 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase
                         try
                         {
                             $helper = SensorHelper::instanceFromContentObjectId( $id );
-                            $helper->attribute( 'collaboration_item' )->setAttribute( 'modified', $object->attribute( 'modified' ) );
-                            $helper->attribute( 'collaboration_item' )->sync();
+                            $helper->collaborationItem->setAttribute( 'modified', $object->attribute( 'modified' ) );
+                            $helper->collaborationItem->sync();
                         }
                         catch( Exception $e )
                         {
@@ -1232,9 +1228,9 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase
                     {
                         $helper = SensorHelper::instanceFromContentObjectId( $object->attribute( 'id' ) );
                         if ( $inTrash )
-                            $helper->moveToTrash();
+                            $helper->currentSensorPost->moveToTrash();
                         else
-                            $helper->delete();
+                            $helper->currentSensorPost->delete();
                     }
                     catch( Exception $e )
                     {

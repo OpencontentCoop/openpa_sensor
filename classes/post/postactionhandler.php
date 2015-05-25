@@ -137,7 +137,6 @@ class SensorPostActionHandler
 
     final public static function instance( SensorUserPostRoles $userPostRoles )
     {
-        //@todo make handler customizable
         return new SensorPostActionHandler( $userPostRoles );
     }
 
@@ -183,7 +182,7 @@ class SensorPostActionHandler
         }
     }
 
-    protected function read()
+    public function read()
     {
         if ( $this->userPostRoles->isApprover()
              && ( $this->post->isWaiting() || $this->post->isReopened() ) )
@@ -194,7 +193,7 @@ class SensorPostActionHandler
         }
     }
 
-    protected function assign( $participantIds )
+    public function assign( $participantIds )
     {
         //@todo verificare multi owner
         $isChanged = false;
@@ -218,7 +217,7 @@ class SensorPostActionHandler
         }
     }
 
-    protected function fix()
+    public function fix()
     {
         //@todo verificare multi owner
         $this->post->addParticipant( $this->userInfo->user()->id(), SensorUserPostRoles::ROLE_OBSERVER );
@@ -234,26 +233,26 @@ class SensorPostActionHandler
         $this->post->eventHelper->handleEvent( 'on_fix' );
     }
 
-    protected function close()
+    public function close()
     {
         $this->post->setStatus( SensorPost::STATUS_CLOSED );
         $this->post->timelineHelper->add( SensorPost::STATUS_CLOSED )->store();
         $this->post->eventHelper->handleEvent( 'on_close' );
     }
 
-    protected function makePrivate()
+    public function makePrivate()
     {
         ezpEvent::getInstance()->notify( 'sensor/make_private', array( $this->post->getContentObject() ) );
         $this->post->touch();
     }
 
-    protected function moderate( $status )
+    public function moderate( $status )
     {
         ezpEvent::getInstance()->notify( 'sensor/moderate', array( $this->post->getContentObject(), $status ) );
         $this->post->touch();
     }
 
-    protected function addObserver( $participantIds )
+    public function addObserver( $participantIds )
     {
         $isChanged = false;
         $currentObserverIds = $this->post->getParticipants( SensorUserPostRoles::ROLE_OBSERVER );
@@ -270,7 +269,7 @@ class SensorPostActionHandler
         }
     }
 
-    protected function addCategory( array $categoryIdList, $autoAssign = false )
+    public function addCategory( array $categoryIdList, $autoAssign = false )
     {
         if ( !empty( $categoryIdList ) )
         {
@@ -295,7 +294,7 @@ class SensorPostActionHandler
         }
     }
 
-    protected function addArea( $areaIdList )
+    public function addArea( $areaIdList )
     {
         if ( empty( $areaList ) )
         {
@@ -305,7 +304,7 @@ class SensorPostActionHandler
         }
     }
 
-    protected function setExpiry( $days )
+    public function setExpiry( $days )
     {
         $value = intval( $days );
         if ( $value > 0 )
@@ -316,7 +315,7 @@ class SensorPostActionHandler
         }
     }
 
-    protected function addComment( $text )
+    public function addComment( $text )
     {
         $this->post->commentHelper->add( $text )->store();
         $this->post->eventHelper->handleEvent( 'on_add_comment' );
@@ -339,7 +338,7 @@ class SensorPostActionHandler
         $this->post->touch();
     }
 
-    protected function addResponse( $text )
+    public function addResponse( $text )
     {
         $this->post->responseHelper->add( $text )->store();
         $this->post->eventHelper->handleEvent( 'on_add_response' );
