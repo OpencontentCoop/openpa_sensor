@@ -13,6 +13,7 @@ class SensorModuleFunctions
             self::clearSensorCache( self::GLOBAL_PREFIX );
         }
         $postClass = ObjectHandlerServiceControlSensor::postContentClass();
+        /** @var eZContentObject[] $objects */
         $objects = eZContentObject::fetchByNodeID( $nodeList );
         foreach( $objects as $object )
         {
@@ -28,7 +29,6 @@ class SensorModuleFunctions
     
     protected static function clearSensorCache( $prefix )
     {
-        $siteAccesses = array();
         $ini = eZINI::instance();
         if ( $ini->hasVariable( 'SiteAccessSettings', 'RelatedSiteAccessList' ) &&
              $relatedSiteAccessList = $ini->variable( 'SiteAccessSettings', 'RelatedSiteAccessList' ) )
@@ -75,50 +75,70 @@ class SensorModuleFunctions
         }
         $Result['content_info'] = $contentInfoArray;
         $Result['path'] = array();
-        $retval = array( 'content' => $Result,
+        $returnValue = array( 'content' => $Result,
                          'scope'   => 'sensor' );
-        return $retval;
+        return $returnValue;
     }
     
     public static function sensorInfoGenerate( $file, $args )
     {
         extract( $args );
-        
-        $tpl = eZTemplate::factory();
-        $identifier = $Params['Page'];        
-        if ( ObjectHandlerServiceControlSensor::rootHandler()->hasAttribute( $identifier ) )
+        if ( isset( $Params ) && $Params['Module'] instanceof eZModule )
         {
-            $currentUser = eZUser::currentUser();
-            
-            $tpl->setVariable( 'current_user', $currentUser );
-            $tpl->setVariable( 'persistent_variable', array() );
-            $tpl->setVariable( 'identifier', $identifier );
-            
-            $Result = array();
-            
-            $Result['persistent_variable'] = $tpl->variable( 'persistent_variable' );
-            $Result['pagelayout'] = 'design:sensor/pagelayout.tpl';
-            $Result['content'] = $tpl->fetch( 'design:sensor/info.tpl' );
-            $Result['node_id'] = 0;
-            
-            $contentInfoArray = array( 'url_alias' => 'sensor/info' );
-            $contentInfoArray['persistent_variable'] = false;
-            if ( $tpl->variable( 'persistent_variable' ) !== false )
+            $tpl = eZTemplate::factory();
+            $identifier = $Params['Page'];
+            if ( ObjectHandlerServiceControlSensor::rootHandler()->hasAttribute( $identifier ) )
             {
-                $contentInfoArray['persistent_variable'] = $tpl->variable( 'persistent_variable' );
+                $currentUser = eZUser::currentUser();
+
+                $tpl->setVariable( 'current_user', $currentUser );
+                $tpl->setVariable( 'persistent_variable', array() );
+                $tpl->setVariable( 'identifier', $identifier );
+
+                $Result = array();
+
+                $Result['persistent_variable'] = $tpl->variable( 'persistent_variable' );
+                $Result['pagelayout'] = 'design:sensor/pagelayout.tpl';
+                $Result['content'] = $tpl->fetch( 'design:sensor/info.tpl' );
+                $Result['node_id'] = 0;
+
+                $contentInfoArray = array( 'url_alias' => 'sensor/info' );
+                $contentInfoArray['persistent_variable'] = false;
+                if ( $tpl->variable( 'persistent_variable' ) !== false )
+                {
+                    $contentInfoArray['persistent_variable'] = $tpl->variable(
+                        'persistent_variable'
+                    );
+                }
+                $Result['content_info'] = $contentInfoArray;
+                $Result['path'] = array();
+
+                $returnValue = array(
+                    'content' => $Result,
+                    'scope' => 'sensor'
+                );
             }
-            $Result['content_info'] = $contentInfoArray;
-            $Result['path'] = array();
-            
-            $retval = array( 'content' => $Result,
-                             'scope'   => 'sensor' );
+            else
+            {
+                /** @var eZModule $module */
+                $module = $Params['Module'];
+                $returnValue = array(
+                    'content' => $module->handleError(
+                        eZError::KERNEL_NOT_AVAILABLE,
+                        'kernel'
+                    ),
+                    'store' => false
+                );
+            }
         }
         else
         {
-            return  array( 'content' => $Params['Module']->handleError( eZError::KERNEL_NOT_AVAILABLE, 'kernel' ),
-                           'store'   => false );
+            $returnValue = array(
+                'content' => 'error',
+                'store' => false
+            );
         }
-        return $retval;
+        return $returnValue;
     }    
     
     public static function sensorPostPopupGenerate( $file, $args )
@@ -129,15 +149,14 @@ class SensorModuleFunctions
             $tpl = eZTemplate::factory();
             $tpl->setVariable( 'object', $object );
             $Result = $tpl->fetch( 'design:sensor/parts/post/marker_popup.tpl' );
-            $data = array( 'content' => $result );
         }
         else
         {
             $Result = '<em>Private</em>';
         }
-        $retval = array( 'content' => $Result,
-                         'scope'   => 'sensor' );
-        return $retval;
+        $returnValue = array( 'content' => $Result,
+                              'scope' => 'sensor' );
+        return $returnValue;
     }
     
     public static function sensorPostGenerate( $file, $args )
@@ -146,55 +165,27 @@ class SensorModuleFunctions
         
         try
         {
-            $object = eZContentObject::fetch( $postId );            
+            $object = eZContentObject::fetch( $postId );
             if ( !$object instanceof eZContentObject )
             {                
                 return  array( 'content' => $module->handleError( eZError::KERNEL_NOT_AVAILABLE, 'kernel' ),
                                'store'   => false );
             }
-    
+
             if ( !$object->attribute( 'can_read' ) )
             {                
                 return  array( 'content' => $module->handleError( eZError::KERNEL_ACCESS_DENIED, 'kernel' ),
                                'store'   => false );
             }
     
-            /** @var ObjectHandlerServiceControlSensor $sensor */
-            $post = OpenPAObjectHandler::instanceFromContentObject( $object )->attribute( 'control_sensor' );
-    
             /** @var SensorHelper $helper */
-            $helper = $post->attribute( 'helper' );
-    
-            /** @var eZCollaborationItem $collaborationItem */
-            $collaborationItem = $helper->attribute( 'collaboration_item' );
-    
-            /** @var OpenPASensorCollaborationHandler $collaborationHandler */
-            $collaborationHandler = $collaborationItem->handler();
-    
-            $collaborationItem->handleView( 'full' );
-    
-            $tpl->setVariable( 'view_parameters', $viewParameters );
-            $tpl->setVariable( 'post', $post );
-            $tpl->setVariable( 'helper', $helper );
-            $tpl->setVariable( 'object', $object );
-            $tpl->setVariable( 'collaboration_item', $collaborationItem );
-    
-            $currentParticipant = eZFunctionHandler::execute(
-                "collaboration",
-                "participant",
-                array(  "item_id" => $collaborationItem->attribute( 'id' ) )
-            );
-    
-            $participantList = $helper->fetchParticipantMap();
-    
-            $tpl->setVariable( 'current_participant', $currentParticipant );
-            $tpl->setVariable( 'participant_list', $participantList );
-    
-            $tpl->setVariable( 'sensor_post', true );
-            $tpl->setVariable( 'post_geo_array_js', $post->attribute( 'geo_js_array' ) );
-    
-            $collaborationHandler->readItem( $collaborationItem );
-            $helper->storePostActivesParticipants();
+            $helper = SensorHelper::instanceFromContentObjectId( $postId );
+            $helper->onRead();
+
+            $tpl->setVariable( 'view_parameters', isset( $viewParameters ) ? $viewParameters : array() );
+            $tpl->setVariable( 'sensor_post', $helper );
+
+            $helper->currentSensorPost->storeActivesParticipants();
         }
         catch( Exception $e )
         {
@@ -241,7 +232,7 @@ class SensorModuleFunctions
             }
             if ( !$user->isAnonymous()  )
             {
-                $activeParticipants = SensorHelper::getStoredActivesParticipantsByPostId( $postId );
+                $activeParticipants = SensorPost::getStoredActivesParticipantsByPostId( $postId );
                 if ( in_array( $user->id(), $activeParticipants ) )
                 {
                     $cacheHashArray[] = 'ap:' .$user->id();

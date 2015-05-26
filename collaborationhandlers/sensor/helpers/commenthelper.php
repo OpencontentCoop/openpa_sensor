@@ -45,10 +45,11 @@ class SensorPostCommentHelper
                 $this->creatorId = eZUser::currentUserID();
             }
             $this->message = eZCollaborationSimpleMessage::create(
-                SensorHelper::getSensorCollaborationHandlerTypeString() . '_comment',
+                SensorHelper::factory()->getSensorCollaborationHandlerTypeString() . '_comment',
                 $this->text,
                 $this->creatorId
             );
+            $this->message->store();
 
             $this->messageLink = eZCollaborationItemMessageLink::addMessage(
                 $this->post->getCollaborationItem(),

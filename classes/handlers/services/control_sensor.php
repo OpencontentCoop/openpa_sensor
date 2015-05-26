@@ -1,6 +1,6 @@
 <?php
 
-class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase
+class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase implements SensorPostObjectHelperInterface
 {
     const SECTION_IDENTIFIER = "sensor";
     const SECTION_NAME = "Sensor";
@@ -100,36 +100,18 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase
         $this->data['moderation_is_enabled'] = self::ModerationIsEnabled();
         $this->data['timed_moderation_is_enabled'] = self::TimedModerationIsEnabled();
 
-        $this->fnData['current_moderation_status'] = 'getCurrentModerationStatus';
         $this->fnData['moderation_states'] = 'getModerationStates';
 
         // post
         $this->data['use_per_area_approver'] = false; //@todo impostare da ini?
 
-        $this->fnData['helper'] = 'getHelper';
-
-        $this->fnData['author_name'] = 'getPostAuthorName';
-        $this->fnData['category_name'] = 'getPostCategoryName';
-
-        $this->fnData['author_id'] = 'getAuthorId';
-        $this->fnData['approver_id_array'] = 'getApproverIdArray';
-
-        $this->fnData['geo_js_array'] = 'getGeoJsArray';
-
-        $this->fnData['type'] = 'getType';
-        $this->fnData['current_status'] = 'getCurrentStatus';
-        $this->fnData['current_privacy_status'] = 'getCurrentPrivacyStatus';
-        $this->fnData['current_owner'] = 'getCurrentOwner'; //@todo rimuovere dal service correggere chiamate tpl
-        $this->fnData['comment_count'] = 'getCommentCount'; //@todo rimuovere dal service correggere chiamate tpl
-        $this->fnData['response_count'] = 'getResponseCount'; //@todo rimuovere dal service correggere chiamate tpl
-
         $this->fnData['post_container_node'] = 'postContainerNode';
         $this->fnData['post_categories_container_node'] = 'postCategoriesNode';
         $this->fnData['post_class'] = 'postContentClass';
                
-        $this->fnData['areas'] = 'postAreas';
-        $this->fnData['categories'] = 'postCategories';
-        $this->fnData['operators'] = 'operators';
+        $this->fnData['areas'] = 'getPostAreas';
+        $this->fnData['categories'] = 'getPostCategories';
+        $this->fnData['operators'] = 'getOperators';
 
         // forum
         $this->fnData['forum_container_node'] = 'forumContainerNode';
@@ -235,225 +217,6 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase
         return $dataMap['terms'];
     }
 
-    /**
-     * Invoca il SensorHelper per l'oggetto corrente
-     * @return null|SensorHelper
-     * @throws Exception
-     */
-    protected function getHelper()
-    {
-        if ( $this->container->getContentObject() instanceof eZContentObject )
-            return SensorHelper::instanceFromContentObjectId( $this->container->getContentObject()->attribute( 'id' ) );
-        return null;
-    }
-
-    /**
-     * Restituisce l'owner_id dell'oggetto corrente
-     * @return int|null
-     */
-    protected function getAuthorId()
-    {
-        if ( $this->container->getContentObject() instanceof eZContentObject )
-            return $this->container->getContentObject()->attribute( 'owner_id' );
-        return null;
-    }
-
-    /**
-     * Restituisce un array di id eZUser che vengono impostati come primi approvatori della richiesta
-     * Se use_per_area_approver == true cerca l'utente in base all'area
-     * Altrimenti restituisce gli utenti valorizzati nell'attributo approver della prima sensor_area
-     *
-     * @return int[]
-     */
-    protected function getApproverIdArray()
-    {
-        $data = array();
-        if ( $this->attribute( 'use_per_area_approver' ) )
-        {
-            if ( $this->container->hasAttribute( 'area' ) )
-            {
-                $areaRelationList = explode(
-                    '-',
-                    $this->container->attribute( 'area' )->attribute(
-                        'contentobject_attribute'
-                    )->toString()
-                );
-                foreach ( $areaRelationList as $item )
-                {
-                    $area = eZContentObject::fetch( $item );
-                    $areaDataMap = $area->attribute( 'data_map' );
-                    if ( isset( $areaDataMap['approver'] ) )
-                    {
-                        $data = explode( '-', $areaDataMap['approver']->toString() );
-                        break;
-                    }
-                }
-            }
-        }
-        if ( empty( $data ) )
-        {
-            $areas = self::postAreas();
-            $area = isset( $areas['tree'][0]['node'] ) ? $areas['tree'][0]['node'] : false;
-            if ( $area instanceof eZContentObjectTreeNode )
-            {
-                $areaDataMap = $area->attribute( 'data_map' );
-                if ( isset( $areaDataMap['approver'] ) )
-                {
-                    $data = explode( '-', $areaDataMap['approver']->toString() );
-                }
-            }
-        }
-
-        return $data;
-    }
-
-    /**
-     * Ritorna il valore dell'attributo geo dell'oggetto corrente in formato javascript array
-     * @return bool|string
-     */
-    protected function getGeoJsArray()
-    {
-        $data = false;
-        if ( $this->container->hasAttribute( 'geo' )
-             &&  $this->container->attribute( 'geo' )->attribute( 'has_content' ) )
-        {
-            $content = $this->container->attribute( 'geo' )->attribute(
-                'contentobject_attribute'
-            )->content();
-            $data = "[{$content->attribute( 'latitude' )},{$content->attribute( 'longitude' )}]";
-        }
-        return $data;
-    }
-
-    /**
-     * Restituisce un hash con il valore dell'attributo type dell'oggetto corrente tradotto
-     * @return array|bool
-     */
-    protected function getType()
-    {
-        $data = false;
-        if ( $this->container->hasAttribute( 'type' )
-             &&  $this->container->attribute( 'type' )->attribute( 'has_content' ) )
-        {
-            $content = $this->container->attribute( 'type' )->attribute(
-                'contentobject_attribute'
-            )->toString();
-            if ( $content == 'segnalazione' )
-            {
-                $data = array(
-                    'name' => ezpI18n::tr( 'openpa_sensor/type', 'Segnalazione' ),
-                    'identifier' => 'segnalazione',
-                    'css_class' => 'info'
-                );
-            }
-            elseif ( $content == 'suggerimento' )
-            {
-                $data = array(
-                    'name' => ezpI18n::tr( 'openpa_sensor/type', 'Suggerimento' ),
-                    'identifier' => 'suggerimento',
-                    'css_class' => 'warning'
-                );
-            }
-            elseif ( $content == 'reclamo' )
-            {
-                $data = array(
-                    'name' => ezpI18n::tr( 'openpa_sensor/type', 'Reclamo' ),
-                    'identifier' => 'reclamo',
-                    'css_class' => 'danger'
-                );
-            }
-        }
-        return $data;
-    }
-
-    //@todo rimuovere dal service correggere chiamate tpl
-    protected function getCommentCount()
-    {
-        return $this->getHelper()->attribute( 'public_message_count' );
-    }
-
-    //@todo rimuovere dal service correggere chiamate tpl
-    protected function getResponseCount()
-    {
-        return $this->getHelper()->attribute( 'response_message_count' );
-    }
-
-    //@todo rimuovere dal service correggere chiamate tpl
-    protected function getCurrentOwner()
-    {
-        return $this->getHelper()->attribute( 'current_owner' );
-
-    }
-    
-    protected function getPostAuthorName()
-    {                
-        $name = '?';
-        if ( $this->container->getContentObject() instanceof eZContentObject )
-        {
-            $owner = $this->container->getContentObject()->attribute( 'owner' );
-            if ( $owner )
-            {
-                $name = $owner->attribute( 'name' );
-                if ( $this->container->hasAttribute( 'on_behalf_of' )
-                    && $this->container->attribute( 'on_behalf_of' ) instanceof OpenPAAttributeHandler
-                    && $this->container->attribute( 'on_behalf_of' )->attribute( 'has_content' ) )
-                {
-                    $name .= ' (' . $this->container->attribute( 'on_behalf_of' )->attribute( 'contentobject_attribute' )->toString() . ')';
-                }
-            }
-        }
-        return $name;
-    }
-    
-    protected function getPostCategoryName()
-    {
-        $name = '';
-        if ( $this->container->hasAttribute( 'category' )
-             && $this->container->attribute( 'category' ) instanceof OpenPAAttributeHandler
-             && $this->container->attribute( 'category' )->attribute( 'has_content' ) )
-        {
-            $names = array();
-            $categoryIds = explode( '-', $this->container->attribute( 'category' )->attribute( 'contentobject_attribute' )->toString() );
-            foreach( $categoryIds as $categoryId )
-            {
-                $category = eZContentObject::fetch( $categoryId );
-                if ( $category instanceof eZContentObject )
-                {
-                    $names[] = $category->attribute( 'name' );
-                }
-            }
-            $name = implode( ' - ', $names );
-        }
-        return $name;
-    }
-
-    /**
-     * Restituisce un array con nome identificatore e classcss del content object state di gruppo Moderation
-     * @return array
-     * @throws Exception
-     */
-    protected function getCurrentModerationStatus()
-    {
-        if ( $this->container->getContentObject() instanceof eZContentObject )
-        {
-            $states = OpenPABase::initStateGroup(
-                self::$moderationStateGroupIdentifier,
-                self::$moderationStateIdentifiers
-            );
-            foreach ( $states as $state )
-            {
-                if ( in_array( $state->attribute( 'id' ), $this->container->getContentObject()->attribute( 'state_id_array' ) ) )
-                {
-                    return array(
-                        'name' => $state->attribute( 'current_translation' )->attribute( 'name' ),
-                        'identifier' => $state->attribute( 'identifier' ),
-                        'css_class' => 'danger'
-                    );
-                }
-            }
-        }
-        return array();
-    }
 
     protected function getModerationStates()
     {
@@ -461,75 +224,6 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase
             self::$moderationStateGroupIdentifier,
             self::$moderationStateIdentifiers
         );
-    }
-
-    /**
-     * Restituisce un array con nome identificatore e classcss del content object state di gruppo Privacy
-     * @return array
-     * @throws Exception
-     */
-    protected function getCurrentPrivacyStatus()
-    {
-        if ( $this->container->getContentObject() instanceof eZContentObject )
-        {
-            $states = OpenPABase::initStateGroup(
-                self::$privacyStateGroupIdentifier,
-                self::$privacyStateIdentifiers
-            );
-            foreach ( $states as $state )
-            {
-                if ( in_array( $state->attribute( 'id' ), $this->container->getContentObject()->attribute( 'state_id_array' ) ) )
-                {
-                    return array(
-                        'name' => $state->attribute( 'current_translation' )->attribute( 'name' ),
-                        'identifier' => $state->attribute( 'identifier' ),
-                        'css_class' => $state->attribute( 'identifier' ) == 'private' ? 'default' : 'info'
-                    );
-                }
-            }
-        }
-        return array();
-    }
-
-    /**
-     * Restituisce un array con nome identificatore e classcss del content object state di gruppo Sensor
-     * @return array
-     * @throws Exception
-     */
-    protected function getCurrentStatus()
-    {
-        if ( $this->container->getContentObject() instanceof eZContentObject )
-        {
-            $states = OpenPABase::initStateGroup(
-                self::$stateGroupIdentifier,
-                self::$stateIdentifiers
-            );
-            foreach ( $states as $state )
-            {
-                $cssClass = 'info';
-                if ( $state->attribute( 'identifier' ) == 'pending' )
-                {
-                    $cssClass = 'danger';
-                }
-                elseif ( $state->attribute( 'identifier' ) == 'open' )
-                {
-                    $cssClass = 'warning';
-                }
-                elseif ( $state->attribute( 'identifier' ) == 'close' )
-                {
-                    $cssClass = 'success';
-                }
-                if ( in_array( $state->attribute( 'id' ), $this->container->getContentObject()->attribute( 'state_id_array' ) ) )
-                {
-                    return array(
-                        'name' => $state->attribute( 'current_translation' )->attribute( 'name' ),
-                        'identifier' => $state->attribute( 'identifier' ),
-                        'css_class' => $cssClass
-                    );
-                }
-            }
-        }
-        return array();
     }
 
     /**
@@ -653,9 +347,11 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase
     }
 
     /**
+     * @param string $identifier
+     *
      * @return string
      */
-    protected function getAttributeString( $identifier )
+    private function getAttributeString( $identifier )
     {
         $data = '';
         if ( $this->container->hasAttribute( $identifier ) )
@@ -831,86 +527,6 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase
             self::$forumCommentClass = eZContentClass::fetchByIdentifier( 'dimmi_forum_reply' );
         }
         return self::$forumCommentClass;
-    }
-
-    /**
-     * @return eZContentObjectTreeNode[]
-     */
-    public static function operators()
-    {
-        return self::rootNode()->subTree( array(
-            'ClassFilterType' => 'include',
-            'ClassFilterArray' => array( 'user', 'sensor_operator', 'dipendente' ),
-            'SortBy' => array( 'name', true )
-        ) );
-    }
-
-    /**
-     * Restituisce un array tree
-     * @see self::walkSubtree
-     * @return array
-     */
-    public static function postAreas()
-    {
-        if ( self::$postAreas == null )
-        {
-            $data = $coords = array();
-            /** @var eZContentObjectTreeNode[] $treeAreas */
-            $treeAreas = self::rootNode()->subTree( array(
-                    'ClassFilterType' => 'include',
-                    'Depth' => 1,
-                    'DepthOperator' => 'eq',
-                    'ClassFilterArray' => array( 'sensor_area' ),
-                    'Limitation' => array(),
-                    'SortBy' => array( 'name', true )
-                ) );
-
-            foreach( $treeAreas as $node )
-            {
-                self::findAreaCoords( $node->attribute( 'object' ), $coords );
-                $data[] = array(
-                    'node' => $node,
-                    'children' => self::walkSubtree( $node, $coords )
-                );
-            }
-
-            self::$postAreas = array( 'tree' => $data, 'coords_json' => json_encode( $coords ), 'coords', $coords );
-        }
-        return self::$postAreas;
-    }
-
-    /**
-     * Restituisce un array tree
-     * @see self::walkSubtree
-     * @return array
-     */
-    public static function postCategories()
-    {
-        if ( self::$postCategories == null )
-        {
-            $data = array();
-            $false = false;
-            /** @var eZContentObjectTreeNode[] $treeCategories */
-            $treeCategories = self::postCategoriesNode()->subTree( array(
-                    'ClassFilterType' => 'include',
-                    'Depth' => 1,
-                    'DepthOperator' => 'eq',
-                    'ClassFilterArray' => array( 'sensor_category' ),
-                    'Limitation' => array(),
-                    'SortBy' => array( 'name', true )
-                ) );
-
-            foreach( $treeCategories as $node )
-            {                
-                $data[] = array(
-                    'node' => $node,
-                    'children' => self::walkSubtree( $node, $false )
-                );
-            }
-
-            self::$postCategories = array( 'tree' => $data );
-        }
-        return self::$postCategories;
     }
 
     /**
@@ -1321,10 +937,10 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase
             ),
             'SearchResultClustering' => null,
             'ExtendedAttributeFilter' => array()
-        );        
-        $solrSearch = new eZSolr();
+        );
+        $solrSearch = new OpenPASolr();
         eZINI::instance( 'ezfind.ini' )->setVariable( 'LanguageSearch', 'SearchMainLanguageOnly', 'disabled' );
-        $solrResult = $solrSearch->search( '', $solrFetchParams );        
+        $solrResult = $solrSearch->search( '', $solrFetchParams );
         return $solrResult;
     }
 
@@ -1337,15 +953,15 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase
         $items = self::fetchPosts( false );
         foreach( $items['SearchResult'] as $item )
         {
-            $geo = isset( $item['fields']['subattr_geo___coordinates____gpt'] ) ? $item['fields']['subattr_geo___coordinates____gpt'] : array();            
+            $geo = isset( $item['fields']['subattr_geo___coordinates____gpt'] ) ? $item['fields']['subattr_geo___coordinates____gpt'] : array();
             if ( count( $geo ) > 0 )
             {
                 $geometryArray = explode( ',', $geo[0] );
-                
+
                 $id = $item['id_si'];
                 $type = isset( $item['fields']['attr_type_s'] ) ? $item['fields']['attr_type_s'] : false;
                 $name = isset( $item['fields']['attr_subject_t'] ) ? $item['fields']['attr_subject_t'] : false;
-                
+
                 $properties = array(
                     'type' => $type,
                     'name' => $name,
@@ -1353,11 +969,11 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase
                 );
                 $feature = new SensorGeoJsonFeature( $id, $geometryArray, $properties );
                 $data->add( $feature );
-            }                
+            }
         }
         return $data;
     }
-    
+
     public static function rootHandler()
     {
         if ( !isset( $GLOBALS['SensorRootHandler'] ) )
@@ -1369,8 +985,347 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase
         return $GLOBALS['SensorRootHandler'];
     }
 
-    public static function onMakePrivate( $object )
+    /**
+     * Restituisce l'owner_id dell'oggetto corrente
+     * @return int|null
+     */
+    public function getPostAuthorId()
     {
+        if ( $this->container->getContentObject() instanceof eZContentObject )
+            return $this->container->getContentObject()->attribute( 'owner_id' );
+        return null;
+    }
+
+    /**
+     * Restituisce un array di id eZUser che vengono impostati come primi approvatori della richiesta
+     * Se use_per_area_approver == true cerca l'utente in base all'area
+     * Altrimenti restituisce gli utenti valorizzati nell'attributo approver della prima sensor_area
+     *
+     * @return int[]
+     */
+    public function getApproverIdArray()
+    {
+        $data = array();
+        if ( $this->attribute( 'use_per_area_approver' ) )
+        {
+            if ( $this->container->hasAttribute( 'area' ) )
+            {
+                $areaRelationList = explode(
+                    '-',
+                    $this->container->attribute( 'area' )->attribute(
+                        'contentobject_attribute'
+                    )->toString()
+                );
+                foreach ( $areaRelationList as $item )
+                {
+                    $area = eZContentObject::fetch( $item );
+                    $areaDataMap = $area->attribute( 'data_map' );
+                    if ( isset( $areaDataMap['approver'] ) )
+                    {
+                        $data = explode( '-', $areaDataMap['approver']->toString() );
+                        break;
+                    }
+                }
+            }
+        }
+        if ( empty( $data ) )
+        {
+            $areas = self::postAreas();
+            $area = isset( $areas['tree'][0]['node'] ) ? $areas['tree'][0]['node'] : false;
+            if ( $area instanceof eZContentObjectTreeNode )
+            {
+                $areaDataMap = $area->attribute( 'data_map' );
+                if ( isset( $areaDataMap['approver'] ) )
+                {
+                    $data = explode( '-', $areaDataMap['approver']->toString() );
+                }
+            }
+        }
+
+        return $data;
+    }
+
+    /**
+     * Ritorna il valore dell'attributo geo dell'oggetto corrente in formato javascript array
+     * @return bool|string
+     */
+    public function getPostGeoJsArray()
+    {
+        $data = false;
+        if ( $this->container->hasAttribute( 'geo' )
+             &&  $this->container->attribute( 'geo' )->attribute( 'has_content' ) )
+        {
+            $content = $this->container->attribute( 'geo' )->attribute(
+                'contentobject_attribute'
+            )->content();
+            $data = "[{$content->attribute( 'latitude' )},{$content->attribute( 'longitude' )}]";
+        }
+        return $data;
+    }
+
+    /**
+     * Restituisce un hash con il valore dell'attributo type dell'oggetto corrente tradotto
+     * @return array|bool
+     */
+    public function getType()
+    {
+        $data = false;
+        if ( $this->container->hasAttribute( 'type' )
+             &&  $this->container->attribute( 'type' )->attribute( 'has_content' ) )
+        {
+            $content = $this->container->attribute( 'type' )->attribute(
+                'contentobject_attribute'
+            )->toString();
+            if ( $content == 'segnalazione' )
+            {
+                $data = array(
+                    'name' => ezpI18n::tr( 'openpa_sensor/type', 'Segnalazione' ),
+                    'identifier' => 'segnalazione',
+                    'css_class' => 'info'
+                );
+            }
+            elseif ( $content == 'suggerimento' )
+            {
+                $data = array(
+                    'name' => ezpI18n::tr( 'openpa_sensor/type', 'Suggerimento' ),
+                    'identifier' => 'suggerimento',
+                    'css_class' => 'warning'
+                );
+            }
+            elseif ( $content == 'reclamo' )
+            {
+                $data = array(
+                    'name' => ezpI18n::tr( 'openpa_sensor/type', 'Reclamo' ),
+                    'identifier' => 'reclamo',
+                    'css_class' => 'danger'
+                );
+            }
+        }
+        return $data;
+    }
+
+    public function getPostAuthorName()
+    {
+        $name = '?';
+        if ( $this->container->getContentObject() instanceof eZContentObject )
+        {
+            $owner = $this->container->getContentObject()->attribute( 'owner' );
+            if ( $owner )
+            {
+                $name = $owner->attribute( 'name' );
+                if ( $this->container->hasAttribute( 'on_behalf_of' )
+                     && $this->container->attribute( 'on_behalf_of' ) instanceof OpenPAAttributeHandler
+                     && $this->container->attribute( 'on_behalf_of' )->attribute( 'has_content' ) )
+                {
+                    $name .= ' (' . $this->container->attribute( 'on_behalf_of' )->attribute( 'contentobject_attribute' )->toString() . ')';
+                }
+            }
+        }
+        return $name;
+    }
+
+    public function getPostCategoryName()
+    {
+        $name = '';
+        if ( $this->container->hasAttribute( 'category' )
+             && $this->container->attribute( 'category' ) instanceof OpenPAAttributeHandler
+             && $this->container->attribute( 'category' )->attribute( 'has_content' ) )
+        {
+            $names = array();
+            $categoryIds = explode( '-', $this->container->attribute( 'category' )->attribute( 'contentobject_attribute' )->toString() );
+            foreach( $categoryIds as $categoryId )
+            {
+                $category = eZContentObject::fetch( $categoryId );
+                if ( $category instanceof eZContentObject )
+                {
+                    $names[] = $category->attribute( 'name' );
+                }
+            }
+            $name = implode( ' - ', $names );
+        }
+        return $name;
+    }
+
+    /**
+     * Restituisce un array con nome identificatore e classcss del content object state di gruppo Moderation
+     * @return array
+     * @throws Exception
+     */
+    public function getCurrentModerationState()
+    {
+        if ( $this->container->getContentObject() instanceof eZContentObject )
+        {
+            $states = OpenPABase::initStateGroup(
+                self::$moderationStateGroupIdentifier,
+                self::$moderationStateIdentifiers
+            );
+            foreach ( $states as $state )
+            {
+                if ( in_array( $state->attribute( 'id' ), $this->container->getContentObject()->attribute( 'state_id_array' ) ) )
+                {
+                    return array(
+                        'name' => $state->attribute( 'current_translation' )->attribute( 'name' ),
+                        'identifier' => $state->attribute( 'identifier' ),
+                        'css_class' => 'danger'
+                    );
+                }
+            }
+        }
+        return array();
+    }
+
+    /**
+     * Restituisce un array con nome identificatore e classcss del content object state di gruppo Privacy
+     * @return array
+     * @throws Exception
+     */
+    public function getCurrentPrivacyState()
+    {
+        if ( $this->container->getContentObject() instanceof eZContentObject )
+        {
+            $states = OpenPABase::initStateGroup(
+                self::$privacyStateGroupIdentifier,
+                self::$privacyStateIdentifiers
+            );
+            foreach ( $states as $state )
+            {
+                if ( in_array( $state->attribute( 'id' ), $this->container->getContentObject()->attribute( 'state_id_array' ) ) )
+                {
+                    return array(
+                        'name' => $state->attribute( 'current_translation' )->attribute( 'name' ),
+                        'identifier' => $state->attribute( 'identifier' ),
+                        'css_class' => $state->attribute( 'identifier' ) == 'private' ? 'default' : 'info'
+                    );
+                }
+            }
+        }
+        return array();
+    }
+
+    /**
+     * Restituisce un array con nome identificatore e classcss del content object state di gruppo Sensor
+     * @return array
+     * @throws Exception
+     */
+    public function getCurrentState()
+    {
+        if ( $this->container->getContentObject() instanceof eZContentObject )
+        {
+            $states = OpenPABase::initStateGroup(
+                self::$stateGroupIdentifier,
+                self::$stateIdentifiers
+            );
+            foreach ( $states as $state )
+            {
+                $cssClass = 'info';
+                if ( $state->attribute( 'identifier' ) == 'pending' )
+                {
+                    $cssClass = 'danger';
+                }
+                elseif ( $state->attribute( 'identifier' ) == 'open' )
+                {
+                    $cssClass = 'warning';
+                }
+                elseif ( $state->attribute( 'identifier' ) == 'close' )
+                {
+                    $cssClass = 'success';
+                }
+                if ( in_array( $state->attribute( 'id' ), $this->container->getContentObject()->attribute( 'state_id_array' ) ) )
+                {
+                    return array(
+                        'name' => $state->attribute( 'current_translation' )->attribute( 'name' ),
+                        'identifier' => $state->attribute( 'identifier' ),
+                        'css_class' => $cssClass
+                    );
+                }
+            }
+        }
+        return array();
+    }
+
+    /**
+     * @return eZContentObjectTreeNode[]
+     */
+    public static function getOperators()
+    {
+        return self::rootNode()->subTree( array(
+            'ClassFilterType' => 'include',
+            'ClassFilterArray' => array( 'user', 'sensor_operator', 'dipendente' ),
+            'SortBy' => array( 'name', true )
+        ) );
+    }
+
+    /**
+     * Restituisce un array tree
+     * @see self::walkSubtree
+     * @return array
+     */
+    public function getPostAreas()
+    {
+        if ( self::$postAreas == null )
+        {
+            $data = $coords = array();
+            /** @var eZContentObjectTreeNode[] $treeAreas */
+            $treeAreas = self::rootNode()->subTree( array(
+                    'ClassFilterType' => 'include',
+                    'Depth' => 1,
+                    'DepthOperator' => 'eq',
+                    'ClassFilterArray' => array( 'sensor_area' ),
+                    'Limitation' => array(),
+                    'SortBy' => array( 'name', true )
+                ) );
+
+            foreach( $treeAreas as $node )
+            {
+                self::findAreaCoords( $node->attribute( 'object' ), $coords );
+                $data[] = array(
+                    'node' => $node,
+                    'children' => self::walkSubtree( $node, $coords )
+                );
+            }
+
+            self::$postAreas = array( 'tree' => $data, 'coords_json' => json_encode( $coords ), 'coords', $coords );
+        }
+        return self::$postAreas;
+    }
+
+    /**
+     * Restituisce un array tree
+     * @see self::walkSubtree
+     * @return array
+     */
+    public function getPostCategories()
+    {
+        if ( self::$postCategories == null )
+        {
+            $data = array();
+            $false = false;
+            /** @var eZContentObjectTreeNode[] $treeCategories */
+            $treeCategories = self::postCategoriesNode()->subTree( array(
+                    'ClassFilterType' => 'include',
+                    'Depth' => 1,
+                    'DepthOperator' => 'eq',
+                    'ClassFilterArray' => array( 'sensor_category' ),
+                    'Limitation' => array(),
+                    'SortBy' => array( 'name', true )
+                ) );
+
+            foreach( $treeCategories as $node )
+            {                
+                $data[] = array(
+                    'node' => $node,
+                    'children' => self::walkSubtree( $node, $false )
+                );
+            }
+
+            self::$postCategories = array( 'tree' => $data );
+        }
+        return self::$postCategories;
+    }
+
+    public function makePrivate()
+    {
+        $object = $this->getContentObject();
         if ( $object instanceof eZContentObject )
         {
             OpenPABase::sudo(
@@ -1382,8 +1337,23 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase
         }
     }
 
-    public static function onModerate( $object, $identifier )
+    public function makePublic()
     {
+        $object = $this->getContentObject();
+        if ( $object instanceof eZContentObject )
+        {
+            OpenPABase::sudo(
+                function () use ( $object )
+                {
+                    ObjectHandlerServiceControlSensor::setState( $object, 'privacy', 'public' );
+                }
+            );
+        }
+    }
+
+    public function moderate( $identifier )
+    {
+        $object = $this->getContentObject();
         if ( $object instanceof eZContentObject )
         {
             OpenPABase::sudo(
@@ -1394,8 +1364,9 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase
         }
     }
 
-    public static function onSetStatus( $object, $status )
+    public function setObjectState( $object, $status )
     {
+        $object = $this->getContentObject();
         if ( $object instanceof eZContentObject )
         {
             if ( $status == SensorPost::STATUS_READ )
@@ -1425,13 +1396,60 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase
         }
     }
 
-    public static function onConfigParams()
+    public function getContentObject()
     {
-        return array(
-            'DefaultPostExpirationDaysInterval' => OpenPAINI::variable( 'SensorConfig', 'DefaultPostExpirationDaysInterval', 15 ),
-            'UniqueCategoryCount' => OpenPAINI::variable( 'SensorConfig', 'CategoryCount', 'unique' ) == 'unique',
-            'CategoryAutomaticAssign' => OpenPAINI::variable( 'SensorConfig', 'CategoryAutomaticAssign', 'disabled' ) == 'enabled',
-            'AuthorCanReopen' => OpenPAINI::variable( 'SensorConfig', 'AuthorCanReopen', 'disabled' ) == 'enabled'
-        );
+        return $this->container->getContentObject();
+    }
+
+    public function getContentObjectAttribute( $identifier )
+    {
+        $object = $this->getContentObject();
+        if ( $object instanceof eZContentObject )
+        {
+            $dataMap = $object->attribute( 'data_map' );
+            if ( isset( $dataMap[$identifier] ) )
+            {
+                return $dataMap[$identifier];
+            }
+        }
+        return false;
+    }
+
+    public function setContentObjectAttribute( $identifier, $stringValue )
+    {
+        $attribute = $this->getContentObjectAttribute( $identifier );
+        if ( $attribute instanceof eZContentObjectAttribute )
+        {
+            $attribute->fromString( $stringValue );
+            $attribute->store();
+            eZContentCacheManager::clearContentCacheIfNeeded( $this->getContentObject()->attribute( 'id' ) );
+            eZSearch::addObject( $this->getContentObject(), true );
+            return true;
+        }
+        return false;
+    }
+
+    public function getApproverIdsByCategory()
+    {
+        $userIds = array();
+        $category = $this->getContentObjectAttribute( 'category' );
+        if ( $category instanceof eZContentObjectAttribute )
+        {
+            $categories = explode( '-', $category->toString() );
+            foreach( $categories as $categoryId )
+            {
+                $category = eZContentObject::fetch( $categoryId );
+                if ( $category instanceof eZContentObject )
+                {
+                    /** @var eZContentObjectAttribute[] $categoryDataMap */
+                    $categoryDataMap = $category->attribute( 'data_map' );
+                    if ( isset( $categoryDataMap['approver'] ) )
+                    {
+                        $userIds = array_merge( $userIds, explode( '-', $categoryDataMap['approver']->toString() ) );
+                    }
+                }
+            }
+        }
+        return $userIds;
     }
 }

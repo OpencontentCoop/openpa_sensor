@@ -39,16 +39,6 @@ class SensorUserPostRoles
         return new SensorUserPostRoles( $post, $userInfo );
     }
 
-    public function getPost()
-    {
-        return $this->post;
-    }
-
-    public function getUserInfo()
-    {
-        return $this->userInfo;
-    }
-
     public function attributes()
     {
         return array(
@@ -75,7 +65,7 @@ class SensorUserPostRoles
 
     public function attribute( $key )
     {
-        switch ( $key )
+        switch( $key )
         {
             case 'can_do_something':
                 return $this->canDoSomething();
@@ -128,10 +118,19 @@ class SensorUserPostRoles
             case 'can_set_expiry':
                 return $this->canSetExpiry();
                 break;
-        }
-        eZDebug::writeError( "Attribute $key not found", get_called_class() );
 
+        }
         return false;
+    }
+
+    public function getPost()
+    {
+        return $this->post;
+    }
+
+    public function getUserInfo()
+    {
+        return $this->userInfo;
     }
 
     public function handleAction( $actionName, $actionParameters = array() )
@@ -165,7 +164,7 @@ class SensorUserPostRoles
         return in_array( $this->userInfo->user()->id(), $list );
     }
 
-    protected function canDoSomething()
+    public function canDoSomething()
     {
         return (
             $this->canAssign()
@@ -179,72 +178,72 @@ class SensorUserPostRoles
         );
     }
 
-    protected function canAddCategory()
+    public function canAddCategory()
     {
         return $this->isApprover();
     }
 
-    protected function canAddArea()
+    public function canAddArea()
     {
         return $this->isApprover();
     }
 
-    protected function canAssign()
+    public function canAssign()
     {
         return
-            !$this->post->isClosed()
-            && (
-                $this->isApprover()
-                || ( $this->isOwner() && $this->post->isAssigned() )
-            );
+            !$this->post->isClosed();
+//            && (
+//                $this->isApprover()
+//                || ( $this->isOwner() && $this->post->isAssigned() )
+//            );
     }
 
-    protected function canRespond()
+    public function canRespond()
     {
         return $this->canClose();
     }
 
-    protected function canComment()
+    public function canComment()
     {
         return ! (bool) $this->userInfo->hasDenyCommentMode();
     }
 
-    protected function canChangePrivacy()
+    public function canChangePrivacy()
     {
         return $this->isApprover();
     }
 
-    protected function canSetExpiry()
+    public function canSetExpiry()
     {
         return !$this->post->isClosed()
                && $this->isApprover();
     }
 
-    protected function canModerate()
+    public function canModerate()
     {
         return $this->isApprover();
     }
 
-    protected function canClose()
+    public function canClose()
     {
         return $this->isApprover()
                && !$this->post->isClosed()
                && !$this->post->isAssigned();
     }
 
-    protected function canFix()
+    public function canFix()
     {
         return $this->isOwner() && $this->post->isAssigned();
     }
 
-    protected function canSendPrivateMessage()
+    public function canSendPrivateMessage()
     {
         return $this->isOwner()
                || $this->isObserver()
                || $this->isApprover();
     }
 
-    protected function canAddObserver()
+    public function canAddObserver()
     {
         return !$this->post->isClosed() && $this->isApprover();
     }

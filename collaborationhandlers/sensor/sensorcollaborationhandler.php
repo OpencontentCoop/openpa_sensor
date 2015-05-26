@@ -8,7 +8,7 @@ class SensorCollaborationHandler extends eZCollaborationItemHandler
     function SensorCollaborationHandler()
     {
         $this->eZCollaborationItemHandler(
-            SensorHelper::getSensorCollaborationHandlerTypeString(),
+            SensorHelper::factory()->getSensorCollaborationHandlerTypeString(),
             ezpI18n::tr( 'openpa_sensor/settings', 'Notifiche SensorCivico' ),
             array(
                 'use-messages' => true,
@@ -204,7 +204,7 @@ class SensorCollaborationHandler extends eZCollaborationItemHandler
 
             $tpl->setVariable( 'collaboration_item', $item );
             $tpl->setVariable( 'collaboration_participant_role', $participantRole );
-            $tpl->setVariable( 'collaboration_item_status', $item->attribute( SensorHelper::ITEM_STATUS ) );
+            $tpl->setVariable( 'collaboration_item_status', $item->attribute( SensorPost::COLLABORATION_FIELD_STATUS ) );
             $tpl->setVariable( 'post', $post );
             $tpl->setVariable( 'object', $object );
             $tpl->setVariable( 'node', $object->attribute( 'main_node' ) );
