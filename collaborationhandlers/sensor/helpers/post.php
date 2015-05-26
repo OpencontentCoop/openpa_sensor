@@ -342,14 +342,14 @@ class SensorPost
         );
         if ( $this->isClosed() )
         {
-            $responses = $this->attribute( 'robot_messages' ); //@todo
+            $responses = $this->timelineHelper->items();
             if ( count( $responses ) >= 1 )
             {
                 $response = array_pop( $responses );
                 $start = new DateTime();
                 $start->setTimestamp( $this->collaborationItem->attribute( "created" ) );
                 $end = new DateTime();
-                $end->setTimestamp( $response->attribute( "created" ) );
+                $end->setTimestamp( $response['message_link']->attribute( "created" ) );
                 if ( $start instanceof DateTime )
                 {
                     $diff = self::getDateDiff( $start, $end );
@@ -715,6 +715,17 @@ class SensorPost
     {
         $itemId = $this->collaborationItem->attribute( 'id' );
         self::deleteCollaborationStuff( $itemId );
+    }
+
+    public function commentsIsOpen()
+    {
+        $now = time();
+        $resolutionTime = $this->getResolutionTime();
+        if ( $resolutionTime['timestamp'] && $this->configParameters['CloseCommentsAfterSeconds'] )
+        {
+            return ($now < $resolutionTime['timestamp'] + $this->configParameters['CloseCommentsAfterSeconds'] );
+        }
+        return true;
     }
 
     public static function deleteCollaborationStuff( $itemId )

@@ -27,9 +27,20 @@
         </div>
         <div class="comment_date"><i class="fa-time"></i>
             {if $is_read|not}<strong>{/if}{$item.created|l10n(shortdatetime)}{if $is_read|not}</strong>{/if}
+            {if $message.creator_id|eq(fetch(user,current_user).contentobject_id)}
+                <a class="btn btn-warning btn-sm edit-message" href="#" data-message-id="{$message.id}"><i class="fa fa-edit"></i></a>
+            {/if}
         </div>
         <div class="the_comment">
-            <p>{$message.data_text1}</p>
+            {if $message.creator_id|eq(fetch(user,current_user).contentobject_id)}
+                <div id="edit-message-{$message.id}" style="display: none;">
+                    <textarea name="Collaboration_OpenPASensorEditMessage[{$message.id}]" class="form-control" rows="3">{$message.data_text1}</textarea>
+                    <input class="btn send btn-primary btn-md pull-right" type="submit" name="CollaborationAction_EditMessage" value="{'Salva'|i18n('openpa_sensor/messages')}" />
+                </div>
+            {/if}
+            <div id="view-message-{$message.id}">
+                <p>{$message.data_text1|wash()}</p>
+            </div>
         </div>
     </div>
 </div>

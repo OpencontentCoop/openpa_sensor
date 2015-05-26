@@ -7,7 +7,6 @@ $Offset = $Params['Offset'];
 if ( !is_numeric( $Offset ) )
     $Offset = 0;
 
-
 if ( !is_numeric( $postId ) )
 {
     $node = ObjectHandlerServiceControlSensor::postContainerNode();
@@ -17,7 +16,9 @@ else
 {
     eZPreferences::sessionCleanup();
     
-    $viewParameters = array( 'offset' => $Offset );
+    $viewParameters = array(
+        'offset' => $Offset
+    );
     $user = eZUser::currentUser();
     $cacheFilePath = SensorModuleFunctions::sensorPostCacheFilePath( $user, $postId, $viewParameters );    
     $localVars = array( "cacheFilePath", "postId", "module", "tpl", 'viewParameters' );        

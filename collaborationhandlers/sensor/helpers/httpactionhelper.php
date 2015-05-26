@@ -115,6 +115,24 @@ class SensorHttpActionHelper
                     )
                 ),
                 'action_name' => 'add_response',
+            ),
+            'EditComment' => array(
+                'http_parameters' => array(
+                    'OpenPASensorEditComment' => array(
+                        'required' => true,
+                        'action_parameter_name' => 'id_text'
+                    )
+                ),
+                'action_name' => 'edit_comment',
+            ),
+            'EditMessage' => array(
+                'http_parameters' => array(
+                    'OpenPASensorEditMessage' => array(
+                        'required' => true,
+                        'action_parameter_name' => 'id_text'
+                    )
+                ),
+                'action_name' => 'edit_message',
             )
         );
     }

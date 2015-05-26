@@ -137,6 +137,24 @@ class SensorPostActionHandler
                     )
                 )
             ),
+            'edit_comment' => array(
+                'call_function' => 'editComment',
+                'check_role' => array( 'can_comment' ),
+                'parameters' => array(
+                    'id_text' => array(
+                        'required' => true
+                    )
+                )
+            ),
+            'edit_message' => array(
+                'call_function' => 'editMessage',
+                'check_role' => array( 'can_send_private_message' ),
+                'parameters' => array(
+                    'id_text' => array(
+                        'required' => true
+                    )
+                )
+            ),
         );
     }
 
@@ -395,6 +413,27 @@ class SensorPostActionHandler
     {
         $this->post->responseHelper->add( $text )->store();
         $this->post->eventHelper->handleEvent( 'on_add_response' );
+        $this->post->touch();
+    }
+
+    public function editComment( $idTextArray )
+    {
+        foreach( $idTextArray as $id => $text )
+        {
+            $this->post->commentHelper->edit( $id, $text );
+        }
+        $this->post->eventHelper->handleEvent( 'on_edit_comment' );
+        $this->post->touch();
+    }
+
+    public function editMessage( $idTextArray )
+    {
+        foreach( $idTextArray as $id => $text )
+        {
+            $this->post->commentHelper->edit( $id, $text );
+        }
+        $this->post->messageHelper->edit( $id, $text );
+        $this->post->eventHelper->handleEvent( 'on_edit_message' );
         $this->post->touch();
     }
 

@@ -42,6 +42,21 @@ class SensorPostMessageHelper
         return $this;
     }
 
+    public function edit( $id, $text )
+    {
+        $simpleMessage = eZCollaborationSimpleMessage::fetch( $id );
+        if ( $simpleMessage instanceof eZCollaborationSimpleMessage
+             && $simpleMessage->attribute( 'creator_id' ) == eZUser::currentUserID()
+             && $text != ''
+             && $text != $simpleMessage->attribute( 'data_text1' ) )
+        {
+            $simpleMessage->setAttribute( 'data_text1', $text );
+            $now = time();
+            $simpleMessage->setAttribute( 'modified', $now );
+            $simpleMessage->store();
+        }
+    }
+
     public function store()
     {
         if ( $this->text !== null && count( $this->receivers ) > 0 )

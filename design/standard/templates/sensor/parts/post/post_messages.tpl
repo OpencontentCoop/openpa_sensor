@@ -98,3 +98,15 @@
     </div>
     {/if}
 </div>
+<script>
+{literal}
+$(document).ready(function(){
+    $("a.edit-message").bind( 'click', function(e){
+        var id = $(this).data('message-id');
+        $('#edit-message-'+id).toggle();
+        $('#view-message-'+id).toggle();
+        e.preventDefault();
+    });
+});
+{/literal}
+</script>
