@@ -15,4 +15,7 @@ DefaultPostExpirationDaysInterval=15
 DefaultPostExpirationDaysLimit=7
 TextMaxLength=200
 
+#tre settimane
+CloseCommentsAfterSeconds=1814400
+
 */ ?>
