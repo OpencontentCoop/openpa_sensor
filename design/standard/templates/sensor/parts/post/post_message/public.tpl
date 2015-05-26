@@ -6,9 +6,7 @@
     <div class="col-xs-10 col-md-10">
         <div class="comment_name"> {if is_set( $participant.name )}{$participant.name|wash()}{else}?{/if}</div>
         <div class="comment_date"><i class="fa-time"></i>
-            {if $is_read|not}<strong>{/if}
-                {$item.created|l10n(shortdatetime)}
-            {if $is_read|not}</strong>{/if}
+            {if $is_read|not}<strong>{/if}{$item.created|l10n(shortdatetime)}{if $is_read|not}</strong>{/if}
         </div>
         <div class="the_comment">
             <p>{$message.data_text1}</p>

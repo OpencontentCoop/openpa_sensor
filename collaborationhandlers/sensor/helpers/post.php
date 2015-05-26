@@ -34,7 +34,7 @@ class SensorPost
     /**
      * @var eZCollaborationItemParticipantLink[]
      */
-    protected $participantList;
+    public $participantList;
 
     /**
      * @var array
@@ -66,7 +66,12 @@ class SensorPost
      */
     public $responseHelper;
 
-    protected function __construct( eZCollaborationItem $collaborationItem, array $configParameters )
+    /**
+     * @var SensorPostObjectHelperInterface
+     */
+    public $objectHelper;
+
+    protected function __construct( eZCollaborationItem $collaborationItem, SensorPostObjectHelperInterface $objectHelper, array $configParameters )
     {
         $this->collaborationItem = $collaborationItem;
         $this->participantList = eZCollaborationItemParticipantLink::fetchParticipantList(
@@ -81,11 +86,12 @@ class SensorPost
         $this->commentHelper = SensorPostCommentHelper::instance( $this );
         $this->messageHelper = SensorPostMessageHelper::instance( $this );
         $this->responseHelper = SensorPostResponseHelper::instance( $this );
+        $this->objectHelper = $objectHelper;
     }
 
-    final public static function instance( eZCollaborationItem $collaborationItem, $configParameters = array() )
+    final public static function instance( eZCollaborationItem $collaborationItem, SensorPostObjectHelperInterface $objectHelper, $configParameters = array() )
     {
-        return new SensorPost( $collaborationItem, $configParameters );
+        return new SensorPost( $collaborationItem, $objectHelper, $configParameters );
     }
 
     public function restoreFormTrash()
@@ -106,136 +112,12 @@ class SensorPost
         }
     }
 
-    public function attributes()
-    {
-        return array(
-            'collaboration_item',
-            'object',
-            'current_status',
-            'current_owner',
-            'participants',
-            'has_owner',
-            'owner_id',
-            'owner_ids',
-            'owner_name',
-            'owner_names',
-            'expiring_date',
-            'expiration_days',
-            'resolution_time'
-        );
-    }
-
-    public function hasAttribute( $key )
-    {
-        return in_array( $key, $this->attributes() );
-    }
-
-    public function attribute( $key )
-    {
-        switch( $key )
-        {
-            case 'collaboration_item':
-                return $this->getCollaborationItem();
-                break;
-
-            case 'object':
-                return $this->getContentObject();
-                break;
-
-            case 'current_status':
-                return $this->getCurrentStatus();
-                break;
-
-            case 'current_owner':
-                return $this->getMainOwnerText();
-                break;
-
-            case 'participants':
-                return $this->getParticipants( null, true );
-                break;
-
-            case 'has_owner':
-                return $this->hasOwner();
-                break;
-
-            case 'owner_id':
-                return $this->getMainOwner();
-                break;
-
-            case 'owner_ids':
-                return $this->getOwners();
-                break;
-
-            case 'owner_name':
-                return $this->getMainOwnerName();
-                break;
-
-            case 'owner_names':
-                return $this->getOwnerNames();
-                break;
-
-            case 'expiring_date':
-                return $this->getExpiringDate();
-                break;
-
-            case 'expiration_days':
-                return $this->getExpirationDays();
-                break;
-
-            case 'resolution_time':
-                return $this->getResolutionTime();
-                break;
-
-        }
-        eZDebug::writeError( "Attribute $key not found", get_called_class() );
-        return false;
-    }
-
     public function getCollaborationItem()
     {
         return $this->collaborationItem;
     }
 
-    public function getContentObject()
-    {
-        $objectId = $this->collaborationItem->attribute( self::COLLABORATION_FIELD_OBJECT_ID );
-        $object = eZContentObject::fetch( $objectId );
-        if ( $object instanceof eZContentObject )
-        {
-            return $object;
-        }
-        return null;
-    }
-
-    public function getContentObjectAttribute( $identifier )
-    {
-        $object = $this->getContentObject();
-        if ( $object instanceof eZContentObject )
-        {
-            $dataMap = $object->attribute( 'data_map' );
-            if ( isset( $dataMap[$identifier] ) )
-            {
-                return $dataMap[$identifier];
-            }
-        }
-        return false;
-    }
-
-    public function setContentObjectAttribute( $identifier, $stringValue )
-    {
-        $attribute = $this->getContentObjectAttribute( $identifier );
-        if ( $attribute instanceof eZContentObjectAttribute )
-        {
-            $attribute->fromString( stringValue );
-            $attribute->store();
-            eZContentCacheManager::clearContentCacheIfNeeded( $this->getContentObject()->attribute( 'id' ) );
-            eZSearch::addObject( $this->getContentObject(), true );
-            return true;
-        }
-        return false;
-    }
-
-        public function getCurrentStatus()
+    public function getCurrentStatus()
     {
         return $this->collaborationItem->attribute( self::COLLABORATION_FIELD_STATUS );
     }
@@ -278,37 +160,48 @@ class SensorPost
      */
     public function getParticipants( $byRole = null, $asObject = false )
     {
-        $participantIds = array();
+        /** @var eZCollaborationItemParticipantLink[] $participants */
+        $participants = array();
         foreach( $this->participantList as $participant )
         {
             if ( $byRole !== null )
             {
                 if ( $byRole == $participant->attribute( 'participant_role' ) )
                 {
-                    $participantIds[] = $participant->attribute( 'participant_id' );
+                    $participants[$participant->attribute( 'participant_id' )] = $participant;
                 }
             }
             else
             {
-                $participantIds[] = $participant->attribute( 'participant_id' );
+                $participants[$participant->attribute( 'participant_id' )] = $participant;
             }
         }
         if ( $asObject )
         {
-            $participants = array();
-            foreach( $participantIds as $participantId )
+            $map = array();
+            foreach( $participants as $id => $participant )
             {
-                $participant = eZContentObject::fetch( $participantId );
-                if ( $participant instanceof eZContentObject )
+                $sortKey = $this->participantRoleSortKey( $participant->attribute( 'participant_role' ) );
+                if ( !isset( $map[$sortKey] ) )
                 {
-                    $participants[] = $participant;
+                    $sortName = self::participantRoleName( $participant->attribute( 'participant_role' ) );
+                    $map[$sortKey] = array(
+                        'role_name' => $sortName,
+                        'role_id' => $participant->attribute( 'participant_role' ),
+                        'items' => array()
+                    );
                 }
+                $map[$sortKey]['items'][] = array(
+                    'participant_link' => $participant,
+                    'contentobject' => eZContentObject::fetch( $id )
+                );
             }
-            return $participants;
+            ksort( $map );
+            return $map;
         }
         else
         {
-            return $participantIds;
+            return array_keys( $participants );
         }
     }
 
@@ -322,7 +215,7 @@ class SensorPost
         if ( $this->hasOwner() )
         {
             $ownerIds = $this->getParticipants( SensorUserPostRoles::ROLE_OWNER );
-            $ownerId = array_shift( $$ownerIds );
+            $ownerId = array_shift( $ownerIds );
             if ( $asObject )
             {
                 return eZContentObject::fetch( $ownerId );
@@ -343,6 +236,11 @@ class SensorPost
             $text = $tpl->fetch( 'design:content/view/sensor_person.tpl' );
         }
         return $text;
+    }
+
+    public function getCurrentParticipant()
+    {
+        return eZCollaborationItemParticipantLink::fetch( $this->collaborationItem->attribute( 'id' ), eZUser::currentUserID() );
     }
 
     public function getMainOwnerName()
@@ -376,7 +274,7 @@ class SensorPost
             }
             return $ownerIds;
         }
-        return null;
+        return array();
     }
 
     public function getOwnerNames()
@@ -559,45 +457,6 @@ class SensorPost
         $this->setStatus();
     }
 
-    public function setAreas( $areaIdList )
-    {
-        $areaIdList = ezpEvent::getInstance()->filter( 'sensor/set_areas',  $areaIdList );
-        $areasString = implode( '-', $areaIdList );
-        return $this->setContentObjectAttribute( 'area', $areasString );
-    }
-
-    public function setCategories( $categoryIdList )
-    {
-        $categoryIdList = ezpEvent::getInstance()->filter( 'sensor/set_categories',  $categoryIdList );
-        $categoryString = implode( '-', $categoryIdList );
-        return $this->setContentObjectAttribute( 'category', $categoryString );
-    }
-
-    public function getApproverIdsByCategory()
-    {
-        $userIds = array();
-        $category = $this->getContentObjectAttribute( 'category' );
-        if ( $category instanceof eZContentObjectAttribute )
-        {
-            $categories = explode( '-', $category->toString() );
-            foreach( $categories as $categoryId )
-            {
-                $category = eZContentObject::fetch( $categoryId );
-                if ( $category instanceof eZContentObject )
-                {
-                    /** @var eZContentObjectAttribute[] $categoryDataMap */
-                    $categoryDataMap = $category->attribute( 'data_map' );
-                    if ( isset( $categoryDataMap['approver'] ) )
-                    {
-                        $userIds = array_merge( $userIds, explode( '-', $categoryDataMap['approver']->toString() ) );
-                    }
-                }
-            }
-        }
-        $userIds = ezpEvent::getInstance()->filter( 'sensor/user_by_categories', $userIds );
-        return $userIds;
-    }
-
     public function setExpiry( $value )
     {
         $this->collaborationItem->setAttribute(
@@ -610,7 +469,7 @@ class SensorPost
     public function setStatus( $status = null )
     {
         $timestamp = time();
-        $object = $this->getContentObject();
+        $object = $this->objectHelper->getContentObject();
         if ( $status !== null )
         {
             $this->collaborationItem->setAttribute( SensorPost::COLLABORATION_FIELD_STATUS, $status );
@@ -637,7 +496,7 @@ class SensorPost
         }
         if ( $object instanceof eZContentObject )
         {
-            ezpEvent::getInstance()->notify( 'sensor/set_status', array( $object, $status ) );
+            $this->objectHelper->setObjectState( $object, $status );
 
             $object->setAttribute( 'modified', $timestamp );
             $object->store();
@@ -721,12 +580,8 @@ class SensorPost
         return $this->collaborationItem->attribute( self::COLLABORATION_FIELD_STATUS ) == $key;
     }
 
-    protected function expiryTimestamp( $creationTimestamp, $days = null )
+    public static function expiryTimestamp( $creationTimestamp, $days = null )
     {
-        if ( $days === null )
-        {
-            $days = $this->configParameters['DefaultPostExpirationDaysInterval'];
-        }
         $creation = new DateTime();
         $creation->setTimestamp( $creationTimestamp );
         $creation->add( self::expiringInterval( $days ) );
@@ -891,6 +746,38 @@ class SensorPost
         $res['ezcollab_item_participant_link'] = $db->arrayQuery( "SELECT * FROM ezcollab_item_participant_link WHERE collaboration_id = $itemId" );
         $res['ezcollab_item_status'] = $db->arrayQuery( "SELECT * FROM ezcollab_item_status WHERE collaboration_id = $itemId" );
         return $res;
+    }
+
+    protected static function participantRoleName( $roleID )
+    {
+        if ( empty( $GLOBALS['SensorParticipantRoleNameMap'] ) )
+        {
+
+            $GLOBALS['SensorParticipantRoleNameMap'] =
+                array( eZCollaborationItemParticipantLink::ROLE_STANDARD => ezpI18n::tr( 'openpa_sensor/role_name', 'Standard' ),
+                       eZCollaborationItemParticipantLink::ROLE_OBSERVER => ezpI18n::tr( 'openpa_sensor/role_name', 'Osservatore' ),
+                       eZCollaborationItemParticipantLink::ROLE_OWNER => ezpI18n::tr( 'openpa_sensor/role_name', 'In carico a' ),
+                       eZCollaborationItemParticipantLink::ROLE_APPROVER => ezpI18n::tr( 'openpa_sensor/role_name', 'Riferimento per il cittadino' ),
+                       eZCollaborationItemParticipantLink::ROLE_AUTHOR => ezpI18n::tr( 'openpa_sensor/role_name', 'Autore' ) );
+        }
+        $roleNameMap = $GLOBALS['SensorParticipantRoleNameMap'];
+        if ( isset( $roleNameMap[$roleID] ) )
+        {
+            return $roleNameMap[$roleID];
+        }
+        return null;
+    }
+
+    protected function participantRoleSortKey( $roleID )
+    {
+        $sorter = array(
+            eZCollaborationItemParticipantLink::ROLE_STANDARD => 1000,
+            eZCollaborationItemParticipantLink::ROLE_OBSERVER => 4,
+            eZCollaborationItemParticipantLink::ROLE_OWNER => 3,
+            eZCollaborationItemParticipantLink::ROLE_APPROVER => 2,
+            eZCollaborationItemParticipantLink::ROLE_AUTHOR => 1
+        );
+        return isset( $sorter[$roleID] ) ? $sorter[$roleID] : 1000;
     }
 
 }

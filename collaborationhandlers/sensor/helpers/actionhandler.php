@@ -54,6 +54,11 @@ class SensorPostActionHandler
                 'check_role' => array( 'can_change_privacy' ),
                 'parameters' => array()
             ),
+            'make_public' => array(
+                'call_function' => 'makePublic',
+                'check_role' => array( 'can_change_privacy' ),
+                'parameters' => array()
+            ),
             'moderate' => array(
                 'call_function' => 'moderate',
                 'check_role' => array( 'can_moderate' ),
@@ -88,7 +93,7 @@ class SensorPostActionHandler
                 'call_function' => 'addArea',
                 'check_role' => array( 'can_add_area' ),
                 'parameters' => array(
-                    'expiry_days' => array(
+                    'area_id' => array(
                         'required' => true
                     )
                 )
@@ -144,19 +149,19 @@ class SensorPostActionHandler
     {
         if ( array_key_exists( $actionName, $this->actions ) )
         {
+            $action = $this->actions[$actionName];
+            $arguments = array();
+
             if ( isset( $action['check_role'] ) )
             {
                 foreach( $action['check_role'] as $role )
                 {
-                    if ( !$this->userPostRoles->getUserInfo()->attribute( $role ) )
+                    if ( !$this->userPostRoles->attribute( $role ) )
                     {
-                        return false;
+                        throw new Exception( "$role role required" );
                     }
                 }
             }
-
-            $action = $this->actions[$actionName];
-            $arguments = array();
 
             foreach ( $action['parameters'] as $parameterName => $parameterOptions )
             {
@@ -168,12 +173,15 @@ class SensorPostActionHandler
                 }
                 else
                 {
-                    $arguments[] = isset( $actionParameters[$parameterName] ) ?
-                        $actionParameters[$parameterName] : isset( $parameterOptions['default'] ) ?
-                            $parameterOptions['default'] : null;
+                    $argument = null;
+                    if ( isset( $actionParameters[$parameterName] ) )
+                        $argument = $actionParameters[$parameterName];
+                    elseif ( isset( $actionParameters['default'] ) )
+                        $argument = $actionParameters['default'];
+                    $arguments[] = $argument;
                 }
             }
-
+            eZDebugSetting::writeNotice( 'sensor', "Call {$action['call_function']} with arguments " . var_export( $arguments, 1 ), __METHOD__ );
             return call_user_func_array( array( $this, $action['call_function'] ), $arguments );
         }
         else
@@ -184,6 +192,7 @@ class SensorPostActionHandler
 
     public function read()
     {
+        $this->post->getCollaborationItem()->setLastRead();
         if ( $this->userPostRoles->isApprover()
              && ( $this->post->isWaiting() || $this->post->isReopened() ) )
         {
@@ -197,9 +206,26 @@ class SensorPostActionHandler
     {
         //@todo verificare multi owner
         $isChanged = false;
-        $currentOwnerIds = $this->post->getOwners();
-        $makeOwnerIds = array_diff( $participantIds, $currentOwnerIds );
-        $makeObserverIds = array_intersect( $currentOwnerIds, $participantIds );
+
+        $currentApproverIds = $this->post->getParticipants( SensorUserPostRoles::ROLE_APPROVER );
+        $currentOwnerIds = $this->post->getParticipants( SensorUserPostRoles::ROLE_OWNER );
+        $makeOwnerIds = array_diff( $participantIds, $currentOwnerIds, $currentApproverIds );
+        $makeObserverIds = array_diff( $currentOwnerIds, $participantIds );
+
+        $debugArray = array(
+            'request' => $participantIds,
+            'current_approvers' => $currentApproverIds,
+            'current_owners' => $currentOwnerIds,
+            'new_owners' => $makeOwnerIds,
+            'new_observers' => $makeObserverIds,
+        );
+        eZDebugSetting::writeNotice( 'sensor', var_export( $debugArray, 1 ), __METHOD__ );
+
+        if ( $makeObserverIds == $currentOwnerIds && empty( $makeOwnerIds  ) )
+        {
+            return;
+        }
+
         foreach( $makeOwnerIds as $id )
         {
             $this->post->addParticipant( $id, SensorUserPostRoles::ROLE_OWNER );
@@ -242,21 +268,40 @@ class SensorPostActionHandler
 
     public function makePrivate()
     {
-        ezpEvent::getInstance()->notify( 'sensor/make_private', array( $this->post->getContentObject() ) );
+        $this->post->objectHelper->makePrivate();
+        $this->post->touch();
+    }
+
+    public function makePublic()
+    {
+        $this->post->objectHelper->makePublic();
         $this->post->touch();
     }
 
     public function moderate( $status )
     {
-        ezpEvent::getInstance()->notify( 'sensor/moderate', array( $this->post->getContentObject(), $status ) );
+        $this->post->objectHelper->moderate( $status );
         $this->post->touch();
     }
 
     public function addObserver( $participantIds )
     {
+        $participantIds = (array) $participantIds;
         $isChanged = false;
+        $currentApproverIds = $this->post->getParticipants( SensorUserPostRoles::ROLE_APPROVER );
+        $currentOwnerIds = $this->post->getParticipants( SensorUserPostRoles::ROLE_OWNER );
         $currentObserverIds = $this->post->getParticipants( SensorUserPostRoles::ROLE_OBSERVER );
         $makeObserverIds = array_intersect( $currentObserverIds, $participantIds );
+        $makeObserverIds = array_diff( $participantIds, $currentObserverIds, $currentApproverIds, $currentOwnerIds );
+        $debugArray = array(
+            'request' => $participantIds,
+            'current_approvers' => $currentApproverIds,
+            'current_observers' => $currentObserverIds,
+            'current_owners' => $currentOwnerIds,
+            'new_observers' => $makeObserverIds,
+        );
+        eZDebugSetting::writeNotice( 'sensor', var_export( $debugArray, 1 ), __METHOD__ );
+
         foreach( $makeObserverIds as $id )
         {
             $this->post->addParticipant( $id, SensorUserPostRoles::ROLE_OBSERVER );
@@ -276,15 +321,21 @@ class SensorPostActionHandler
 
             if ( $this->post->configParameters['UniqueCategoryCount'] )
             {
-                $categoryIdList = $categoryIdList[0];
+                $categoryIdList = array( array_shift( $categoryIdList ) );
             }
 
-            $this->post->setCategories( $categoryIdList );
+            $categoryIdList = ezpEvent::getInstance()->filter( 'sensor/set_categories',  $categoryIdList );
+            $categoryString = implode( '-', $categoryIdList );
+            $this->post->objectHelper->setContentObjectAttribute( 'category', $categoryString );
             $this->post->eventHelper->handleEvent( 'on_add_category' );
 
-            if ( $this->post->configParameters['CategoryAutomaticAssign'] || $autoAssign )
+            if ( $this->post->configParameters['CategoryAutomaticAssign'] )
             {
-                $userIds = $this->post->getApproverIdsByCategory();
+                $userIds = $this->post->objectHelper->getApproverIdsByCategory();
+                $userIds = ezpEvent::getInstance()->filter(
+                    'sensor/user_by_categories',
+                    $userIds
+                );
                 if ( !empty( $userIds ) )
                 {
                     $this->assign( $userIds );
@@ -294,11 +345,13 @@ class SensorPostActionHandler
         }
     }
 
-    public function addArea( $areaIdList )
+    public function addArea( array $areaIdList )
     {
-        if ( empty( $areaList ) )
+        if ( !empty( $areaIdList ) )
         {
-            $this->post->setAreas( $areaIdList );
+            $areaIdList = ezpEvent::getInstance()->filter( 'sensor/set_areas',  $areaIdList );
+            $areasString = implode( '-', $areaIdList );
+            $this->post->objectHelper->setContentObjectAttribute( 'area', $areasString );
             $this->post->eventHelper->handleEvent( 'on_add_area' );
             $this->post->touch();
         }

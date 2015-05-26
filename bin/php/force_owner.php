@@ -31,7 +31,7 @@ try
         if ( isset( $options['user_id'] ) )
         {
             $newOwnerId = $options['user_id'];
-            $helper->forceAssignTo( $newOwnerId );
+            $helper->currentSensorUserRoles->actionHandler->assign( array( $newOwnerId ) );
         }
     }
 

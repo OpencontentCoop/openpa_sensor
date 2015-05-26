@@ -4,11 +4,29 @@
         {include uri='design:sensor/parts/user_image.tpl' object=$participant}
     </figure>
     <div class="col-xs-10 col-md-10">
-        <div class="comment_name"> <small>{'MESSAGGIO PRIVATO'|i18n('openpa_sensor/messages')}</small><br />{$participant.name|wash()}</div>
+        <div class="comment_name">
+            <small>
+                <ul class="list-unstyled">
+                    <li>{'Da:'|i18n('openpa_sensor/messages')} {$participant.name|wash()}</li>
+                    {def $receiversIds = cond(  $message.data_text2|ne(''), $message.data_text2|explode(','), array() )}
+                    {if count($receiversIds)|gt(0)}
+                        {def $index = 0}
+                        {foreach $receiversIds as $receiversId}
+                            {if $item_link.participant_id|ne($receiversId)}
+                                {def $obj = fetch( content, object, hash( object_id, $receiversId, load_data_map, false() ))}
+                                {if $obj}
+                                    <li>{if $index|eq(0)}{'a:'|i18n('openpa_sensor/messages')}{set $index = $index|inc()} {/if}{$obj.name|wash()}</li>
+                                {/if}
+                                {undef $obj}
+                            {/if}
+                        {/foreach}
+                    {/if}
+                    {undef $receiversIds}
+                </ul>
+            </small>
+        </div>
         <div class="comment_date"><i class="fa-time"></i>
-            {if $is_read|not}<strong>{/if}
-                {$item.created|l10n(shortdatetime)}
-                {if $is_read|not}</strong>{/if}
+            {if $is_read|not}<strong>{/if}{$item.created|l10n(shortdatetime)}{if $is_read|not}</strong>{/if}
         </div>
         <div class="the_comment">
             <p>{$message.data_text1}</p>

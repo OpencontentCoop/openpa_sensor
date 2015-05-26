@@ -29,7 +29,7 @@ try
         if ( $item->attribute( SensorHelper::ITEM_EXPIRY ) == '' )
         {
             $helper = SensorHelper::instanceFromCollaborationItem( $item );
-            $helper->setExpiry(
+            $helper->currentSensorPost->setExpiry(
                 OpenPAINI::variable( 'SensorConfig', 'DefaultPostExpirationDaysInterval', 15 )
             );
         }

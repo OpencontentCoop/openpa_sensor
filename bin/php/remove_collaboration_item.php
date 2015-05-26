@@ -29,7 +29,7 @@ try
 
     if ( isset( $options['id'] ) )
     {
-        SensorHelper::deleteCollaborationStuff( $options['id'] );
+        SensorPost::deleteCollaborationStuff( $options['id'] );
         $cli->warning( "Removed {$options['id']}" );
     }
 
