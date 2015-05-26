@@ -98,18 +98,47 @@ class SensorHelper
     }
 
     /**
-     * @param SensorPostCreateStruct $struct
+     * @param eZContentObject $object
      *
      * @return SensorPost
      * @throws Exception
      */
-    public static function createSensorPost( SensorPostCreateStruct $struct )
+    public static function createSensorPost( $object )
     {
-        $object = eZContentObject::fetch( $struct->contentObjectId );
         if ( !$object instanceof eZContentObject )
         {
-            throw new Exception( "Object {$struct->contentObjectId} not found" );
+            throw new Exception( "Object not found" );
         }
+
+        $objectHelper = self::factory()->getSensorPostObjectHelper( $object  );
+
+        $struct = new SensorPostCreateStruct();
+        $struct->contentObjectId = $object->attribute( 'id');
+        $struct->authorUserId = $objectHelper->getPostAuthorId();
+        $approverIDArray = $objectHelper->getApproverIdArray();
+        if ( empty( $approverIDArray ) )
+        {
+            $admin = eZUser::fetchByName( 'admin' );
+            if ( $admin instanceof eZUser )
+            {
+                $approverIDArray[] = $admin->attribute( 'contentobject_id' );
+                eZDebug::writeNotice(
+                    "Add admin user as fallback empty participant list",
+                    __METHOD__
+                );
+            }
+        }
+        $struct->approverUserIdArray = $approverIDArray;
+        $struct->configParams = SensorHelper::factory()->getSensorConfigParams();
+
+        /** @var eZContentObjectAttribute[] $dataMap */
+        $dataMap = $object->attribute( 'data_map' );
+        if ( isset( $dataMap['privacy'] ) &&  $dataMap['privacy']->attribute( 'data_int' ) == 0 )
+        {
+            $struct->privacy = 'private';
+        }
+
+        $struct->moderation = $objectHelper->defaultModerationStateIdentifier();
 
         $db = eZDB::instance();
         $res = (array) $db->arrayQuery( "SELECT * FROM ezcollab_item WHERE data_int1 = " . $struct->contentObjectId );
@@ -124,8 +153,6 @@ class SensorHelper
             return $post;
         }
 
-        $struct = ezpEvent::getInstance()->filter( 'sensor/create_struct', $struct );
-
         $collaborationItem = eZCollaborationItem::create(
             self::factory()->getSensorCollaborationHandlerTypeString(),
             $struct->authorUserId
@@ -138,7 +165,7 @@ class SensorHelper
             SensorPost::COLLABORATION_FIELD_EXPIRY,
             SensorPost::expiryTimestamp(
                 $collaborationItem->attribute( 'created' ),
-                $struct->configParameters['DefaultPostExpirationDaysInterval']
+                $struct->configParams['DefaultPostExpirationDaysInterval']
             )
          );
         $collaborationItem->store();
@@ -235,6 +262,7 @@ class SensorHelper
             array(
 
                 //SensorPost
+                'id',
                 'collaboration_item',
                 'object',
                 'current_status',
@@ -252,13 +280,19 @@ class SensorHelper
 
                 //SensorPost message*Handler
                 'comment_count',
+                'comment_unread_count',
                 'comment_items',
                 'message_count',
+                'message_unread_count',
                 'message_items',
                 'response_count',
+                'response_unread_count',
                 'response_items',
                 'timeline_count',
+                'timeline_unread_count',
                 'timeline_items',
+                'human_count',
+                'human_unread_count',
 
                 //SensorPost objectHandler
                 'type',
@@ -287,6 +321,10 @@ class SensorHelper
 
         switch( $key )
         {
+            case 'id':
+                return $this->currentSensorPost->objectHelper->getContentObject()->attribute( 'id' );
+                break;
+
             case 'collaboration_item':
                 return $this->currentSensorPost->getCollaborationItem();
                 break;
@@ -348,12 +386,20 @@ class SensorHelper
                 return $this->currentSensorPost->commentHelper->count();
                 break;
 
+            case 'comment_unread_count':
+                return $this->currentSensorPost->commentHelper->unreadCount();
+                break;
+
             case 'comment_items':
                 return $this->currentSensorPost->commentHelper->items();
                 break;
 
             case 'message_count':
                 return $this->currentSensorPost->messageHelper->count();
+                break;
+
+            case 'message_unread_count':
+                return $this->currentSensorPost->messageHelper->unreadCount();
                 break;
 
             case 'message_items':
@@ -364,6 +410,10 @@ class SensorHelper
                 return $this->currentSensorPost->responseHelper->count();
                 break;
 
+            case 'response_unread_count':
+                return $this->currentSensorPost->responseHelper->unreadCount();
+                break;
+
             case 'response_items':
                 return $this->currentSensorPost->responseHelper->items();
                 break;
@@ -372,8 +422,24 @@ class SensorHelper
                 return $this->currentSensorPost->timelineHelper->count();
                 break;
 
+            case 'timeline_unread_count':
+                return $this->currentSensorPost->timelineHelper->unreadCount();
+                break;
+
             case 'timeline_items':
                 return $this->currentSensorPost->timelineHelper->items();
+                break;
+
+            case 'human_count':
+                return $this->currentSensorPost->commentHelper->count()
+                       + $this->currentSensorPost->messageHelper->count()
+                       + $this->currentSensorPost->responseHelper->count();
+                break;
+
+            case 'human_unread_count':
+                return $this->currentSensorPost->commentHelper->unreadCount()
+                    + $this->currentSensorPost->messageHelper->unreadCount()
+                    + $this->currentSensorPost->responseHelper->unreadCount();
                 break;
 
 

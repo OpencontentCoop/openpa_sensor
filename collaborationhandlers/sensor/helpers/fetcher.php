@@ -11,7 +11,7 @@ class SensorPostFetcher
      *
      * @return eZCollaborationItem[]|array
      */
-    public static function fetchList( $parameters = array(), $asCount, array $filters = array() )
+    protected static function fetchList( $parameters = array(), $asCount, array $filters = array() )
     {
         $parameters = array_merge( array( 'as_object' => true,
                                           'offset' => false,
@@ -199,8 +199,13 @@ class SensorPostFetcher
                 $statusObject->updateCache();
             }
             $returnItemList = eZPersistentObject::handleRows( $itemListArray, 'eZCollaborationItem', $asObject );
-            eZDebugSetting::writeDebug( 'collaboration-item-list', $returnItemList );
-            return $returnItemList;
+            eZDebugSetting::writeDebug( 'sensor-collaboration-item-list', $returnItemList );
+            $data = array();
+            foreach( $returnItemList as $returnItem )
+            {
+                $data[] = SensorHelper::instanceFromCollaborationItem( $returnItem );
+            }
+            return $data;
         }
         else
         {

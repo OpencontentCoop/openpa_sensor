@@ -6,6 +6,13 @@ MatchFile=post/edit.tpl
 Subdir=templates
 Match[class_identifier]=sensor_post
 
+[post_edit_description]
+Source=content/datatype/edit/eztext.tpl
+MatchFile=post/edit_description.tpl
+Subdir=templates
+Match[class_identifier]=sensor_post
+Match[attribute_identifier]=description
+
 [post_edit_image]
 Source=content/datatype/edit/ezimage.tpl
 MatchFile=post/edit_image.tpl

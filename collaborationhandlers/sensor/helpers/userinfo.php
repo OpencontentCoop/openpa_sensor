@@ -138,12 +138,12 @@ class SensorUserInfo
     /**
      * @return eZCollaborationGroup
      */
-    protected function sensorCollaborationGroup()
+    public function sensorCollaborationGroup()
     {
         return $this->getCollaborationGroup( self::MAIN_COLLABORATION_GROUP_NAME );
     }
 
-    protected function trashCollaborationGroup()
+    public function trashCollaborationGroup()
     {
         return $this->getCollaborationGroup( self::TRASH_COLLABORATION_GROUP_NAME );
     }

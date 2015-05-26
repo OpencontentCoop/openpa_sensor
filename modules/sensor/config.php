@@ -11,7 +11,7 @@ $root = ObjectHandlerServiceControlSensor::rootNode();
 
 if ( $Part == 'areas' )
 {
-    $areas = ObjectHandlerServiceControlSensor::postAreas();
+    $areas = ObjectHandlerServiceControlSensor::getPostAreas();
     $tpl->setVariable( 'areas', $areas['tree'] );
 }
 
@@ -23,13 +23,13 @@ elseif ( $Part == 'users' )
 
 elseif ( $Part == 'categories' )
 {
-    $categories = ObjectHandlerServiceControlSensor::postCategories();
+    $categories = ObjectHandlerServiceControlSensor::getPostCategories();
     $tpl->setVariable( 'categories', $categories['tree'] );
 }
 
 elseif ( $Part == 'operators' )
 {
-    $operators = ObjectHandlerServiceControlSensor::operators();
+    $operators = ObjectHandlerServiceControlSensor::getOperators();
     $tpl->setVariable( 'operators', $operators );
 }
 

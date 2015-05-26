@@ -10,7 +10,7 @@
 //$db->commit();
 //echo '<pre>';print_r($res);die();
 
-
+/** @var eZModule $module */
 $module = $Params['Module'];
 $tpl = eZTemplate::factory();
 $http = eZHTTPTool::instance();
@@ -51,6 +51,7 @@ $selectedList = $Params['List'];
 $limit = 15;
 
 $currentUser = eZUser::currentUser();
+$currentSensorUser = SensorUserInfo::current();
 
 $tpl->setVariable( 'current_user', $currentUser );
 $tpl->setVariable( 'limit', $limit );
@@ -79,7 +80,7 @@ else
         }
         else
         {
-            $group = SensorHelper::currentUserCollaborationGroup();
+            $group = $currentSensorUser->sensorCollaborationGroup();
         }
 
         if ( $group instanceof eZCollaborationGroup )
@@ -87,8 +88,8 @@ else
             $access = $currentUser->hasAccessTo( 'sensor', 'manage' );
             if ( $access['accessWord'] == 'no' )
             {
-                $items = SensorHelper::fetchAllItems( array(), $group, $limit, $offset );
-                $itemsCount = SensorHelper::fetchAllItemsCount( array(), $group );
+                $items = SensorPostFetcher::fetchAllItems( array(), $group, $limit, $offset );
+                $itemsCount = SensorPostFetcher::fetchAllItemsCount( array(), $group );
                 $tpl->setVariable( 'simplified_dashboard', true );
                 $tpl->setVariable( 'all_items', $items );
                 $tpl->setVariable( 'all_items_count', $itemsCount );
@@ -142,15 +143,16 @@ else
                     }
                     
                     $items = call_user_func( $currentList['list_function'], $filters, $group, $limit, $offset );
+                    $expiringItems = SensorPostFetcher::fetchExpiringItems( array(), $group, 100 );
+
                     $tpl->setVariable( 'items', $items );
+                    $tpl->setVariable( 'expiring_items', $expiringItems );
+                    $tpl->setVariable( 'filters', $filters );
+                    $tpl->setVariable( 'filters_query', $filtersQuery );
+                    $tpl->setVariable( 'simplified_dashboard', false );
+                    $tpl->setVariable( 'current_list', $currentList );
+                    $tpl->setVariable( 'list_types', $listTypes );
                 }
-
-                $tpl->setVariable( 'filters', $filters );
-                $tpl->setVariable( 'filters_query', $filtersQuery );
-                $tpl->setVariable( 'simplified_dashboard', false );
-                $tpl->setVariable( 'current_list', $currentList );
-                $tpl->setVariable( 'list_types', $listTypes );
-
             }
         }
         else

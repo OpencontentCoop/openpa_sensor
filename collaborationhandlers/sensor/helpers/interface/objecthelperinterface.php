@@ -3,8 +3,14 @@
 interface SensorPostObjectHelperInterface
 {
 
+    /**
+     * @return eZContentObject
+     */
     public function getContentObject();
 
+    /**
+     * @return eZContentObjectAttribute
+     */
     public function getContentObjectAttribute( $identifier );
 
     public function setContentObjectAttribute( $identifier, $stringValue );
@@ -17,6 +23,9 @@ interface SensorPostObjectHelperInterface
 
     public function setObjectState( $object, $status );
 
+    /**
+     * @return int[]
+     */
     public function getApproverIdsByCategory();
 
     public function getType();
@@ -42,4 +51,9 @@ interface SensorPostObjectHelperInterface
     public function getPostCategories();
 
     public static function getOperators();
+
+    /**
+     * @return bool|null
+     */
+    public function defaultModerationStateIdentifier();
 }

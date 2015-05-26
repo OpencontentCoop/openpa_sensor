@@ -163,7 +163,7 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
         $parts = explode( '/', $siteUrl );        
         if ( count( $parts ) >= 2 )
         {
-            $suffix = array_pop( $parts );
+            array_pop( $parts );
             $siteUrl = implode( '/', $parts );
         }        
         return rtrim( $siteUrl, '/' );
@@ -274,8 +274,10 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
             $attribute = $this->container->attribute( 'banner' )->attribute( 'contentobject_attribute' );
             if ( $attribute instanceof eZContentObjectAttribute && $attribute->hasContent() )
             {
-                $content = $attribute->content()->attribute( 'original' );
-                $data = $content['full_path'];
+                /** @var eZImageAliasHandler $content */
+                $content = $attribute->content();
+                $original = $content->attribute( 'original' );
+                $data = $original['full_path'];
             }
         }
         return $data;
@@ -311,8 +313,10 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
             $attribute = $this->container->attribute( 'logo' )->attribute( 'contentobject_attribute' );
             if ( $attribute instanceof eZContentObjectAttribute && $attribute->hasContent() )
             {
-                $content = $attribute->content()->attribute( 'original' );
-                $data = $content['full_path'];
+                /** @var eZImageAliasHandler $content */
+                $content = $attribute->content();
+                $original = $content->attribute( 'original' );
+                $data = $original['full_path'];
             }
             else
             {
@@ -367,6 +371,7 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
 
     /**
      * Replace [ ] with strong html tag
+     * @param string $string
      * @return string
      */
     public static function replaceBracket( $string )
@@ -537,8 +542,6 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
         if ( !self::SurveyIsEnabled() ) return array();
         if ( self::$surveys == null )
         {
-            $data = array();
-            $false = false;
             $includeClasses = array( 'consultation_survey' );
             /** @var eZContentObjectTreeNode[] $treeCategories */
             $surveys = (array) self::surveyContainerNode()->subTree( array(
@@ -550,6 +553,7 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
                 'SortBy' => array( 'name', true )
             ) );
 
+            /** @var eZContentObjectTreeNode[] $surveys */
             foreach( $surveys as $survey )
             {
                 /** @var eZContentObject $surveyObject */
@@ -581,7 +585,9 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
         $data = array();
         foreach( self::surveys() as $item )
         {
-            if ( $item['survey_content']['survey']->attribute( 'enabled' ) )
+            /** @var eZSurvey $survey */
+            $survey = $item['survey_content']['survey'];
+            if ( $survey->attribute( 'enabled' ) )
             {
                 $data[] = $item;
             }
@@ -643,6 +649,7 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
                     'SortBy' => $node->attribute( 'sort_array' )
                 ) );
             }
+            /** @var eZContentObjectTreeNode[] $children */
             foreach( $children as $subNode )
             {
                 if ( is_array( $coords ) )
@@ -660,6 +667,7 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
 
     protected  static function findAreaCoords( eZContentObject $area, &$coords )
     {
+        /** @var eZContentObjectAttribute[] $dataMap */
         $dataMap = $area->attribute( 'data_map' );
         if ( isset( $dataMap['geo'] ) && $dataMap['geo']->hasContent() )
         {
@@ -763,43 +771,7 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
                 {
                     if ( $object->attribute( 'current_version') == 1  )
                     {
-                        $sensor = OpenPAObjectHandler::instanceFromContentObject( $object )->attribute(
-                            'control_sensor'
-                        );
-
-                        $struct = new SensorPostCreateStruct();
-                        $struct->contentObjectId = $object->attribute( 'id');
-                        $struct->authorUserId = $sensor->attribute( 'author_id' );
-                        $approverIDArray = $sensor->attribute( 'approver_id_array' );
-                        if ( empty( $approverIDArray ) )
-                        {
-                            $admin = eZUser::fetchByName( 'admin' );
-                            if ( $admin instanceof eZUser )
-                            {
-                                $approverIDArray[] = $admin->attribute( 'contentobject_id' );
-                                eZDebug::writeNotice(
-                                    "Add admin user as fallback empty participant list",
-                                    __METHOD__
-                                );
-                            }
-                        }
-                        $struct->approverUserIdArray = $approverIDArray;
-                        $struct->configParams = SensorHelper::getSensorConfigParams();
-
-                        $dataMap = $object->attribute( 'data_map' );
-                        if ( isset( $dataMap['privacy'] ) )
-                        {
-                            if ( $dataMap['privacy']->attribute( 'data_int' ) == 0 )
-                            {
-                                $struct->privacy = 'private';
-                            }
-                        }
-                        if ( self::needModeration() )
-                        {
-                            $struct->moderation = 'waiting';
-                        }
-
-                        SensorHelper::createSensorPost( $struct );
+                        SensorHelper::createSensorPost( $object );
                         eZSearch::addObject( $object, true );
                     }
                     else
@@ -985,6 +957,12 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
         return $GLOBALS['SensorRootHandler'];
     }
 
+    public function defaultModerationStateIdentifier()
+    {
+        return self::needModeration() ? 'waiting' : null;
+    }
+
+
     /**
      * Restituisce l'owner_id dell'oggetto corrente
      * @return int|null
@@ -1030,7 +1008,7 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
         }
         if ( empty( $data ) )
         {
-            $areas = self::postAreas();
+            $areas = self::getPostAreas();
             $area = isset( $areas['tree'][0]['node'] ) ? $areas['tree'][0]['node'] : false;
             if ( $area instanceof eZContentObjectTreeNode )
             {
@@ -1372,27 +1350,30 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
             if ( $status == SensorPost::STATUS_READ )
             {
                 OpenPABase::sudo(
-                    function() use( $object ){
+                    function () use ( $object )
+                    {
                         ObjectHandlerServiceControlSensor::setState( $object, 'sensor', 'open' );
                     }
                 );
             }
-        }
-        elseif ( $status == SensorPost::STATUS_CLOSED )
-        {
-            OpenPABase::sudo(
-                function() use( $object ){
-                    ObjectHandlerServiceControlSensor::setState( $object, 'sensor', 'close' );
-                }
-            );
-        }
-        elseif ( $status == SensorPost::STATUS_REOPENED )
-        {
-            OpenPABase::sudo(
-                function() use( $object ){
-                    ObjectHandlerServiceControlSensor::setState( $object, 'sensor', 'pending' );
-                }
-            );
+            elseif ( $status == SensorPost::STATUS_CLOSED )
+            {
+                OpenPABase::sudo(
+                    function () use ( $object )
+                    {
+                        ObjectHandlerServiceControlSensor::setState( $object, 'sensor', 'close' );
+                    }
+                );
+            }
+            elseif ( $status == SensorPost::STATUS_REOPENED )
+            {
+                OpenPABase::sudo(
+                    function () use ( $object )
+                    {
+                        ObjectHandlerServiceControlSensor::setState( $object, 'sensor', 'pending' );
+                    }
+                );
+            }
         }
     }
 

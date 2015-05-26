@@ -9,8 +9,10 @@
     <div class="col-md-4">
       <small>
         <strong>{"Legenda:"|i18n('openpa_sensor/dashboard')}</strong><br />
-        <i class="fa fa-comments-o"></i> {"indica la presenza di messaggi"|i18n('openpa_sensor/dashboard')} <br />
-        <i class="fa fa-comments"></i> {"indica la presenza di messaggi non letti"|i18n('openpa_sensor/dashboard')} <br />
+        <i class="fa fa-comments-o"></i> {"indica la presenza di commenti"|i18n('openpa_sensor/dashboard')} <br />
+        {if $simplified_dashboard|not()}
+          <i class="fa fa-comments"></i> {"indica la presenza di messaggi privati"|i18n('openpa_sensor/dashboard')} <br />
+        {/if}
         <i class="fa fa-exclamation-triangle"></i> {"indica la presenza di variazioni in cronologia non lette"|i18n('openpa_sensor/dashboard')}
       </small>
     </div>
@@ -132,24 +134,22 @@
           <a class="btn btn-danger pull-right" title="Reset" href="{'sensor/dashboard/post'|ezurl(no)}"><span class="fa fa-close"></span> Annulla</a>      
         </form>
       </div>
-      
 
-      {def $expiring_items = fetch( 'sensor', 'items', hash( 'type', 'expiring', 'limit', 100 ) )}
-      {if count( $expiring_items )|gt(0)}
+      {if $expiring_items|count()}
       <aside class="widget" style="height: 570px;overflow-y: auto">
         <h4 class="section_header">In scadenza</h4>
           <ul class="media-list">
           {foreach $expiring_items as $item}              
             <li class="media">
-              <a class="media-date" href={concat('sensor/posts/',$item.content.content_object_id)|ezurl()} style="opacity: 1">
-                {$item.content.helper.expiring_date.timestamp|datetime('custom', '%j')}<span>{$item.content.helper.expiring_date.timestamp|datetime('custom', '%M')}
+              <a class="media-date" href={concat('sensor/posts/',$item.id)|ezurl()} style="opacity: 1">
+                {$item.expiring_date.timestamp|datetime('custom', '%j')}<span>{$item.expiring_date.timestamp|datetime('custom', '%M')}
               </a>
               <h5>
-                <a href={concat('sensor/posts/',$item.content.content_object_id)|ezurl()}>
-                  <strong>{$item.content.helper.object.id}</strong> {$item.content.helper.object.name|wash()}  
+                <a href={concat('sensor/posts/',$item.id)|ezurl()}>
+                  <strong>{$item.id}</strong> {$item.object.name|wash()}
                 </a>
               </h5>
-              <small>{$item.content.helper.expiring_date.text|wash()}</small>
+              <small>{$item.expiring_date.text|wash()}</small>
             </li>              
           {/foreach}
           </ul>
