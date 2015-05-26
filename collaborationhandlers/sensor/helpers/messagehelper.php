@@ -66,8 +66,14 @@ class SensorPostMessageHelper
                     $receiver,
                     $this->creatorId
                 );
-                $timestamp = $messageLink->attribute( 'modified' ) + 1;
-                $this->post->getCollaborationItem()->setLastRead( $this->creatorId, $timestamp );
+                if ( $this->creatorId == eZUser::currentUserID() )
+                {
+                    $timestamp = $messageLink->attribute( 'modified' ) + 1;
+                    $this->post->getCollaborationItem()->setLastRead(
+                        $this->creatorId,
+                        $timestamp
+                    );
+                }
                 $this->messageLinks[] = $messageLink;
             }
         }

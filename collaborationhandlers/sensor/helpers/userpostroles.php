@@ -191,11 +191,11 @@ class SensorUserPostRoles
     public function canAssign()
     {
         return
-            !$this->post->isClosed();
-//            && (
-//                $this->isApprover()
-//                || ( $this->isOwner() && $this->post->isAssigned() )
-//            );
+            !$this->post->isClosed()
+            && (
+                $this->isApprover()
+                || ( $this->isOwner() && $this->post->isAssigned() )
+            );
     }
 
     public function canRespond()

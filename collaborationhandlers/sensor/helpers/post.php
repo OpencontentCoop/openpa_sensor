@@ -34,7 +34,7 @@ class SensorPost
     /**
      * @var eZCollaborationItemParticipantLink[]
      */
-    public $participantList;
+    protected $participantList;
 
     /**
      * @var array
@@ -74,12 +74,6 @@ class SensorPost
     protected function __construct( eZCollaborationItem $collaborationItem, SensorPostObjectHelperInterface $objectHelper, array $configParameters )
     {
         $this->collaborationItem = $collaborationItem;
-        $this->participantList = eZCollaborationItemParticipantLink::fetchParticipantList(
-            array(
-                'item_id' => $this->collaborationItem->attribute( 'id' ),
-                'limit' => 100
-            )
-        );
         $this->configParameters = $configParameters;
         $this->eventHelper = SensorPostEventHelper::instance( $this );
         $this->timelineHelper = SensorPostTimelineHelper::instance( $this );
@@ -160,6 +154,15 @@ class SensorPost
      */
     public function getParticipants( $byRole = null, $asObject = false )
     {
+        if ( $this->participantList === null )
+        {
+            $this->participantList = eZCollaborationItemParticipantLink::fetchParticipantList(
+                array(
+                    'item_id' => $this->collaborationItem->attribute( 'id' ),
+                    'limit' => 100
+                )
+            );
+        }
         /** @var eZCollaborationItemParticipantLink[] $participants */
         $participants = array();
         foreach( $this->participantList as $participant )

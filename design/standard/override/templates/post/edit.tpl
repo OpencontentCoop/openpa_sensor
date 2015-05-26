@@ -138,6 +138,9 @@
                                         <span style="white-space: nowrap">{first_set( $contentclass_attribute.nameList[$content_language], $contentclass_attribute.name )|wash}{if $attribute.is_required} <span class="required" title="{'required'|i18n( 'design/admin/content/edit_attribute' )}">*</span>{/if}</span>
                                         {if $attribute.is_information_collector} <span class="collector">({'information collector'|i18n( 'design/admin/content/edit_attribute' )})</span>{/if}
 									</p>
+										{if $attribute.contentclass_attribute_identifier|eq('description')}
+											<small id="{$attribute.contentclassattribute_id}-counter"><span>{openpaini('SensorConfig','TextMaxLength',300)}</span>/{openpaini('SensorConfig','TextMaxLength',300)}</small>
+										{/if}
                                     {/if}
 								</div>
 								<div class="col-md-9">

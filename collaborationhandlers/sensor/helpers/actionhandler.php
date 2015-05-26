@@ -255,14 +255,14 @@ class SensorPostActionHandler
         {
             $this->post->touch();
         }
-        $this->post->timelineHelper->add( SensorPost::STATUS_FIXED )->store();
+        $this->post->timelineHelper->add( SensorPost::STATUS_FIXED, eZUser::currentUserID() )->store();
         $this->post->eventHelper->handleEvent( 'on_fix' );
     }
 
     public function close()
     {
         $this->post->setStatus( SensorPost::STATUS_CLOSED );
-        $this->post->timelineHelper->add( SensorPost::STATUS_CLOSED )->store();
+        $this->post->timelineHelper->add( SensorPost::STATUS_CLOSED, eZUser::currentUserID() )->store();
         $this->post->eventHelper->handleEvent( 'on_close' );
     }
 
@@ -375,7 +375,7 @@ class SensorPostActionHandler
         if ( $this->post->isClosed() && $this->userPostRoles->isAuthor() && $this->post->configParameters['AuthorCanReopen'] )
         {
             $this->post->setStatus( SensorPost::STATUS_REOPENED );
-            $this->post->timelineHelper->add( SensorPost::STATUS_REOPENED )->store();
+            $this->post->timelineHelper->add( SensorPost::STATUS_REOPENED, eZUser::currentUserID() )->store();
             $this->post->eventHelper->handleEvent( 'on_reopen' );
         }
         else

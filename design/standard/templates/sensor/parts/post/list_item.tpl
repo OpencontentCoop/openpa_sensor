@@ -1,23 +1,23 @@
-{def $post = object_handler($node).control_sensor}
+{def $sensor_post = $node.object|sensor_post()}
 <div class="row">
   <div class="col-md-12">
 	<section class="hgroup">
 	  <h2 class="section_header skincolored" style="margin-bottom: 0;border: none">
-	  <a href={concat('sensor/posts/',$node.contentobject_id)|ezurl()}>
-		<span class="label label-primary">{$node.object.id}</span>
-		{$node.name|wash()}
+	  <a href={concat('sensor/posts/',$sensor_post.id)|ezurl()}>
+		<span class="label label-primary">{$sensor_post.id}</span>
+		{$sensor_post.object.name|wash()}
 	  </a>
-	  <small>{$node.object.owner.name|wash()} {if $node.object|has_attribute('on_behalf_of')}[{$node.object|attribute('on_behalf_of').contentclass_attribute_name|wash()} {$node.object|attribute('on_behalf_of').content|wash()}]{/if}</small>
+	  <small>{$sensor_post.object.owner.name|wash()} {if $sensor_post.object|has_attribute('on_behalf_of')}[{$sensor_post.object|attribute('on_behalf_of').contentclass_attribute_name|wash()} {$sensor_post.object|attribute('on_behalf_of').content|wash()}]{/if}</small>
 	  </h2>
 	  <ul class="breadcrumb pull-right">
 	  <li>
-		<span class="label label-{$post.type.css_class}">{$post.type.name}</span>
-		<span class="label label-{$post.current_status.css_class}">{$post.current_status.name}</span>
-		{if $post.current_privacy_status.identifier|eq('private')}
-		  <span class="label label-{$post.current_privacy_status.css_class}">{$post.current_privacy_status.name}</span>
+		<span class="label label-{$sensor_post.type.css_class}">{$sensor_post.type.name}</span>
+		<span class="label label-{$sensor_post.current_object_state.css_class}">{$sensor_post.current_object_state.name}</span>
+		{if $sensor_post.current_privacy_state.identifier|eq('private')}
+		  <span class="label label-{$sensor_post.current_privacy_state.css_class}">{$sensor_post.current_privacy_state.name}</span>
 		{/if}
-		{if $post.current_moderation_status.identifier|eq('waiting')}
-		  <span class="label label-{$post.current_moderation_status.css_class}">{$post.current_moderation_status.name}</span>
+		{if $sensor_post.current_moderation_state.identifier|eq('waiting')}
+		  <span class="label label-{$sensor_post.current_moderation_state.css_class}">{$sensor_post.current_moderation_state.name}</span>
 		{/if}
 		</li>
 	  </ul>
@@ -25,54 +25,47 @@
   </div>
 </div>
 <div class="row service_teaser" style="margin-bottom: 10px;">          
-	{if $node|has_attribute('image')}
+	{if $sensor_post.object|has_attribute('image')}
 	<div class="service_photo col-sm-4 col-md-4">
-	  <figure style="background-image:url({$node|attribute('image').content.large.full_path|ezroot(no)})"></figure>
+	  <figure style="background-image:url({$sensor_post.object|attribute('image').content.large.full_path|ezroot(no)})"></figure>
 	</div>
 	{/if}
-	<div class="service_details {if $node|has_attribute('image')}col-sm-8 col-md-8{else}col-sm-12 col-md-12{/if}">            
+	<div class="service_details {if $sensor_post.object|has_attribute('image')}col-sm-8 col-md-8{else}col-sm-12 col-md-12{/if}">
 	  <div class="clearfix">
 		  <p class="pull-left">
-			  {if $node|has_attribute('geo')}
-				  <i class="fa fa-map-marker"></i> {$node|attribute('geo').content.address}
-			  {elseif $node|has_attribute('area')}
-				  {attribute_view_gui attribute=$node|attribute('area')}
+			  {if $sensor_post.object|has_attribute('geo')}
+				  <i class="fa fa-map-marker"></i> {$sensor_post.object|attribute('geo').content.address}
+			  {elseif $sensor_post.object|has_attribute('area')}
+				  {attribute_view_gui attribute=$sensor_post.object|attribute('area')}
 			  {/if}
 		  </p>
-		  {*<p class="pull-right">
-			  <span class="label label-{$post.type.css_class}">{$post.type.name}</span>
-			  <span class="label label-{$post.current_status.css_class}">{$post.current_status.name}</span>
-			  {if $post.current_privacy_status.identifier|eq('private')}
-				  <span class="label label-{$post.current_privacy_status.css_class}">{$post.current_privacy_status.name}</span>
-			  {/if}
-		  </p>*}
 	  </div>
 	  <p>
-		{attribute_view_gui attribute=$node|attribute('description')}
+		{attribute_view_gui attribute=$sensor_post.object|attribute('description')}
 	  </p>
-	  {if $node|has_attribute('attachment')}
-		  <p>{attribute_view_gui attribute=$node|attribute('attachment')}</p>
+	  {if $sensor_post.object|has_attribute('attachment')}
+		  <p>{attribute_view_gui attribute=$sensor_post.object|attribute('attachment')}</p>
 	  {/if}
 	  <ul class="list-inline">
-		  <li><small><i class="fa fa-clock-o"></i> {'Pubblicata il'|i18n('openpa_sensor/post')} {$node.object.published|l10n(shortdatetime)}</small></li>
-		  {if $node.object.modified|gt($node.object.published)}
-			  <li><small><i class="fa fa-clock-o"></i> {'Ultima modifica del'|i18n('openpa_sensor/post')} {$node.object.modified|l10n(shortdatetime)}</small></li>
+		  <li><small><i class="fa fa-clock-o"></i> {'Pubblicata il'|i18n('openpa_sensor/post')} {$sensor_post.object.published|l10n(shortdatetime)}</small></li>
+		  {if $sensor_post.object.modified|gt($sensor_post.object.published)}
+			  <li><small><i class="fa fa-clock-o"></i> {'Ultima modifica del'|i18n('openpa_sensor/post')} {$sensor_post.object.modified|l10n(shortdatetime)}</small></li>
 		  {/if}
-		  {if $post.current_owner}<li><small><i class="fa fa-user"></i> In carico a {$post.current_owner}</small></li>{/if}
-		  {if $post.comment_count|gt(0)}<li><small><i class="fa fa-comments"></i> {$post.comment_count} {'commenti'|i18n('openpa_sensor/post')}</small></li>{/if}
-		  {if $post.response_count|gt(0)}<li><small><i class="fa fa-comment"></i> {$post.response_count} {'risposte ufficiali'|i18n('openpa_sensor/post')}</small></li>{/if}
+		  {if $sensor_post.current_owner}<li><small><i class="fa fa-user"></i> In carico a {$sensor_post.current_owner}</small></li>{/if}
+		  {if $sensor_post.comment_count|gt(0)}<li><small><i class="fa fa-comments"></i> {$sensor_post.comment_count} {'commenti'|i18n('openpa_sensor/post')}</small></li>{/if}
+		  {if $sensor_post.response_count|gt(0)}<li><small><i class="fa fa-comment"></i> {$sensor_post.response_count} {'risposte ufficiali'|i18n('openpa_sensor/post')}</small></li>{/if}
 		  {if $node.data_map.category.has_content}
 			<li><small><i class="fa fa-tags"></i> {attribute_view_gui attribute=$node.data_map.category href=no-link}</small></li>
 		  {/if}
 	  </ul>
-	  <a href={concat('sensor/posts/',$node.object.id)|ezurl()} class="btn btn-info btn-sm">{"Dettagli"|i18n('openpa_sensor/dashboard')}</a>
-	  {if $node.object.can_edit}
-		<a class="btn btn-warning btn-sm" href="{concat('sensor/edit/',$node.object.id)|ezurl(no)}"><i class="fa fa-edit"></i></a>
+	  <a href={concat('sensor/posts/',$sensor_post.object.id)|ezurl()} class="btn btn-info btn-sm">{"Dettagli"|i18n('openpa_sensor/dashboard')}</a>
+	  {if $sensor_post.object.can_edit}
+		<a class="btn btn-warning btn-sm" href="{concat('sensor/edit/',$sensor_post.object.id)|ezurl(no)}"><i class="fa fa-edit"></i></a>
 	  {/if}
-	  {if $node.object.can_remove}
+	  {if $sensor_post.object.can_remove}
 	  <form method="post" action={"content/action"|ezurl} style="display: inline">        
-		  <input type="hidden" name="ContentObjectID" value="{$node.object.id}" />                        
-		  <input type="hidden" name="ContentNodeID" value="{$node.object.main_node_id}" />
+		  <input type="hidden" name="ContentObjectID" value="{$sensor_post.object.id}" />
+		  <input type="hidden" name="ContentNodeID" value="{$sensor_post.object.main_node_id}" />
 		  <input type="hidden" name="RedirectURIAfterRemove" value="/sensor/dashboard" />
 		  <input type="hidden" name="RedirectIfCancel" value="/sensor/dashboard" />                                
 		  <button type="submit" class="btn btn-danger btn-sm" name="ActionRemove"><i class="fa fa-trash"></i></button>
@@ -81,4 +74,4 @@
 
   </div>
 </div>
-{undef $post}
+{undef $sensor_post}

@@ -13,5 +13,6 @@ CategoryCount=unique
 CategoryAutomaticAssign=disabled
 DefaultPostExpirationDaysInterval=15
 DefaultPostExpirationDaysLimit=7
+TextMaxLength=200
 
 */ ?>

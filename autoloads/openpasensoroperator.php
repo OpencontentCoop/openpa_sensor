@@ -7,13 +7,13 @@ class OpenPASensorOperator
         return array(
             'sensor_root_handler',
             'is_current_sensor_page',
-            'sensor_robot_message',
             'sensor_postcontainer',
             'sensor_categorycontainer',
             'user_settings',
             'objectstate_by_id',
             'bracket_to_strong',
-            'current_sensor_userinfo'
+            'current_sensor_userinfo',
+            'sensor_post'
         );
     }
 
@@ -38,6 +38,14 @@ class OpenPASensorOperator
     {
         switch ( $operatorName )
         {
+            case 'sensor_post':
+            {
+                if ( $operatorValue instanceof eZContentObject )
+                {
+                    $operatorValue = SensorHelper::instanceFromContentObjectId( $operatorValue->attribute( 'id' ) );
+                }
+            } break;
+
             case 'current_sensor_userinfo':
             {
                 $operatorValue = SensorUserInfo::current();;
