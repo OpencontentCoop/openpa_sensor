@@ -48,7 +48,16 @@ class SensorCollaborationHandler extends eZCollaborationItemHandler
      */
     static function helper( $collaborationItem )
     {
-        return SensorHelper::instanceFromCollaborationItem( $collaborationItem );
+        $helper = null;
+        try
+        {
+            $helper = SensorHelper::instanceFromCollaborationItem( $collaborationItem );
+        }
+        catch( Exception $e )
+        {
+            eZDebug::writeError( $e->getMessage() );
+        }
+        return $helper;
     }
 
     /**

@@ -42,7 +42,16 @@ class OpenPASensorOperator
             {
                 if ( $operatorValue instanceof eZContentObject )
                 {
-                    $operatorValue = SensorHelper::instanceFromContentObjectId( $operatorValue->attribute( 'id' ) );
+                    try
+                    {
+                        $operatorValue = SensorHelper::instanceFromContentObjectId(
+                            $operatorValue->attribute( 'id' )
+                        );
+                    }
+                    catch( Exception $e )
+                    {
+                        eZDebug::writeError( $e->getMessage(), __METHOD__ );
+                    }
                 }
             } break;
 
