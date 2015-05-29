@@ -89,6 +89,7 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
         $this->fnData['privacy'] = 'getPrivacy';
         $this->fnData['faq'] = 'getFaq';
         $this->fnData['terms'] = 'getTerms';
+        $this->fnData['cookie'] = 'getCookie';
 
         $this->fnData['sensor_url'] = 'getSensorSiteaccessUrl';
         $this->fnData['sensor_asset_url'] = 'getAssetUrl';
