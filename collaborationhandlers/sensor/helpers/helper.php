@@ -302,7 +302,9 @@ class SensorHelper
                 'areas',
                 'categories',
                 'operators',
-                'post_geo_array_js'
+                'post_geo_array_js',
+                'category_name',
+                'author_name'
             )
         );
     }
@@ -473,6 +475,14 @@ class SensorHelper
 
             case 'post_geo_array_js':
                 return $this->currentSensorPost->objectHelper->getPostGeoJsArray();
+                break;
+
+            case 'category_name':
+                return $this->currentSensorPost->objectHelper->getPostCategoryName();
+                break;
+
+            case 'author_name':
+                return $this->currentSensorPost->objectHelper->getPostAuthorName();
                 break;
         }
 

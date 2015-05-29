@@ -182,14 +182,19 @@ class SensorCollaborationHandler extends eZCollaborationItemHandler
         
         $tpl = eZTemplate::factory();
         $tpl->resetVariables();
-        
-        $object = eZContentObject::fetch( $item->attribute( "data_int1" ) );
-        if ( !$object instanceof eZContentObject )
+
+        try
         {
+            $helper = SensorHelper::instanceFromCollaborationItem( $item );
+            $object = $helper->currentSensorPost->objectHelper->getContentObject();
+            $node = $object->attribute( 'main_node' );
+        }
+        catch( Exception $e )
+        {
+            eZDebugSetting::writeError( $e->getMessage(), __METHOD__ );
             return eZNotificationEventHandler::EVENT_SKIPPED;
         }
-        $post = OpenPAObjectHandler::instanceFromContentObject( $object )->attribute( 'control_sensor' );
-        
+
         foreach( $userCollection as $participantRole => $collectionItems )
         {
             $templateName = $itemHandler->notificationParticipantTemplate( $participantRole );
@@ -205,11 +210,11 @@ class SensorCollaborationHandler extends eZCollaborationItemHandler
             $tpl->setVariable( 'collaboration_item', $item );
             $tpl->setVariable( 'collaboration_participant_role', $participantRole );
             $tpl->setVariable( 'collaboration_item_status', $item->attribute( SensorPost::COLLABORATION_FIELD_STATUS ) );
-            $tpl->setVariable( 'post', $post );
+            $tpl->setVariable( 'sensor_post', $helper );
             $tpl->setVariable( 'object', $object );
-            $tpl->setVariable( 'node', $object->attribute( 'main_node' ) );
+            $tpl->setVariable( 'node', $node );
 
-            $result = $tpl->fetch( $templatePath );
+            $tpl->fetch( $templatePath );
 
             $body = $tpl->variable( 'body' );
             $subject = $tpl->variable( 'subject' );

@@ -146,8 +146,9 @@ class SensorModuleFunctions
         $object = eZContentObject::fetch( $args );
         if ( $object instanceof eZContentObject && $object->attribute( 'can_read' ) )
         {
+            $helper = SensorHelper::instanceFromContentObjectId( $object->attribute( 'id' ) );
             $tpl = eZTemplate::factory();
-            $tpl->setVariable( 'object', $object );
+            $tpl->setVariable( 'sensor_post', $helper );
             $Result = $tpl->fetch( 'design:sensor/parts/post/marker_popup.tpl' );
         }
         else
