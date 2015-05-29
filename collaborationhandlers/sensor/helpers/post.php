@@ -342,10 +342,9 @@ class SensorPost
         );
         if ( $this->isClosed() )
         {
-            $responses = $this->timelineHelper->items();
-            if ( count( $responses ) >= 1 )
+            $response = $this->getLastTimelineMessage();
+            if ( $response )
             {
-                $response = array_pop( $responses );
                 $start = new DateTime();
                 $start->setTimestamp( $this->collaborationItem->attribute( "created" ) );
                 $end = new DateTime();
@@ -365,6 +364,18 @@ class SensorPost
         }
         return $data;
     }
+
+    public function getLastTimelineMessage()
+    {
+        $response = null;
+        $responses = $this->timelineHelper->items();
+        if ( count( $responses ) >= 1 )
+        {
+            $response = array_pop( $responses );
+        }
+        return $response;
+    }
+
 
     public function getExpirationDays()
     {

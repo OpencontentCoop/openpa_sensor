@@ -5,9 +5,9 @@ $ini = eZINI::instance();
 $http = eZHTTPTool::instance();
 $templateResult = false;
 
-$test = 'post';
-$objectId = 1692;
-$participantRole = eZCollaborationItemParticipantLink::ROLE_APPROVER;
+$test = $Params['Type'];
+$objectId = $Params['Id'];
+$participantRole = $Params['Param'];
 
 $siteUrl = eZINI::instance()->variable( 'SiteSettings', 'SiteURL' );
 $parts = explode( '/', $siteUrl );
