@@ -732,6 +732,7 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
     public static function executeWorkflow( $parameters, $process, $event )
     {
         $trigger = $parameters['trigger_name'];
+        eZDebug::writeNotice( "Sensor workflow for $trigger", __METHOD__ );
         if ( $trigger == 'pre_read' )
         {
             $redirectUrl = $redirectUrlAlias = false;
@@ -821,7 +822,7 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
             foreach( $nodeIdList as $nodeId )
             {
                 $object = eZContentObject::fetchByNodeID( $nodeId );
-                if ( $object instanceof eZContentObject )
+                if ( $object instanceof eZContentObject && $object->attribute( 'class_identifier' ) == 'sensor_post' )
                 {
                     try
                     {
@@ -833,7 +834,7 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
                     }
                     catch( Exception $e )
                     {
-
+                        eZDebug::writeError( $e->getMessage(), __METHOD__ );
                     }
                 }
             }
