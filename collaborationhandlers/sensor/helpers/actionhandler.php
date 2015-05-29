@@ -200,7 +200,8 @@ class SensorPostActionHandler
                 }
             }
             eZDebugSetting::writeNotice( 'sensor', "Call {$action['call_function']} with arguments " . var_export( $arguments, 1 ), __METHOD__ );
-            return call_user_func_array( array( $this, $action['call_function'] ), $arguments );
+            $reflectionMethod = new ReflectionMethod( $this, $action['call_function'] );
+            return $reflectionMethod->invokeArgs( $this, $arguments );
         }
         else
         {

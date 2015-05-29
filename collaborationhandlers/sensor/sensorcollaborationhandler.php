@@ -114,7 +114,7 @@ class SensorCollaborationHandler extends eZCollaborationItemHandler
     function handleCustomAction( $module, $collaborationItem )
     {
         $helper = self::helper( $collaborationItem );
-        $helper->handleHttpAction();
+        $helper->handleHttpAction( $module );
         $module->redirectTo( 'sensor/posts/' . $collaborationItem->attribute( 'data_int1' ) );
         return;
     }

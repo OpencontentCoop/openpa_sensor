@@ -143,7 +143,7 @@ class SensorHttpActionHelper
         return new SensorHttpActionHelper( $postUserRoles );
     }
 
-    public function handleHttpAction()
+    public function handleHttpAction( eZModule $module )
     {
         $http = eZHTTPTool::instance();
         foreach( $this->httpActions as $action => $parameters )
@@ -179,7 +179,15 @@ class SensorHttpActionHelper
                 if ( $doAction )
                 {
                     eZDebugSetting::writeNotice( 'sensor', "Http call $actionName action with arguments " . var_export( $actionParameters, 1 ), __METHOD__ );
-                    $this->postUserRoles->handleAction( $actionName, $actionParameters );
+                    try
+                    {
+                        $this->postUserRoles->handleAction( $actionName, $actionParameters );
+                    }
+                    catch( Exception $e )
+                    {
+                        eZDebugSetting::writeError( 'sensor', $e->getMessage(), __METHOD__ );
+                        $this->postUserRoles->getUserInfo()->addFlashAlert( $e->getMessage(), 'error' );
+                    }
                 }
             }
         }

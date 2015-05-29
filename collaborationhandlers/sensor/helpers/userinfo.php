@@ -9,6 +9,10 @@ class SensorUserInfo
 
     const ANONYMOUS_CAN_COMMENT = false;
 
+    const ALERT_ERROR = 'error';
+    const ALERT_SUCCESS = 'success';
+    const ALERT_INFO = 'info';
+
     /**
      * @var eZUser
      */
@@ -332,15 +336,15 @@ class SensorUserInfo
                 break;
 
             case 'alerts':
-                $messages = array();
+                $messages = $this->getFlashAlerts();
                 if ( $this->hasModerationMode() )
                 {
                     $activate = false;
                     if ( eZPersistentObject::fetchObject( eZUserAccountKey::definition(), null,  array( 'user_id' => $this->user->id() ), true ) )
                     {
-                        $activate = ' Attiva il tuo profilo per partecipare!';
+                        $activate = ' ' . ezpI18n::tr( 'openpa_sensor/alerts', 'Attiva il tuo profilo per partecipare!' );
                     }
-                    $messages[] = ezpI18n::tr('openpa_sensor/alerts', 'Il tuo account è ora in moderazione, tutte le tue attività non saranno rese pubbliche.' . $activate );
+                    $messages[] = ezpI18n::tr( 'openpa_sensor/alerts', 'Il tuo account è ora in moderazione, tutte le tue attività non saranno rese pubbliche.' . $activate );
                 }
                 return $messages;
                 break;
@@ -349,5 +353,34 @@ class SensorUserInfo
                 eZDebug::writeError( "Attribute $name not found", __METHOD__ );
                 return null;
         }
+    }
+
+    protected function getFlashAlerts()
+    {
+        $messages = array();
+        foreach( array( 'error', 'success', 'info' ) as $level )
+        {
+            if ( eZHTTPTool::instance()->hasSessionVariable( 'FlashAlert_' . $level ) )
+            {
+                $messages = array_merge(
+                    $messages,
+                    eZHTTPTool::instance()->sessionVariable( 'FlashAlert_' . $level )
+                );
+                eZHTTPTool::instance()->removeSessionVariable( 'FlashAlert_' . $level );
+            }
+        }
+        return $messages;
+    }
+
+    public static function addFlashAlert( $message, $level )
+    {
+        $messages = array();
+        if ( eZHTTPTool::instance()->hasSessionVariable( 'FlashAlert_' . $level ) )
+        {
+            $messages = eZHTTPTool::instance()->sessionVariable( 'FlashAlert_' . $level );
+            eZHTTPTool::instance()->removeSessionVariable( 'FlashAlert_' . $level );
+        }
+        $messages[] = $message;
+        eZHTTPTool::instance()->setSessionVariable( 'FlashAlert_' . $level, $messages );
     }
 }
