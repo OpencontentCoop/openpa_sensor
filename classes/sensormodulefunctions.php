@@ -185,6 +185,7 @@ class SensorModuleFunctions
 
             $tpl->setVariable( 'view_parameters', isset( $viewParameters ) ? $viewParameters : array() );
             $tpl->setVariable( 'sensor_post', $helper );
+            $tpl->setVariable( 'current_user', eZUser::currentUser() );
 
             $helper->currentSensorPost->storeActivesParticipants();
         }

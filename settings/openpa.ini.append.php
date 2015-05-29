@@ -13,7 +13,7 @@ CategoryCount=unique
 CategoryAutomaticAssign=disabled
 DefaultPostExpirationDaysInterval=15
 DefaultPostExpirationDaysLimit=7
-TextMaxLength=200
+TextMaxLength=800
 
 #tre settimane
 CloseCommentsAfterSeconds=1814400
