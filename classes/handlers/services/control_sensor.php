@@ -89,6 +89,7 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase
         $this->fnData['privacy'] = 'getPrivacy';
         $this->fnData['faq'] = 'getFaq';
         $this->fnData['terms'] = 'getTerms';
+        $this->fnData['cookie'] = 'getCookie';
 
         $this->fnData['sensor_url'] = 'getSensorSiteaccessUrl';
         $this->fnData['sensor_asset_url'] = 'getAssetUrl';
@@ -233,6 +234,16 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase
     {
         $dataMap = self::rootNodeDataMap();
         return $dataMap['terms'];
+    }
+
+    /**
+     * Ritorna l'attributo cookie di rootNode
+     * @return eZContentObjectAttribute
+     */
+    protected function getCookie()
+    {
+        $dataMap = self::rootNodeDataMap();
+        return $dataMap['cookie'];
     }
 
     /**
