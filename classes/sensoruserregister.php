@@ -283,7 +283,7 @@ class SensorUserRegister
                     $Module->redirectTo( '/sensor/home' );
                 }
 
-                $rule = eZCollaborationNotificationRule::create( OpenPASensorCollaborationHandler::TYPE_STRING, $user->id() );
+                $rule = eZCollaborationNotificationRule::create( SensorHelper::factory()->getSensorCollaborationHandlerTypeString(), $user->id() );
                 $rule->store();
             }
         }
