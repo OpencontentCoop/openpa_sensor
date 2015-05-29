@@ -73,7 +73,7 @@ class SensorPostCsvExporter
                 $offset += $length;
                 
             } while ( count( $items ) == $length );    
-        }        
+        }
     }
     
     protected function transformItem( SensorHelper $item )

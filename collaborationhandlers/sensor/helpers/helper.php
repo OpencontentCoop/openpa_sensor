@@ -208,9 +208,9 @@ class SensorHelper
         return $post;
     }
 
-    public function handleHttpAction()
+    public function handleHttpAction( eZModule $module )
     {
-        $this->httpActionHelper->handleHttpAction();
+        $this->httpActionHelper->handleHttpAction( $module );
     }
 
     public function onRead()
@@ -302,9 +302,7 @@ class SensorHelper
                 'areas',
                 'categories',
                 'operators',
-                'post_geo_array_js',
-                'category_name',
-                'author_name'
+                'post_geo_array_js'
             )
         );
     }
@@ -475,14 +473,6 @@ class SensorHelper
 
             case 'post_geo_array_js':
                 return $this->currentSensorPost->objectHelper->getPostGeoJsArray();
-                break;
-
-            case 'category_name':
-                return $this->currentSensorPost->objectHelper->getPostCategoryName();
-                break;
-
-            case 'author_name':
-                return $this->currentSensorPost->objectHelper->getPostAuthorName();
                 break;
         }
 
