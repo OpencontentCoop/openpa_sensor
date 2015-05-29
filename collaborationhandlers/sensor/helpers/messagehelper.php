@@ -17,6 +17,12 @@ class SensorPostMessageHelper
 
     public $messageLinks = array();
 
+    protected $count;
+
+    protected $unReadCount;
+
+    protected $items;
+
     protected function __construct( SensorPost $post )
     {
         $this->post = $post;
@@ -97,48 +103,61 @@ class SensorPostMessageHelper
 
     public function items()
     {
-        return eZPersistentObject::fetchObjectList(
-            eZCollaborationItemMessageLink::definition(),
-            null,
-            array(
-                'collaboration_id' => $this->post->getCollaborationItem()->attribute( 'id' ),
-                'message_type' => eZUser::currentUserID()
-            ),
-            array( 'created' => 'asc' ),
-            null,
-            true
-        );
+        if ( $this->items == null )
+        {
+            $this->items = eZPersistentObject::fetchObjectList(
+                eZCollaborationItemMessageLink::definition(),
+                null,
+                array(
+                    'collaboration_id' => $this->post->getCollaborationItem()->attribute( 'id' ),
+                    'message_type' => eZUser::currentUserID()
+                ),
+                array( 'created' => 'asc' ),
+                null,
+                true
+            );
+        }
+        return $this->items;
     }
 
     public function count()
     {
-        return eZCollaborationItemMessageLink::fetchItemCount(
-            array(
-                'item_id' => $this->post->getCollaborationItem()->attribute( 'id' ),
-                'conditions' => array(
-                    'message_type' => eZUser::currentUserID()
+        if ( $this->count == null )
+        {
+            $this->count = eZCollaborationItemMessageLink::fetchItemCount(
+                array(
+                    'item_id' => $this->post->getCollaborationItem()->attribute( 'id' ),
+                    'conditions' => array(
+                        'message_type' => eZUser::currentUserID()
+                    )
                 )
-            )
-        );
+            );
+        }
+        return $this->count;
     }
 
     public function unreadCount()
     {
-        $lastRead = 0;
-        /** @var eZCollaborationItemStatus $status */
-        $status = $this->post->getCollaborationItem()->attribute( 'user_status' );
-        if ( $status )
+        if ( $this->unReadCount == null )
         {
-            $lastRead = $status->attribute( 'last_read' );
-        }
-        return eZCollaborationItemMessageLink::fetchItemCount(
-            array(
-                'item_id' => $this->post->getCollaborationItem()->attribute( 'id' ),
-                'conditions' => array(
-                    'message_type' => eZUser::currentUserID(),
-                    'modified' => array( '>', $lastRead )
+            $lastRead = 0;
+            /** @var eZCollaborationItemStatus $status */
+            $status = $this->post->getCollaborationItem()->attribute( 'user_status' );
+            if ( $status )
+            {
+                $lastRead = $status->attribute( 'last_read' );
+            }
+
+            $this->unReadCount = eZCollaborationItemMessageLink::fetchItemCount(
+                array(
+                    'item_id' => $this->post->getCollaborationItem()->attribute( 'id' ),
+                    'conditions' => array(
+                        'message_type' => eZUser::currentUserID(),
+                        'modified' => array( '>', $lastRead )
+                    )
                 )
-            )
-        );
+            );
+        }
+        return $this->unReadCount;
     }
 }
