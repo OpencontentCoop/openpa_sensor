@@ -30,7 +30,8 @@
                             <div class="checkbox">
                                 <label>
                                     <input type="checkbox" checked="checked" disabled="disabled" />
-                                    <small>{$participant.contentobject.name|wash()}</small>
+                                    {*<small>{$participant.contentobject.name|wash()}</small>*}
+                                    <small>{'Solo te stesso'|i18n('openpa_sensor/messages')}</small>
                                     <input name="Collaboration_OpenPASensorItemPrivateMessageReceiver[]" type="hidden" value="{$participant.contentobject.id}" />
                                 </label>
                             </div>
