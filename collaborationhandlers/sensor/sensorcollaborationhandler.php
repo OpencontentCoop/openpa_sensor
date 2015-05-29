@@ -171,6 +171,7 @@ class SensorCollaborationHandler extends eZCollaborationItemHandler
         {
             $userIDList[] = $rule['user_id'];
         }
+
         $userList = array();
         if ( count( $userIDList ) > 0 )
         {

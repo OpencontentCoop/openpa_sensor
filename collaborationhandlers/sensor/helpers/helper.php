@@ -277,6 +277,7 @@ class SensorHelper
                 'expiring_date',
                 'expiration_days',
                 'resolution_time',
+                'last_timeline',
 
                 //SensorPost message*Handler
                 'comment_count',
@@ -379,6 +380,10 @@ class SensorHelper
 
             case 'resolution_time':
                 return $this->currentSensorPost->getResolutionTime();
+                break;
+
+            case 'last_timeline':
+                return $this->currentSensorPost->getLastTimelineMessage();
                 break;
 
 

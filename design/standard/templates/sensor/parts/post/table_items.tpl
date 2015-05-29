@@ -61,6 +61,8 @@
         {/if}
         {if $item.current_owner}
           <li><small><strong>{"In carico a"|i18n('openpa_sensor/dashboard')}</strong> {$item.current_owner}</small></li>
+        {elseif $item.last_timeline}
+            <li><small>{$item.last_timeline.message_text|wash()}</small></li>
         {/if}
     </ul>
   </td>

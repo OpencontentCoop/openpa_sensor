@@ -67,7 +67,7 @@ $ViewList['redirect'] = array(
 
 $ViewList['test_mail'] = array(
     'script' =>	'test_mail.php',
-    'params' => array(),
+    'params' => array( 'Type', 'Id', 'Param' ),
     'functions' => array( 'debug' )
 );
 
