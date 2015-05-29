@@ -119,6 +119,28 @@ class SensorCollaborationHandler extends eZCollaborationItemHandler
         return;
     }
 
+    function notificationParticipantTemplate( $participantRole )
+    {
+        if ( $participantRole == eZCollaborationItemParticipantLink::ROLE_APPROVER )
+        {
+            return 'approver.tpl';
+        }
+        else if ( $participantRole == eZCollaborationItemParticipantLink::ROLE_AUTHOR )
+        {
+            return 'author.tpl';
+        }
+        else if ( $participantRole == eZCollaborationItemParticipantLink::ROLE_OBSERVER )
+        {
+            return 'observer.tpl';
+        }
+        else if ( $participantRole == eZCollaborationItemParticipantLink::ROLE_OWNER )
+        {
+            return 'owner.tpl';
+        }
+        else
+            return false;
+    }
+
     /**
      * @param eZNotificationEvent $event
      * @param eZCollaborationItem $item
@@ -131,9 +153,9 @@ class SensorCollaborationHandler extends eZCollaborationItemHandler
         $participantList = eZCollaborationItemParticipantLink::fetchParticipantList( array( 'item_id' => $item->attribute( 'id' ),
                                                                                             'offset' => 0,
                                                                                             'limit' => 100,
-                                                                                            'participant_type' => eZCollaborationItemParticipantLink::TYPE_USER,
                                                                                             'as_object' => false ) );
         $userIDList = array();
+        /** @var eZCollaborationItemParticipantLink[] $participantMap */
         $participantMap = array();
         foreach ( $participantList as $participant )
         {
@@ -191,7 +213,7 @@ class SensorCollaborationHandler extends eZCollaborationItemHandler
         }
         catch( Exception $e )
         {
-            eZDebugSetting::writeError( $e->getMessage(), __METHOD__ );
+            eZDebugSetting::writeError( 'sensor', $e->getMessage(), __METHOD__ );
             return eZNotificationEventHandler::EVENT_SKIPPED;
         }
 

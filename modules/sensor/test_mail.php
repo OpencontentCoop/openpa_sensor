@@ -3,20 +3,23 @@ $module = $Params['Module'];
 $tpl = eZTemplate::factory();
 $ini = eZINI::instance();
 $http = eZHTTPTool::instance();
+$templateResult = false;
+
 $test = 'post';
+$objectId = 1692;
+$participantRole = eZCollaborationItemParticipantLink::ROLE_APPROVER;
 
 $siteUrl = eZINI::instance()->variable( 'SiteSettings', 'SiteURL' );
-        $parts = explode( '/', $siteUrl );
-        if ( count( $parts ) >= 2 )
-        {
-            $suffix = array_shift( $parts );
-            $siteUrl = implode( '/', $siteUrl );
-        }
-        echo rtrim( $siteUrl, '/' );
+$parts = explode( '/', $siteUrl );
+if ( count( $parts ) >= 2 )
+{
+    $suffix = array_shift( $parts );
+    $siteUrl = implode( '/', $parts );
+}
+echo rtrim( $siteUrl, '/' );
 
 if ( $test == 'notification' )
 {
-    $objectId = 172824;
     $contentObject = eZContentObject::fetch($objectId);
     $tpl->setVariable( 'object', $contentObject );
     $result = $tpl->fetch( 'design:notification/handler/ezsubtree/view/plain.tpl' );
@@ -58,19 +61,17 @@ elseif ( $test == 'registration' )
 }
 elseif ( $test == 'post' )
 {
-    $objectId = 2199;
-    $participantRole = eZCollaborationItemParticipantLink::ROLE_AUTHOR;
-    
     $helper = SensorHelper::instanceFromContentObjectId( $objectId );
-    $item = $helper->attribute( 'collaboration_item' );
+    $item = $helper->currentSensorPost->getCollaborationItem();
     //$item->createNotificationEvent();    
     $object = eZContentObject::fetch( $item->attribute( "data_int1" ) );
+    $node = $object->attribute( 'main_node' );
     if ( !$object instanceof eZContentObject )
     {
         throw new Exception( 'object not found' );
     }
-    $post = OpenPAObjectHandler::instanceFromContentObject( $object )->attribute( 'control_sensor' );
-    
+
+    /** @var SensorCollaborationHandler $itemHandler */
     $itemHandler = $item->attribute( 'handler' );
     
     $templateName = $itemHandler->notificationParticipantTemplate( $participantRole );
@@ -78,26 +79,26 @@ elseif ( $test == 'post' )
 
     $tpl->setVariable( 'collaboration_item', $item );
     $tpl->setVariable( 'collaboration_participant_role', $participantRole );
-    $tpl->setVariable( 'collaboration_item_status', $item->attribute( SensorHelper::ITEM_STATUS ) );
-    $tpl->setVariable( 'post', $post );
+    $tpl->setVariable( 'collaboration_item_status', $item->attribute( SensorPost::COLLABORATION_FIELD_STATUS ) );
+    $tpl->setVariable( 'sensor_post', $helper );
     $tpl->setVariable( 'object', $object );
-    $tpl->setVariable( 'node', $object->attribute( 'main_node' ) );
+    $tpl->setVariable( 'node', $node );
 
     $result = $tpl->fetch( $templatePath );
 
     $body = $tpl->variable( 'body' );
     $subject = $tpl->variable( 'subject' );
 
-        $tpl->setVariable( 'title', $subject );
-        $tpl->setVariable( 'content', $body );
-        $templateResult = $tpl->fetch( 'design:sensor/mail/mail_pagelayout.tpl' ); 
+    $tpl->setVariable( 'title', $subject );
+    $tpl->setVariable( 'content', $body );
+    $templateResult = $tpl->fetch( 'design:sensor/mail/mail_pagelayout.tpl' );
     
 }
 
 if ( $http->hasGetVariable( 'send' ) )
 {
     //$mailResult = eZMailTransport::send( $mail );
-    print_r($mailResult);
+    print_r($templateResult);
 }
 else
 {
