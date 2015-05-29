@@ -7,6 +7,7 @@
 {include uri='design:sensor/parts/head.tpl'}
 
 <body>
+{include uri='design:sensor/parts/alert_cookie.tpl'}
 
 <header>
     <div class="container">
