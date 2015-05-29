@@ -218,6 +218,16 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
         return $dataMap['terms'];
     }
 
+    /**
+     * Ritorna l'attributo cookie di rootNode
+     * @return eZContentObjectAttribute
+     */
+    protected function getCookie()
+    {
+        $dataMap = self::rootNodeDataMap();
+        return $dataMap['cookie'];
+    }
+
 
     protected function getModerationStates()
     {
