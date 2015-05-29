@@ -41,9 +41,14 @@ class SensorUserInfo
      * @param eZUser $user
      *
      * @return SensorUserInfo
+     * @throws Exception
      */
     public static function instance( eZUser $user )
     {
+        if ( !$user instanceof eZUser )
+        {
+            throw new Exception( "User not found" );
+        }
         return new static( $user );
     }
 
