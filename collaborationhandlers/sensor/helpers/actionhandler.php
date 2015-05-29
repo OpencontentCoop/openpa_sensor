@@ -44,6 +44,11 @@ class SensorPostActionHandler
                 'check_role' => array( 'can_fix' ),
                 'parameters' => array()
             ),
+            'force_fix' => array(
+                'call_function' => 'forceFix',
+                'check_role' => array( 'can_force_fix' ),
+                'parameters' => array()
+            ),
             'close' => array(
                 'call_function' => 'close',
                 'check_role' => array( 'can_close' ),
@@ -276,6 +281,28 @@ class SensorPostActionHandler
         }
         $this->post->timelineHelper->add( SensorPost::STATUS_FIXED, eZUser::currentUserID() )->store();
         $this->post->eventHelper->handleEvent( 'on_fix' );
+    }
+
+    public function forceFix()
+    {
+        //@todo verificare multi owner
+        foreach( $this->post->getOwners() as $ownerId )
+        {
+            $this->post->addParticipant(
+                $ownerId,
+                SensorUserPostRoles::ROLE_OBSERVER
+            );
+        }
+        if ( !$this->post->hasOwner() )
+        {
+            $this->post->setStatus( SensorPost::STATUS_FIXED );
+        }
+        else
+        {
+            $this->post->touch();
+        }
+        $this->post->timelineHelper->add( SensorPost::STATUS_FIXED, eZUser::currentUserID() )->store();
+        $this->post->eventHelper->handleEvent( 'on_force_fix' );
     }
 
     public function close()

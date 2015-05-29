@@ -25,6 +25,9 @@ class SensorHttpActionHelper
             'Fix' => array(
                 'action_name' => 'fix'
             ),
+            'ForceFix' => array(
+                'action_name' => 'force_fix'
+            ),
             'Close' => array(
                 'action_name' => 'close'
             ),

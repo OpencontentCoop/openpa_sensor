@@ -52,6 +52,7 @@ class SensorUserPostRoles
             'can_moderate',
             'can_close',
             'can_fix',
+            'can_force_fix',
             'can_send_private_message',
             'can_add_observer',
             'can_set_expiry'
@@ -105,6 +106,10 @@ class SensorUserPostRoles
 
             case 'can_fix':
                 return $this->canFix();
+                break;
+
+            case 'can_force_fix':
+                return $this->canForceFix();
                 break;
 
             case 'can_send_private_message':
@@ -175,6 +180,7 @@ class SensorUserPostRoles
             || $this->canAddArea()
             || $this->canModerate()
             || $this->canSetExpiry()
+            || $this->canForceFix()
         );
     }
 
@@ -235,6 +241,11 @@ class SensorUserPostRoles
     public function canFix()
     {
         return $this->isOwner() && $this->post->isAssigned();
+    }
+
+    public function canForceFix()
+    {
+        return $this->post->isAssigned() && $this->isApprover();
     }
 
     public function canSendPrivateMessage()

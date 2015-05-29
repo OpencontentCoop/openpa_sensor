@@ -13,6 +13,7 @@ class SensorPostEventHelper
         'on_create',
         'on_assign',
         'on_fix',
+        'on_force_fix',
         'on_close',
         'on_make_private',
         'on_make_public',
