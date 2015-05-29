@@ -32,7 +32,7 @@ class SensorPostCsvExporter
             'author'            => ezpI18n::tr( 'openpa_sensor/export', 'Autore' ),
             'category'          => ezpI18n::tr( 'openpa_sensor/export', 'Area tematica' ),
             'current_owner'     => ezpI18n::tr( 'openpa_sensor/export', 'Assegnatario' ),
-            'human_messages'    => ezpI18n::tr( 'openpa_sensor/export', 'Commenti' )
+            'comment'           => ezpI18n::tr( 'openpa_sensor/export', 'Commenti' )
         );
         $this->filename = 'posts'; //@todo
     }
@@ -76,44 +76,41 @@ class SensorPostCsvExporter
         }        
     }
     
-    protected function transformItem( eZCollaborationItem $item )
-    {        
-        $content = $item->attribute( 'content' );
-        /** @var SensorHelper $helper */
-        $helper = $content['helper'];
-        /** @var ObjectHandlerServiceControlSensor $post */
-        $post = $helper->attribute( 'sensor' );
+    protected function transformItem( SensorHelper $item )
+    {
         $data = array_fill_keys( array_keys( $this->CSVheaders ), '');
-        $data['id'] = $helper->attribute( 'object' )->attribute( 'id' );
+        $data['id'] = $item->attribute( 'id' );
         
-        $privacy = $post->attribute( 'current_privacy_status' );
+        $privacy = $item->attribute( 'current_privacy_state' );
         $data['privacy'] = $privacy['name'];
         
-        $moderation = $post->attribute( 'current_moderation_status' );
+        $moderation = $item->attribute( 'current_moderation_state' );
         $data['moderation'] = $moderation['name'];
         
-        $type = $post->attribute( 'type' );
+        $type = $item->attribute( 'type' );
         $data['type'] = $type['name'];
 
-        $currentStatus = $post->attribute( 'current_status' );
+        $currentStatus = $item->attribute( 'current_object_state' );
         $data['current_status'] = $currentStatus['name'];
+
+        /** @var eZContentObject $object */
+        $object = $item->attribute( 'object' );
+        $data['created'] = strftime( '%d/%m/%Y %H:%M', $object->attribute( 'published' ) );
+        $data['modified'] = strftime( '%d/%m/%Y %H:%M', $object->attribute( 'modified' ) );
         
-        $data['created'] = strftime( '%d/%m/%Y %H:%M', $item->attribute( 'created' ) );
-        $data['modified'] = strftime( '%d/%m/%Y %H:%M', $item->attribute( 'modified' ) );
-        
-        $expiringDate = $helper->attribute( 'expiring_date' );
+        $expiringDate = $item->attribute( 'expiring_date' );
         $data['expiring_date'] = strftime( '%d/%m/%Y %H:%M', $expiringDate['timestamp'] );
     
-        $resolutionTime = $helper->attribute( 'resolution_time' );
+        $resolutionTime = $item->attribute( 'resolution_time' );
         $data['resolution_time'] = $resolutionTime['timestamp'] ? strftime( '%d/%m/%Y %H:%M', $resolutionTime['timestamp'] ) : '';
         $data['resolution_diff'] = $resolutionTime['text'];
         
-        $data['title'] = $helper->attribute( 'object' )->attribute( 'name' );        
+        $data['title'] = $object->attribute( 'name' );
         
-        $data['author'] = $post->attribute( 'author_name' );
-        $data['category'] = $post->attribute( 'category_name' );
-        $data['current_owner'] = $post->attribute( 'current_owner' ) ? $post->attribute( 'current_owner' ) : '';
-        $data['human_messages'] = $helper->attribute( 'human_message_count' );
+        $data['author'] = $item->attribute( 'author_name' );
+        $data['category'] = $item->attribute( 'category_name' );
+        $data['current_owner'] = $item->attribute( 'current_owner' ) ? $item->attribute( 'current_owner' ) : '';
+        $data['comment'] = $item->attribute( 'comment_count' );
         
         return $data;
     }

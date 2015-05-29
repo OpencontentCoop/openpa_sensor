@@ -28,6 +28,13 @@ interface SensorPostObjectHelperInterface
      */
     public function getApproverIdsByCategory();
 
+    /**
+     * @return int[]
+     */
+    public function getApproverIdArray();
+
+    public static function getOperators();
+
     public function getType();
 
     public function getCurrentState();
@@ -44,13 +51,9 @@ interface SensorPostObjectHelperInterface
 
     public function getPostCategoryName();
 
-    public function getApproverIdArray();
-
     public function getPostAreas();
 
     public function getPostCategories();
-
-    public static function getOperators();
 
     /**
      * @return bool|null

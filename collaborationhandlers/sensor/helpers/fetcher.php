@@ -9,7 +9,7 @@ class SensorPostFetcher
      * @param bool $asCount
      * @param array $filters
      *
-     * @return eZCollaborationItem[]|array
+     * @return SensorHelper[]|array
      */
     protected static function fetchList( $parameters = array(), $asCount, array $filters = array() )
     {
@@ -155,14 +155,15 @@ class SensorPostFetcher
             $secondsLimit = 60 * 60 * 24 * self::$DefaultPostExpirationDaysLimit;
             $nowDate = new DateTime();
             $now = $nowDate->getTimestamp();
-            $isExpiringTest = "( CAST( ci.{$expiryField} AS integer ) - {$now} <= $secondsLimit OR {$now} >= CAST( ci.{$expiryField} AS integer ) )  AND ";
+            $isExpiringTest = "( CAST( nullif(ci.{$expiryField},'') AS integer ) - {$now} <= $secondsLimit OR {$now} >= CAST( nullif(ci.{$expiryField},'') AS integer ) )  AND ";
         }
 
         $sql = "SELECT $selectText
                 FROM
                        ezcollab_item ci,
                        ezcollab_item_status cis,
-                       ezcollab_item_group_link cigl
+                       ezcollab_item_group_link cigl,
+                       ezcontentobject co
                        {$ownerFilter['table']}
                 WHERE  ci.status IN ( $statusText ) AND
                        $isReadText
@@ -173,6 +174,7 @@ class SensorPostFetcher
                        {$ownerFilter['where']}
                        ci.id = cis.collaboration_id AND
                        ci.id = cigl.collaboration_id AND
+                       ci.data_int1 = co.id AND
                        $parentGroupText
                        cis.user_id = '$userID' AND
                        cigl.user_id = '$userID'
@@ -203,7 +205,14 @@ class SensorPostFetcher
             $data = array();
             foreach( $returnItemList as $returnItem )
             {
-                $data[] = SensorHelper::instanceFromCollaborationItem( $returnItem );
+                try
+                {
+                    $data[] = SensorHelper::instanceFromCollaborationItem( $returnItem );
+                }
+                catch( Exception $e )
+                {
+
+                }
             }
             return $data;
         }
@@ -214,6 +223,11 @@ class SensorPostFetcher
         }
     }
 
+    /**
+     * @param array $filters
+     *
+     * @return string
+     */
     protected static function parseFetchFilters( array $filters )
     {
         $filterText = '';
@@ -346,6 +360,17 @@ class SensorPostFetcher
         return $filterText;
     }
 
+    /**
+     * @param array $filters
+     * @param eZCollaborationGroup $group
+     * @param $limit
+     * @param int $offset
+     * @param string $sortBy
+     * @param bool $sortOrder
+     * @param bool $status
+     *
+     * @return array|SensorHelper[]
+     */
     public static function fetchAllItems( array $filters = array(), eZCollaborationGroup $group, $limit, $offset = 0, $sortBy = 'modified', $sortOrder = false, $status = false )
     {
         $itemParameters = array(
@@ -358,6 +383,12 @@ class SensorPostFetcher
         return self::fetchList( $itemParameters, false, $filters );
     }
 
+    /**
+     * @param array $filters
+     * @param eZCollaborationGroup $group
+     *
+     * @return array|SensorHelper[]
+     */
     public static function fetchAllItemsCount( array $filters = array(), eZCollaborationGroup $group )
     {
         $itemParameters = array(
@@ -366,6 +397,17 @@ class SensorPostFetcher
         return self::fetchList( $itemParameters, true, $filters );
     }
 
+    /**
+     * @param array $filters
+     * @param eZCollaborationGroup $group
+     * @param $limit
+     * @param int $offset
+     * @param string $sortBy
+     * @param bool $sortOrder
+     * @param bool $status
+     *
+     * @return array|SensorHelper[]
+     */
     public static function fetchUnreadItems( array $filters = array(), eZCollaborationGroup $group, $limit, $offset = 0, $sortBy = 'modified', $sortOrder = false, $status = false )
     {
         $itemParameters = array(
@@ -379,6 +421,12 @@ class SensorPostFetcher
         return self::fetchList( $itemParameters, false, $filters );
     }
 
+    /**
+     * @param array $filters
+     * @param eZCollaborationGroup $group
+     *
+     * @return array|SensorHelper[]
+     */
     public static function fetchUnreadItemsCount( array $filters = array(), eZCollaborationGroup $group )
     {
         $itemParameters = array(
@@ -388,6 +436,17 @@ class SensorPostFetcher
         return self::fetchList( $itemParameters, true, $filters );
     }
 
+    /**
+     * @param array $filters
+     * @param eZCollaborationGroup $group
+     * @param $limit
+     * @param int $offset
+     * @param string $sortBy
+     * @param bool $sortOrder
+     * @param bool $status
+     *
+     * @return array|SensorHelper[]
+     */
     public static function fetchActiveItems( array $filters = array(), eZCollaborationGroup $group, $limit, $offset = 0, $sortBy = 'modified', $sortOrder = false, $status = false )
     {
         $itemParameters = array(
@@ -402,6 +461,12 @@ class SensorPostFetcher
         return self::fetchList( $itemParameters, false, $filters );
     }
 
+    /**
+     * @param array $filters
+     * @param eZCollaborationGroup $group
+     *
+     * @return array|SensorHelper[]
+     */
     public static function fetchActiveItemsCount( array $filters = array(), eZCollaborationGroup $group )
     {
         $itemParameters = array(
@@ -412,6 +477,17 @@ class SensorPostFetcher
         return self::fetchList( $itemParameters, true, $filters );
     }
 
+    /**
+     * @param array $filters
+     * @param eZCollaborationGroup $group
+     * @param $limit
+     * @param int $offset
+     * @param string $sortBy
+     * @param bool $sortOrder
+     * @param bool $status
+     *
+     * @return array|SensorHelper[]
+     */
     public static function fetchUnactiveItems( array $filters = array(), eZCollaborationGroup $group, $limit, $offset = 0, $sortBy = 'modified', $sortOrder = false, $status = false )
     {
         $itemParameters = array(
@@ -426,6 +502,12 @@ class SensorPostFetcher
         return self::fetchList( $itemParameters, false, $filters );
     }
 
+    /**
+     * @param array $filters
+     * @param eZCollaborationGroup $group
+     *
+     * @return array|SensorHelper[]
+     */
     public static function fetchUnactiveItemsCount( array $filters = array(), eZCollaborationGroup $group )
     {
         $itemParameters = array(
@@ -436,6 +518,17 @@ class SensorPostFetcher
         return self::fetchList( $itemParameters, true, $filters );
     }
 
+    /**
+     * @param array $filters
+     * @param eZCollaborationGroup $group
+     * @param $limit
+     * @param int $offset
+     * @param string $sortBy
+     * @param bool $sortOrder
+     * @param bool $status
+     *
+     * @return array|SensorHelper[]
+     */
     public static function fetchExpiringItems( array $filters = array(), eZCollaborationGroup $group, $limit, $offset = 0, $sortBy = 'created', $sortOrder = true, $status = false )
     {
         $itemParameters = array(
@@ -450,6 +543,12 @@ class SensorPostFetcher
         return self::fetchList( $itemParameters, false, $filters );
     }
 
+    /**
+     * @param array $filters
+     * @param eZCollaborationGroup $group
+     *
+     * @return array|SensorHelper[]
+     */
     public static function fetchExpiringItemsCount( array $filters = array(), eZCollaborationGroup $group )
     {
         $itemParameters = array(

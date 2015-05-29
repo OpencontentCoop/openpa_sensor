@@ -287,18 +287,21 @@ class SensorPostActionHandler
     public function makePrivate()
     {
         $this->post->objectHelper->makePrivate();
+        $this->post->eventHelper->handleEvent( 'on_make_private' );
         $this->post->touch();
     }
 
     public function makePublic()
     {
         $this->post->objectHelper->makePublic();
+        $this->post->eventHelper->handleEvent( 'on_make_public' );
         $this->post->touch();
     }
 
     public function moderate( $status )
     {
         $this->post->objectHelper->moderate( $status );
+        $this->post->eventHelper->handleEvent( 'on_moderate' );
         $this->post->touch();
     }
 
@@ -430,9 +433,8 @@ class SensorPostActionHandler
     {
         foreach( $idTextArray as $id => $text )
         {
-            $this->post->commentHelper->edit( $id, $text );
+            $this->post->messageHelper->edit( $id, $text );
         }
-        $this->post->messageHelper->edit( $id, $text );
         $this->post->eventHelper->handleEvent( 'on_edit_message' );
         $this->post->touch();
     }
