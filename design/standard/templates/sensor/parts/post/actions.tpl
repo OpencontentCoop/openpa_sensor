@@ -2,7 +2,7 @@
     <aside class="widget well well-sm">
 
         {if $sensor_post.can_add_area}
-            <h4>{'Quartiere/Zona'|i18n('openpa_sensor/post')}</h4>
+            <strong>{'Quartiere/Zona'|i18n('openpa_sensor/post')}</strong>
             <div class="form-group">
                 <div class="row">
                     <div class="col-xs-8">
@@ -21,7 +21,7 @@
         {/if}
 
         {if $sensor_post.can_add_category}
-            <h4>{'Area tematica'|i18n('openpa_sensor/post')}</h4>
+            <strong>{'Area tematica'|i18n('openpa_sensor/post')}</strong>
             <div class="form-group">
                 <div class="row">
                     <div class="col-xs-8">
@@ -47,7 +47,7 @@
         {/if}
 
         {if $sensor_post.can_set_expiry}
-            <h4>{'Scadenza'|i18n('openpa_sensor/post')} <small>{'in giorni'|i18n('openpa_sensor/post')}</small></h4>
+            <strong>{'Scadenza'|i18n('openpa_sensor/post')} <small>{'in giorni'|i18n('openpa_sensor/post')}</small></strong>
             <div class="form-group">
                 <div class="row">
                     <div class="col-xs-8">
@@ -68,7 +68,7 @@
         and( $sensor_post.current_privacy_state.identifier|ne('private'), $sensor_post.can_change_privacy ),
         and( $sensor_post.current_moderation_state.identifier|eq('waiting'), $sensor_post.can_moderate )
         )}
-            <h4>{'Azioni'|i18n('openpa_sensor/post')}</h4>
+            <strong>{'Azioni'|i18n('openpa_sensor/post')}</strong>
         {/if}
 
         {if $sensor_post.can_assign}
@@ -109,7 +109,13 @@
 
         {if $sensor_post.can_fix}
             <div class="form-group">
-                <input class="btn btn-success btn-lg btn-block" type="submit" name="CollaborationAction_Fix" value="{'Intervento terminato'|i18n('openpa_sensor/post')}" /><br />
+                <input class="btn btn-success btn-lg btn-block" type="submit" name="CollaborationAction_Fix" value="{'Intervento terminato'|i18n('openpa_sensor/post')}" />
+            </div>
+        {/if}
+
+        {if $sensor_post.can_force_fix}
+            <div class="form-group">
+                <input class="btn btn-danger btn-lg btn-block" type="submit" name="CollaborationAction_ForceFix" value="{'Forza chiusura'|i18n('openpa_sensor/post')}" />
             </div>
         {/if}
 
