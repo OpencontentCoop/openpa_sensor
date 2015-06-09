@@ -34,7 +34,7 @@ class SensorHelper
      */
     public $httpActionHelper;
 
-    protected function __construct( eZCollaborationItem $collaborationItem )
+    protected function __construct( eZCollaborationItem $collaborationItem, SensorUserInfo $user = null )
     {
         $contentObject = eZContentObject::fetch( $collaborationItem->attribute( 'data_int1' ) );
         if ( !$contentObject instanceof eZContentObject )
@@ -50,7 +50,11 @@ class SensorHelper
             self::factory()->getSensorPostObjectHelper( $contentObject ),
             $this->sensorConfigParams
         );
-        $this->currentSensorUser = SensorUserInfo::current();
+        if ( $user === null )
+        {
+            $user = SensorUserInfo::current();
+        }
+        $this->currentSensorUser = $user;
         $this->currentSensorUserRoles = SensorUserPostRoles::instance(
             $this->currentSensorPost,
             $this->currentSensorUser
@@ -66,21 +70,24 @@ class SensorHelper
 
     /**
      * @param eZCollaborationItem $collaborationItem
+     * @param SensorUserInfo $user
      *
      * @return SensorHelper
      */
-    public static function instanceFromCollaborationItem( eZCollaborationItem $collaborationItem )
+    public static function instanceFromCollaborationItem( eZCollaborationItem $collaborationItem,
+                                                          SensorUserInfo $user = null )
     {
-        return new SensorHelper( $collaborationItem );
+        return new SensorHelper( $collaborationItem, $user );
     }
 
     /**
      * @param int $objectId
+     * @param SensorUserInfo $user
      *
      * @return SensorHelper
      * @throws Exception
      */
-    public static function instanceFromContentObjectId( $objectId )
+    public static function instanceFromContentObjectId( $objectId, SensorUserInfo $user = null )
     {
         $type = self::factory()->getSensorCollaborationHandlerTypeString();
         $collaborationItem = eZPersistentObject::fetchObject(
@@ -92,7 +99,7 @@ class SensorHelper
             ) );
         if ( $collaborationItem instanceof eZCollaborationItem )
         {
-            return new SensorHelper( $collaborationItem );
+            return new SensorHelper( $collaborationItem, $user );
     }
         throw new Exception( "$type eZCollaborationItem not found for $objectId" );
     }
@@ -169,8 +176,8 @@ class SensorHelper
             )
          );
         $collaborationItem->store();
-
-        $helper = self::instanceFromCollaborationItem( $collaborationItem );
+        $user = SensorUserInfo::instance( eZUser::fetch( $struct->authorUserId ) );
+        $helper = self::instanceFromCollaborationItem( $collaborationItem, $user );
         $post = $helper->currentSensorPost;
 
         $participantList = array(
