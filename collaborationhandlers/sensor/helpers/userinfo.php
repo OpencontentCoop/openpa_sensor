@@ -60,6 +60,19 @@ class SensorUserInfo
         return $this->user;
     }
 
+    public function whatsAppId()
+    {
+        try
+        {
+            $wa = OCWhatsAppConnector::instanceFromContentObjectId( $this->user()->id() );
+            return $wa->getUsername();
+        }
+        catch( Exception $e )
+        {
+            return false;
+        }
+    }
+
     public function participateAs( SensorPost $post, $role )
     {
         $link = eZCollaborationItemParticipantLink::fetch(
@@ -388,4 +401,5 @@ class SensorUserInfo
         $messages[] = $message;
         eZHTTPTool::instance()->setSessionVariable( 'FlashAlert_' . $level, $messages );
     }
+
 }

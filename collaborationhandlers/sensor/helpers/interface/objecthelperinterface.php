@@ -55,8 +55,10 @@ interface SensorPostObjectHelperInterface
 
     public function getPostCategories();
 
+    public function getPostUrl();
+
     /**
      * @return bool|null
      */
-    public function defaultModerationStateIdentifier();
+    public function defaultModerationStateIdentifier( SensorUserInfo $userInfo = null );
 }

@@ -11,7 +11,7 @@ class SensorPostFetcher
      *
      * @return SensorHelper[]|array
      */
-    protected static function fetchList( $parameters = array(), $asCount, array $filters = array() )
+    protected static function fetchList( $parameters = array(), $asCount, array $filters = array(), eZUser $user = null )
     {
         $parameters = array_merge( array( 'as_object' => true,
                                           'offset' => false,
@@ -134,7 +134,14 @@ class SensorPostFetcher
             );
         }
 
-        $userID = eZUser::currentUserID();
+        if ( $user instanceof eZUser )
+        {
+            $userID = $user->id();
+        }
+        else
+        {
+            $userID = eZUser::currentUserID();
+        }
 
         if ( $statusTypes === false )
         {
@@ -557,6 +564,24 @@ class SensorPostFetcher
             'parent_group_id' => $group->attribute( 'id' )
         );
         return self::fetchList( $itemParameters, true, $filters );
+    }
+
+    public static function fetchUserLastPost( SensorUserInfo $userInfo )
+    {
+        $filters = array( 'creator_id' => $userInfo->user()->id() );
+        $itemParameters = array(
+            'offset' => 0,
+            'limit' => 1,
+            'sort_by' => array( 'created', false ),
+            'parent_group_id' => $userInfo->sensorCollaborationGroup()->attribute( 'id' ),
+            'status' => false
+        );
+        $data = self::fetchList( $itemParameters, false, $filters, $userInfo->user() );
+        if ( count( $data ) > 0 )
+        {
+           return $data[0];
+        }
+        return false;
     }
 
 }
