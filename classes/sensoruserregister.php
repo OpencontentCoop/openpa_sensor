@@ -192,6 +192,7 @@ class SensorUserRegister
             self::setSessionUser( $objectID );
         }
         $db->commit();
+        return $contentObject;
     }
 
     public static function captchaIsValid()
@@ -226,9 +227,13 @@ class SensorUserRegister
         return false;
     }
 
-    public static function finish( eZModule $Module )
+    public static function finish( eZModule $Module, eZContentObject $object = null )
     {
-        $object = self::getSessionUserObject();
+        if ( $object === null )
+        {
+            $object = self::getSessionUserObject();
+        }
+
         if ( $object instanceof eZContentObject )
         {
             $operationResult = eZOperationHandler::execute( 'content', 'publish', array( 'object_id' => $object->attribute( 'id' ), 'version' => 1 ) );

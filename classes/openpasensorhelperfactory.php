@@ -20,6 +20,21 @@ class OpenpaSensorHelperFactory implements SensorHelperFactoryInterface
         return 'openpasensor';
     }
 
+    public function sensorPostObjectFactory( SensorUserInfo $user, $data, eZContentObject $update = null )
+    {
+        if ( $update instanceof eZContentObject )
+        {
+            $id = $update->attribute( 'id' );
+            eZContentObject::clearCache( array( $id ) );
+            $update = eZContentObject::fetch( $id );
+            return ObjectHandlerServiceControlSensor::updatePost( $user, $data, $update );
+        }
+        else
+        {
+            return ObjectHandlerServiceControlSensor::createPost( $user, $data );
+        }
+    }
+
     /**
      * @return array
      */

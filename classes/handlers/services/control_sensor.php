@@ -841,9 +841,13 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
         }
     }
 
-    protected static function needModeration( $timestamp = null )
+    protected static function needModeration( $timestamp = null, SensorUserInfo $userInfo = null )
     {
-        if ( SensorUserInfo::current()->hasModerationMode() )
+        if ( !$userInfo instanceof SensorUserInfo )
+        {
+            $userInfo = SensorUserInfo::current();
+        }
+        if ( $userInfo->hasModerationMode() )
         {
             return true;
         }
@@ -969,9 +973,9 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
         return $GLOBALS['SensorRootHandler'];
     }
 
-    public function defaultModerationStateIdentifier()
+    public function defaultModerationStateIdentifier( SensorUserInfo $userInfo = null  )
     {
-        return self::needModeration() ? 'waiting' : null;
+        return self::needModeration( null, $userInfo ) ? 'waiting' : null;
     }
 
 
@@ -1444,5 +1448,42 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
             }
         }
         return $userIds;
+    }
+
+    public function getPostUrl()
+    {
+        return 'https://' . $this->getSensorSiteaccessUrl() . '/sensor/posts/' . $this->getContentObject()->attribute( 'id' );
+    }
+
+    public static function createPost( SensorUserInfo $user, $data )
+    {
+        $params                     = array();
+        $params['creator_id']       = $user->user()->id();
+        $params['class_identifier'] = self::postContentClass()->attribute( 'identifier' );
+        $params['parent_node_id']   = self::postContainerNode()->attribute( 'node_id' );
+        $params['attributes']       = $data;
+        print_r($data);
+        return eZContentFunctions::createAndPublishObject( $params );
+    }
+
+    public static function updatePost( SensorUserInfo $user, $data, eZContentObject $contentObject )
+    {
+        /** @var eZContentObjectAttribute[] $contentObjectDataMap */
+        $contentObjectDataMap = $contentObject->attribute( 'data_map' );
+        $existingData = array();
+        foreach( $contentObjectDataMap as $identifier => $attribute )
+        {
+            $existingData[$identifier] = $attribute->toString();
+            if ( $attribute->hasContent() && !isset( $data[$identifier] ) )
+            {
+                $data[$identifier] = $attribute->toString();
+            }
+        }
+        print_r($existingData);
+        print_r($data);
+        $params = array();
+        $params['attributes'] = $data;
+        eZContentFunctions::updateAndPublishObject( $contentObject, $params );
+        return $contentObject;
     }
 }

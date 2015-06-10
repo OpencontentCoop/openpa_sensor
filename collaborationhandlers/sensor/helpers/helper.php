@@ -122,6 +122,7 @@ class SensorHelper
         $struct = new SensorPostCreateStruct();
         $struct->contentObjectId = $object->attribute( 'id');
         $struct->authorUserId = $objectHelper->getPostAuthorId();
+        $authorInfo = SensorUserInfo::instance( eZUser::fetch( $struct->authorUserId ) );
         $approverIDArray = $objectHelper->getApproverIdArray();
         if ( empty( $approverIDArray ) )
         {
@@ -145,7 +146,9 @@ class SensorHelper
             $struct->privacy = 'private';
         }
 
-        $struct->moderation = $objectHelper->defaultModerationStateIdentifier();
+        $struct->moderation = $objectHelper->defaultModerationStateIdentifier( $authorInfo );
+
+var_dump($struct);
 
         $db = eZDB::instance();
         $res = (array) $db->arrayQuery( "SELECT * FROM ezcollab_item WHERE data_int1 = " . $struct->contentObjectId );
@@ -176,8 +179,7 @@ class SensorHelper
             )
          );
         $collaborationItem->store();
-        $user = SensorUserInfo::instance( eZUser::fetch( $struct->authorUserId ) );
-        $helper = self::instanceFromCollaborationItem( $collaborationItem, $user );
+        $helper = self::instanceFromCollaborationItem( $collaborationItem, $authorInfo );
         $post = $helper->currentSensorPost;
 
         $participantList = array(
@@ -310,7 +312,8 @@ class SensorHelper
                 'areas',
                 'categories',
                 'operators',
-                'post_geo_array_js'
+                'post_geo_array_js',
+                'post_url'
             )
         );
     }
@@ -486,6 +489,11 @@ class SensorHelper
             case 'post_geo_array_js':
                 return $this->currentSensorPost->objectHelper->getPostGeoJsArray();
                 break;
+
+            case 'post_url':
+                return $this->currentSensorPost->objectHelper->getPostUrl();
+                break;
+
         }
 
         eZDebug::writeError( "Attribute $key not found", get_called_class() );
