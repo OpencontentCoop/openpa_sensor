@@ -62,6 +62,8 @@ class SensorUserInfo
 
     public function whatsAppId()
     {
+        if ( !class_exists( 'OCWhatsAppConnector' ) ) return false;
+
         try
         {
             $wa = OCWhatsAppConnector::instanceFromContentObjectId( $this->user()->id() );
