@@ -43,7 +43,13 @@ class SensorPostEventHelper
 
     public function createEvent( $eventName )
     {
-        $this->post->getCollaborationItem()->createNotificationEvent( $eventName );
+        foreach( SensorNotificationHelper::postNotificationTypes() as $type )
+        {
+            if ( $type['identifier'] ==  $eventName )
+            {
+                $this->post->getCollaborationItem()->createNotificationEvent( $eventName );
+            }
+        }
     }
 
     public function handleEvent( eZNotificationEvent $event, array &$parameters )

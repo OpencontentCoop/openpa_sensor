@@ -222,7 +222,7 @@ class SensorPostActionHandler
         {
             $this->post->setStatus( SensorPost::STATUS_READ );
             $this->post->timelineHelper->add( SensorPost::STATUS_READ )->store();
-            $this->post->eventHelper->handleEvent( 'on_read' );
+            $this->post->eventHelper->createEvent( 'on_read' );
         }
     }
 
@@ -263,7 +263,7 @@ class SensorPostActionHandler
             }
             $this->post->setStatus( SensorPost::STATUS_ASSIGNED );
             $this->post->timelineHelper->add( SensorPost::STATUS_ASSIGNED, $makeOwnerIds )->store();
-            $this->post->eventHelper->handleEvent( 'on_assign' );
+            $this->post->eventHelper->createEvent( 'on_assign' );
         }
     }
 
@@ -280,7 +280,7 @@ class SensorPostActionHandler
             $this->post->touch();
         }
         $this->post->timelineHelper->add( SensorPost::STATUS_FIXED, eZUser::currentUserID() )->store();
-        $this->post->eventHelper->handleEvent( 'on_fix' );
+        $this->post->eventHelper->createEvent( 'on_fix' );
     }
 
     public function forceFix()

@@ -77,7 +77,7 @@ $selection=$handler.collaboration_selections}
                                         {/foreach}
                                     {/if}
 
-                                    {if $hasLanguages}
+                                    {if $hasTransports}
                                         {foreach $current_handler.info.notification-types as $transport_type}
                                             {if and( $transport_type.group|eq( 'transport' ), $transport_type.parent|eq( $type.identifier ))}
                                                 <td class="text-center">
