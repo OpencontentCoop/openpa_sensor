@@ -14,27 +14,19 @@ class SensorNotificationHelper
         return new SensorNotificationHelper( $post );
     }
 
+    /**
+     * @param eZNotificationEvent $event
+     * @param array $parameters
+     *
+     * @return int
+     * @throws Exception
+     */
     public function handleEvent( eZNotificationEvent $event, array &$parameters )
     {
         $eventType = $event->attribute( 'data_text1' );
         $prefix = SensorHelper::factory()->getSensorCollaborationHandlerTypeString() . '_';
         $eventIdentifier = str_replace( $prefix, '', $eventType );
-        $searchRules = array( 'standard' => $prefix . $eventIdentifier );
-        foreach( self::languageNotificationTypes() as $languageNotification )
-        {
-            if ( $languageNotification['parent'] == $eventIdentifier )
-            {
-                $searchRules[] = $prefix . $languageNotification['identifier'];
-            }
-        }
-
-        foreach( self::transportNotificationTypes() as $transportNotification )
-        {
-            if ( $transportNotification['parent'] == $eventIdentifier )
-            {
-                $searchRules[] = $prefix . $transportNotification['identifier'];
-            }
-        }
+        $searchRules = array( $prefix . $eventIdentifier );
 
         $participantIdList = $this->post->getParticipants( null, true );
         $ruleList = array();
@@ -47,20 +39,43 @@ class SensorNotificationHelper
                 {
                     continue;
                 }
-                $sensorUser = SensorUserInfo::instance( $user );
+                $userInfo = SensorUserInfo::instance( $user );
+
+                foreach( self::languageNotificationTypes( $userInfo ) as $languageNotification )
+                {
+                    if ( $languageNotification['parent'] == $eventIdentifier )
+                    {
+                        $searchRules[] = $prefix . $languageNotification['identifier'];
+                    }
+                }
+
+                foreach( self::transportNotificationTypes( $userInfo ) as $transportNotification )
+                {
+                    if ( $transportNotification['parent'] == $eventIdentifier )
+                    {
+                        $searchRules[] = $prefix . $transportNotification['identifier'];
+                    }
+                }
+
                 $rules = eZCollaborationNotificationRule::fetchItemTypeList(
                     $searchRules,
                     array( $item['id'] ),
                     false
                 );
+
                 $ruleListItem = array(
                     'id' => $item['id'],
                     'email' => $user->attribute( 'email' ),
-                    'whatsapp' => $sensorUser->whatsAppId()
+                    'whatsapp' => $userInfo->whatsAppId()
                 );
+                $hasCurrentRule = false;
                 foreach ( $rules as $rule )
                 {
-                    foreach ( self::languageNotificationTypes() as $languageNotification )
+                    if ( $rule['collab_identifier'] == $eventType )
+                    {
+                        $hasCurrentRule = true;
+                    }
+                    foreach ( self::languageNotificationTypes( $userInfo ) as $languageNotification )
                     {
                         if ( $rule['collab_identifier'] == $prefix . $languageNotification['identifier'] )
                         {
@@ -71,7 +86,7 @@ class SensorNotificationHelper
                             );
                         }
                     }
-                    foreach ( self::transportNotificationTypes() as $transportNotification )
+                    foreach ( self::transportNotificationTypes( $userInfo ) as $transportNotification )
                     {
                         if ( $rule['collab_identifier'] == $prefix . $transportNotification['identifier'] )
                         {
@@ -85,20 +100,24 @@ class SensorNotificationHelper
                 }
                 if ( !isset( $ruleListItem['language'] ) )
                 {
-                    $ruleListItem['language'] = $sensorUser->attribute(
+                    $ruleListItem['language'] = $userInfo->attribute(
                         'default_notification_language'
                     );
                 }
-                if ( !isset( $ruleListItem['transport'] ) )
+//                if ( !isset( $ruleListItem['transport'] ) )
+//                {
+//                    $ruleListItem['transport'] = $userInfo->attribute(
+//                        'default_notification_transport'
+//                    );
+//                }
+                if ( $hasCurrentRule && isset( $ruleListItem['transport'] ) )
                 {
-                    $ruleListItem['transport'] = $sensorUser->attribute(
-                        'default_notification_transport'
-                    );
+                    $ruleList[$ruleListItem['transport']][$roleGroup['role_id']][] = $ruleListItem;
                 }
-                $ruleList[$ruleListItem['transport']][$roleGroup['role_id']][] = $ruleListItem;
             }
         }
-print_r($ruleList);die();
+print_r($ruleList);
+die();
         $currentEventIdentifierUserIdList = array();
         foreach ( $ruleList as $rule )
         {
@@ -250,7 +269,7 @@ print_r($ruleList);die();
         );
     }
 
-    protected static function postNotificationTypes()
+    public static function postNotificationTypes()
     {
         $postNotificationTypes = array();
 
@@ -338,12 +357,16 @@ print_r($ruleList);die();
         return $postNotificationTypes;
     }
 
-    protected static function languageNotificationTypes()
+    protected static function languageNotificationTypes( SensorUserInfo $userInfo = null )
     {
+        if ( $userInfo === null )
+        {
+            $userInfo = SensorUserInfo::current();
+        }
         $languagesNotificationTypes = array();
         /** @var eZContentLanguage[] $languages */
         $languages = eZContentLanguage::prioritizedLanguages();
-        $defaultLanguageCode = SensorUserInfo::current()->attribute( 'default_notification_language' );
+        $defaultLanguageCode = $userInfo->attribute( 'default_notification_language' );
         if ( count( $languages ) > 1 )
         {
             foreach( self::postNotificationTypes() as $type )
@@ -368,26 +391,31 @@ print_r($ruleList);die();
         return $languagesNotificationTypes;
     }
 
-    protected static function transportNotificationTypes()
+    protected static function transportNotificationTypes( SensorUserInfo $userInfo = null )
     {
-        $transportNotificationTypes = array();
-        if ( SensorUserInfo::current()->whatsAppId() )
+        if ( $userInfo === null )
         {
-            $defaultTransport = SensorUserInfo::current()->attribute( 'default_notification_transport' );
-            foreach( self::postNotificationTypes() as $type )
+            $userInfo = SensorUserInfo::current();
+        }
+        $transportNotificationTypes = array();
+        $defaultTransport = $userInfo->attribute( 'default_notification_transport' );
+        foreach( self::postNotificationTypes() as $type )
+        {
+            $transportNotificationTypes[] = array(
+                'name' => 'Email',
+                'identifier' => $type['identifier'] . ':ezmail',
+                'description' => ezpI18n::tr(
+                    'openpa_sensor/notification',
+                    'Ricevi la notifica via mail'
+                ),
+                'transport' => 'ezmail',
+                'default_transport' => $defaultTransport,
+                'parent' => $type['identifier'],
+                'group' => 'transport'
+            );
+
+            if ( $type['identifier'] != 'on_create' && $userInfo->whatsAppId() )
             {
-                $transportNotificationTypes[] = array(
-                    'name' => 'Email',
-                    'identifier' => $type['identifier'] . ':ezmail',
-                    'description' => ezpI18n::tr(
-                        'openpa_sensor/notification',
-                        'Ricevi la notifica via mail'
-                    ),
-                    'transport' => 'ezmail',
-                    'default_transport' => $defaultTransport,
-                    'parent' => $type['identifier'],
-                    'group' => 'transport'
-                );
                 $transportNotificationTypes[] = array(
                     'name' => 'WhatsApp',
                     'identifier' => $type['identifier'] . ':ezwhatsapp',
