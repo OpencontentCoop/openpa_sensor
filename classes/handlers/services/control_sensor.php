@@ -936,7 +936,7 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
      * @return SensorGeoJsonFeatureCollection
      */
     public static function fetchSensorGeoJsonFeatureCollection()
-    {
+    {        
         $data = new SensorGeoJsonFeatureCollection();
         $items = self::fetchPosts( false );
         foreach( $items['SearchResult'] as $item )
@@ -946,7 +946,7 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
             {
                 $geometryArray = explode( ',', $geo[0] );
 
-                $id = $item['id_si'];
+                $id = isset( $item['id_si'] ) ? $item['id_si'] : $item['id'];
                 $type = isset( $item['fields']['attr_type_s'] ) ? $item['fields']['attr_type_s'] : false;
                 $name = isset( $item['fields']['attr_subject_t'] ) ? $item['fields']['attr_subject_t'] : false;
 
