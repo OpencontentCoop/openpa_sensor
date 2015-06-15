@@ -48,4 +48,10 @@ class OpenpaSensorHelperFactory implements SensorHelperFactoryInterface
             'CloseCommentsAfterSeconds' => OpenPAINI::variable( 'SensorConfig', 'CloseCommentsAfterSeconds', 1 )
         );
     }
+
+    public function getWhatsAppUserId()
+    {
+        $postContainerNode = ObjectHandlerServiceControlSensor::postContainerNode();
+        return $postContainerNode->attribute( 'contentobject_id' );
+    }
 }

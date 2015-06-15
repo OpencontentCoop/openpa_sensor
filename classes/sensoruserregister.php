@@ -288,8 +288,7 @@ class SensorUserRegister
                     $Module->redirectTo( '/sensor/home' );
                 }
 
-                $rule = eZCollaborationNotificationRule::create( SensorHelper::factory()->getSensorCollaborationHandlerTypeString(), $user->id() );
-                $rule->store();
+                SensorNotificationHelper::storeDefaultNotificationRules( $user->id() );
             }
         }
         else

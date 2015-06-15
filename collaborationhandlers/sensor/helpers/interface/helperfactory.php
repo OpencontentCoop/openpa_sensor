@@ -27,4 +27,9 @@ interface SensorHelperFactoryInterface
      */
     public static function getSensorConfigParams();
 
+    /**
+     * @return int
+     */
+    public function getWhatsAppUserId();
+
 }

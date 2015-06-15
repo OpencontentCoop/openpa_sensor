@@ -23,6 +23,8 @@ class SensorUserInfo
      */
     protected $info = array();
 
+    protected static $cache = array();
+
     protected function __construct( eZUser $user )
     {
         $this->user = $user;
@@ -34,7 +36,11 @@ class SensorUserInfo
      */
     public static function current()
     {
-        return new static( eZUser::currentUser() );
+        if ( !isset( self::$cache[eZUser::currentUserID()] ) )
+        {
+            self::$cache[eZUser::currentUserID()] = new static( eZUser::currentUser() );
+        }
+        return self::$cache[eZUser::currentUserID()];
     }
 
     /**
@@ -49,7 +55,11 @@ class SensorUserInfo
         {
             throw new Exception( "User not found" );
         }
-        return new static( $user );
+        if ( !isset( self::$cache[$user->id()] ) )
+        {
+            self::$cache[$user->id()] = new static( $user );
+        }
+        return self::$cache[$user->id()];
     }
 
     /**

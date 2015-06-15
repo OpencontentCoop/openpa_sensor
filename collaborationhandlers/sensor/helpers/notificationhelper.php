@@ -66,9 +66,12 @@ class SensorNotificationHelper
                 $ruleListItem = array(
                     'id' => $item['id'],
                     'email' => $user->attribute( 'email' ),
-                    'whatsapp' => $userInfo->whatsAppId()
+                    'whatsapp' => $userInfo->whatsAppId(),
+                    'event_type' => $eventType
                 );
                 $hasCurrentRule = false;
+
+                $ruleListItem['transport'] = array();
                 foreach ( $rules as $rule )
                 {
                     if ( $rule['collab_identifier'] == $eventType )
@@ -90,7 +93,7 @@ class SensorNotificationHelper
                     {
                         if ( $rule['collab_identifier'] == $prefix . $transportNotification['identifier'] )
                         {
-                            $ruleListItem['transport'] = str_replace(
+                            $ruleListItem['transport'][] = str_replace(
                                 $eventType . ':',
                                 '',
                                 $rule['collab_identifier']
@@ -98,6 +101,7 @@ class SensorNotificationHelper
                         }
                     }
                 }
+
                 if ( !isset( $ruleListItem['language'] ) )
                 {
                     $ruleListItem['language'] = $userInfo->attribute(
@@ -110,39 +114,36 @@ class SensorNotificationHelper
 //                        'default_notification_transport'
 //                    );
 //                }
-                if ( $hasCurrentRule && isset( $ruleListItem['transport'] ) )
+                if ( $hasCurrentRule && count( $ruleListItem['transport'] ) > 0 )
                 {
-                    $ruleList[$ruleListItem['transport']][$roleGroup['role_id']][] = $ruleListItem;
+                    foreach( $ruleListItem['transport'] as $transport )
+                    {
+                        $ruleList[$transport][$roleGroup['role_id']][] = $ruleListItem;
+                    }
                 }
             }
         }
-print_r($ruleList);
-die();
-        $currentEventIdentifierUserIdList = array();
-        foreach ( $ruleList as $rule )
-        {
-            $currentEventIdentifierUserIdList[] = $rule['user_id'];
-        }
-        if ( empty( $currentEventIdentifierUserIdList ) )
-        {
-            return eZNotificationEventHandler::EVENT_SKIPPED;
-        }
 
-        $participantList = $this->post->getParticipants( null, true );
+        eZDebug::writeNotice( var_export( $ruleList, 1 ), __METHOD__ );
 
-        $userCollection = array();
-        foreach( $participantList as $participantRole  )
+        foreach( $ruleList as $transport => $userList )
         {
-            $userCollection[$participantRole['role_id']] = array();
-            foreach( $participantRole['items'] as $participant )
+            if ( $transport == 'ezmail' )
             {
-                if ( in_array( $participant['id'], $currentEventIdentifierUserIdList ) )
-                {
-                    $userCollection[$participantRole['role_id']][] = $participant['id'];
-                }
+                $this->createMailNotificationCollections( $event, $userList, $parameters );
+            }
+
+            if ( $transport == 'ezwhatsapp' )
+            {
+                $this->createWhatsAppNotificationCollections( $event, $userList, $parameters );
             }
         }
 
+        return eZNotificationEventHandler::EVENT_HANDLED;
+    }
+
+    protected function createMailNotificationCollections( eZNotificationEvent $event, $userCollection, &$parameters )
+    {
         $db = eZDB::instance();
         $db->begin();
 
@@ -200,7 +201,7 @@ die();
                 $collection = eZNotificationCollection::create(
                     $event->attribute( 'id' ),
                     eZCollaborationNotificationHandler::NOTIFICATION_HANDLER_ID,
-                    eZCollaborationNotificationHandler::TRANSPORT
+                    'ezmail'
                 );
 
                 $collection->setAttribute( 'data_subject', $subject );
@@ -208,34 +209,69 @@ die();
                 $collection->store();
                 foreach ( $collectionItems as $collectionItem )
                 {
-                    $skip = false;
-
-                    $user = eZUser::fetch( $collectionItem );
-
-                    if ( !$user instanceof eZUser )
-                    {
-                        $skip = true;
-                    }
-
-                    if ( class_exists( 'OCWhatsAppConnector' ) )
-                    {
-                        if ( strpos( $collectionItem['email'], '@s.whatsapp.net' ) !== false )
-                        {
-                            $skip = true;
-                        }
-                    }
-                    if ( !$skip )
-                    {
-                        $collection->addItem( $collectionItem['email'] );
-                    }
+                    $collection->addItem( $collectionItem['email'] );
                 }
             }
         }
 
         $db->commit();
+    }
 
+    protected function createWhatsAppNotificationCollections( eZNotificationEvent $event, $userCollection, &$parameters )
+    {
+        $db = eZDB::instance();
+        $db->begin();
 
-        return eZNotificationEventHandler::EVENT_HANDLED;
+        $tpl = eZTemplate::factory();
+        $tpl->resetVariables();
+
+        foreach( $userCollection as $participantRole => $collectionItems )
+        {
+            $templateName = $this->notificationMailTemplate( $participantRole );
+            $templatePath = 'design:sensor/whatsapp/' . $templateName;
+
+            $tpl->setVariable( 'collaboration_item', $this->post->getCollaborationItem() );
+            $tpl->setVariable( 'collaboration_participant_role', $participantRole );
+            $tpl->setVariable( 'collaboration_item_status', $this->post->getCollaborationItem()->attribute( SensorPost::COLLABORATION_FIELD_STATUS ) );
+            $tpl->setVariable( 'sensor_post', $this->post );
+            $tpl->setVariable( 'object', $this->post->objectHelper->getContentObject() );
+            $tpl->setVariable( 'node', $this->post->objectHelper->getContentObject()->attribute( 'main_node' ) );
+
+            $message = trim( $tpl->fetch( $templatePath ) );
+
+            if ( $message != '' )
+            {
+
+                eZDebug::writeNotice( $message, __METHOD__ );
+
+//                $collection = eZNotificationCollection::create(
+//                    $event->attribute( 'id' ),
+//                    eZCollaborationNotificationHandler::NOTIFICATION_HANDLER_ID,
+//                    'ezwhatsapp'
+//                );
+//                $collection->setAttribute( 'data_text', $templateResult );
+//                foreach ( $collectionItems as $collectionItem )
+//                {
+//                    $collection->addItem( $collectionItem['whatsapp'] );
+//                }
+                $waUserId = SensorHelper::factory()->getWhatsAppUserId();
+                try
+                {
+                    $wa = OCWhatsAppConnector::instanceFromContentObjectId( $waUserId );
+                    $wa->connectAndLogin();
+                    foreach ( $collectionItems as $collectionItem )
+                    {
+                        $wa->whatsProt->sendMessage( $collectionItem['whatsapp'], $message );
+                    }
+                }
+                catch( Exception $e )
+                {
+                    eZDebug::writeError( $e->getMessage() . ' ' .  $e->getTraceAsString(), __METHOD__ );
+                }
+            }
+        }
+
+        $db->commit();
     }
 
     protected function notificationMailTemplate( $participantRole )
@@ -411,25 +447,65 @@ die();
                 'transport' => 'ezmail',
                 'default_transport' => $defaultTransport,
                 'parent' => $type['identifier'],
-                'group' => 'transport'
+                'group' => 'transport',
+                'enabled' => $defaultTransport == 'ezmail'
             );
 
-            if ( $type['identifier'] != 'on_create' && $userInfo->whatsAppId() )
-            {
-                $transportNotificationTypes[] = array(
-                    'name' => 'WhatsApp',
-                    'identifier' => $type['identifier'] . ':ezwhatsapp',
-                    'description' => ezpI18n::tr(
-                        'openpa_sensor/notification',
-                        'Ricevi la notifica via WhatsApp'
-                    ),
-                    'transport' => 'ezwhatsapp',
-                    'default_transport' => $defaultTransport,
-                    'parent' => $type['identifier'],
-                    'group' => 'transport'
-                );
-            }
+
+            $transportNotificationTypes[] = array(
+                'name' => 'WhatsApp',
+                'identifier' => $type['identifier'] . ':ezwhatsapp',
+                'description' => ezpI18n::tr(
+                    'openpa_sensor/notification',
+                    'Ricevi la notifica via WhatsApp'
+                ),
+                'transport' => 'ezwhatsapp',
+                'default_transport' => $defaultTransport,
+                'parent' => $type['identifier'],
+                'group' => 'transport',
+                'enabled' => $type['identifier'] != 'on_create' && $userInfo->whatsAppId() //@todo
+            );
         }
         return $transportNotificationTypes;
     }
+
+    public static function storeDefaultNotificationRules( $userId )
+    {
+        try
+        {
+            $userInfo = SensorUserInfo::instance( eZUser::fetch( $userId ) );
+            $prefix = SensorHelper::factory()->getSensorCollaborationHandlerTypeString() . '_';
+
+            $transport = $userInfo->attribute( 'default_notification_transport' );
+            $language = $userInfo->attribute( 'default_notification_language' );
+            $rules = array( 'on_create', 'on_assign', 'on_close' );
+
+            $db = eZDB::instance();
+            $db->begin();
+            foreach ( $rules as $rule )
+            {
+                $notificationRule = eZCollaborationNotificationRule::create(
+                    $prefix . $rule,
+                    $userId
+                );
+                $notificationRule->store();
+                $notificationRule = eZCollaborationNotificationRule::create(
+                    $prefix . $rule . ':' . $transport,
+                    $userId
+                );
+                $notificationRule->store();
+                $notificationRule = eZCollaborationNotificationRule::create(
+                    $prefix . $rule . ':' . $language,
+                    $userId
+                );
+                $notificationRule->store();
+            }
+            $db->commit();
+        }
+        catch( Exception $e )
+        {
+            eZDebug::writeError( $e->getMessage(), __METHOD__ );
+        }
+    }
+
 }
