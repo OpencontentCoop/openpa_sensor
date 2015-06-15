@@ -82,8 +82,9 @@ $selection=$handler.collaboration_selections}
                                             {if and( $transport_type.group|eq( 'transport' ), $transport_type.parent|eq( $type.identifier ))}
                                                 <td class="text-center">
                                                     <input type="checkbox"
+                                                           {if $transport_type.enabled|not()}disabled="disabled"{/if}
                                                            name="CollaborationHandlerSelection_{$handler.id_string}[{$transport_type.identifier}]"
-                                                           value="{$current_handler.info.type-identifier}_{$transport_type.identifier}" {if or( $selection|contains(concat($current_handler.info.type-identifier,'_',$transport_type.identifier)), $transport_type.default_transport|eq($transport_type.transport) )} checked="checked"{/if} />
+                                                           value="{$current_handler.info.type-identifier}_{$transport_type.identifier}" {if and( $transport_type.enabled, or( $selection|contains(concat($current_handler.info.type-identifier,'_',$transport_type.identifier)), $transport_type.default_transport|eq($transport_type.transport) ) )} checked="checked"{/if} />
                                                 </td>
                                             {/if}
                                         {/foreach}
