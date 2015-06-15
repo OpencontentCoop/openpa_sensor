@@ -294,7 +294,18 @@ class SensorCollaborationHandler extends eZCollaborationItemHandler
                 $collection->store();
                 foreach ( $collectionItems as $collectionItem )
                 {
-                    $collection->addItem( $collectionItem['email'] );
+                    $skip = false;
+                    if ( class_exists( 'OCWhatsAppConnector' ) )
+                    {
+                        if ( strpos( $collectionItem['email'], '@s.whatsapp.net' ) !== false )
+                        {
+                            $skip = true;
+                        }
+                    }
+                    if ( !$skip )
+                    {
+                        $collection->addItem( $collectionItem['email'] );
+                    }
                 }
             }
         }
