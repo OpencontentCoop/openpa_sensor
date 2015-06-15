@@ -12,7 +12,7 @@ class SensorCollaborationHandler extends eZCollaborationItemHandler
             ezpI18n::tr( 'openpa_sensor/settings', 'Notifiche SensorCivico' ),
             array(
                 'use-messages' => true,
-                'notification-types' => true,
+                'notification-types' => SensorNotificationHelper::notificationTypes(),
                 'notification-collection-handling' => eZCollaborationItemHandler::NOTIFICATION_COLLECTION_PER_PARTICIPATION_ROLE
             )
         );
@@ -86,8 +86,8 @@ class SensorCollaborationHandler extends eZCollaborationItemHandler
      */
     function messageCount( $collaborationItem )
     {
-        $post = SensorPost::instance( $collaborationItem );
-        return $post->commentHelper->count();
+        $helper = self::helper( $collaborationItem );
+        return $helper->attribute( 'human_count' );
     }
 
     /**
@@ -96,8 +96,8 @@ class SensorCollaborationHandler extends eZCollaborationItemHandler
      */
     function unreadMessageCount( $collaborationItem )
     {
-        $post = SensorPost::instance( $collaborationItem );
-        return $post->commentHelper->unreadCount();
+        $helper = self::helper( $collaborationItem );
+        return $helper->attribute( 'human_unread_count' );
     }
 
     /**
@@ -128,27 +128,6 @@ class SensorCollaborationHandler extends eZCollaborationItemHandler
         return;
     }
 
-    function notificationParticipantTemplate( $participantRole )
-    {
-        if ( $participantRole == eZCollaborationItemParticipantLink::ROLE_APPROVER )
-        {
-            return 'approver.tpl';
-        }
-        else if ( $participantRole == eZCollaborationItemParticipantLink::ROLE_AUTHOR )
-        {
-            return 'author.tpl';
-        }
-        else if ( $participantRole == eZCollaborationItemParticipantLink::ROLE_OBSERVER )
-        {
-            return 'observer.tpl';
-        }
-        else if ( $participantRole == eZCollaborationItemParticipantLink::ROLE_OWNER )
-        {
-            return 'owner.tpl';
-        }
-        else
-            return false;
-    }
 
     /**
      * @param eZNotificationEvent $event
@@ -158,161 +137,12 @@ class SensorCollaborationHandler extends eZCollaborationItemHandler
      * @return int
      */
     static function handleCollaborationEvent( $event, $item, &$parameters )
-    {        
-        $participantList = eZCollaborationItemParticipantLink::fetchParticipantList( array( 'item_id' => $item->attribute( 'id' ),
-                                                                                            'offset' => 0,
-                                                                                            'limit' => 100,
-                                                                                            'as_object' => false ) );
-        $userIDList = array();
-        /** @var eZCollaborationItemParticipantLink[] $participantMap */
-        $participantMap = array();
-        foreach ( $participantList as $participant )
-        {
-            if ( is_array( $participant ) ) $participant = new OpenPATempletizable( $participant );
-            $userIDList[] = $participant->attribute( 'participant_id' );
-            $participantMap[$participant->attribute('participant_id' )] = $participant;
-        }
-
-        $collaborationIdentifier = $event->attribute( 'data_text1' );
-        $ruleList = eZCollaborationNotificationRule::fetchItemTypeList( $collaborationIdentifier, $userIDList, false );
-        $userIDList = array();
-        foreach ( $ruleList as $rule )
-        {
-            $userIDList[] = $rule['user_id'];
-        }
-
-        $userList = array();
-        if ( count( $userIDList ) > 0 )
-        {
-            $db = eZDB::instance();
-            $userIDListText = $db->generateSQLINStatement( $userIDList, 'contentobject_id', false, false, 'int' );
-            $userList = $db->arrayQuery( "SELECT contentobject_id, email FROM ezuser WHERE $userIDListText" );
-        }
+    {
+        $helper = self::helper( $item );
+        if ( $helper  )
+            return $helper->currentSensorPost->eventHelper->handleEvent( $event, $parameters );
         else
             return eZNotificationEventHandler::EVENT_SKIPPED;
-
-        /** @var SensorCollaborationHandler $itemHandler */
-        $itemHandler = $item->attribute( 'handler' );
-
-        $db = eZDB::instance();
-        $db->begin();
-        
-        $userCollection = array();
-        foreach( $userList as $subscriber )
-        {
-            $contentObjectID = $subscriber['contentobject_id'];
-            $participant = $participantMap[$contentObjectID];
-            $participantRole = $participant->attribute( 'participant_role' );
-            $userItem = array( 'participant' => $participant,
-                               'email' => $subscriber['email'] );
-            if ( !isset( $userCollection[$participantRole] ) )
-            {
-                $userCollection[$participantRole] = array();
-            }
-            $userCollection[$participantRole][] = $userItem;            
-        }
-        
-        $tpl = eZTemplate::factory();
-        $tpl->resetVariables();
-
-        try
-        {
-            $helper = SensorHelper::instanceFromCollaborationItem( $item );
-            $object = $helper->currentSensorPost->objectHelper->getContentObject();
-            $node = $object->attribute( 'main_node' );
-        }
-        catch( Exception $e )
-        {
-            eZDebugSetting::writeError( 'sensor', $e->getMessage(), __METHOD__ );
-            return eZNotificationEventHandler::EVENT_SKIPPED;
-        }
-
-        foreach( $userCollection as $participantRole => $collectionItems )
-        {
-            $templateName = $itemHandler->notificationParticipantTemplate( $participantRole );
-            $templatePath = 'design:sensor/mail/' . $templateName;
-            if ( !$templateName )
-            {
-                $templateName = eZCollaborationItemHandler::notificationParticipantTemplate( $participantRole );
-                $itemInfo = $itemHandler->attribute( 'info' );
-                $typeIdentifier = $itemInfo['type-identifier'];
-                $templatePath = 'design:notification/handler/ezcollaboration/view/' . $typeIdentifier . '/' . $templateName;
-            }
-
-            $tpl->setVariable( 'collaboration_item', $item );
-            $tpl->setVariable( 'collaboration_participant_role', $participantRole );
-            $tpl->setVariable( 'collaboration_item_status', $item->attribute( SensorPost::COLLABORATION_FIELD_STATUS ) );
-            $tpl->setVariable( 'sensor_post', $helper );
-            $tpl->setVariable( 'object', $object );
-            $tpl->setVariable( 'node', $node );
-
-            $tpl->fetch( $templatePath );
-
-            $body = $tpl->variable( 'body' );
-            $subject = $tpl->variable( 'subject' );
-
-            if ( !empty( $body ) )
-            {
-                $tpl->setVariable( 'title', $subject );
-                $tpl->setVariable( 'content', $body );
-                $templateResult = $tpl->fetch( 'design:sensor/mail/mail_pagelayout.tpl' ); 
-
-                
-                if ( $tpl->hasVariable( 'message_id' ) )
-                {
-                    $parameters['message_id'] = $tpl->variable( 'message_id' );
-                }
-                if ( $tpl->hasVariable( 'references' ) )
-                {
-                    $parameters['references'] = $tpl->variable( 'references' );
-                }
-                if ( $tpl->hasVariable( 'reply_to' ) )
-                {
-                    $parameters['reply_to'] = $tpl->variable( 'reply_to' );
-                }
-                if ( $tpl->hasVariable( 'from' ) )
-                {
-                    $parameters['from'] = $tpl->variable( 'from' );
-                }
-                if ( $tpl->hasVariable( 'content_type' ) )
-                {
-                    $parameters['content_type'] = $tpl->variable( 'content_type' );
-                }
-                else
-                {
-                    $parameters['content_type'] = 'text/html';
-                }
-
-                $collection = eZNotificationCollection::create(
-                    $event->attribute( 'id' ),
-                    eZCollaborationNotificationHandler::NOTIFICATION_HANDLER_ID,
-                    eZCollaborationNotificationHandler::TRANSPORT
-                );
-
-                $collection->setAttribute( 'data_subject', $subject );
-                $collection->setAttribute( 'data_text', $templateResult );
-                $collection->store();
-                foreach ( $collectionItems as $collectionItem )
-                {
-                    $skip = false;
-                    if ( class_exists( 'OCWhatsAppConnector' ) )
-                    {
-                        if ( strpos( $collectionItem['email'], '@s.whatsapp.net' ) !== false )
-                        {
-                            $skip = true;
-                        }
-                    }
-                    if ( !$skip )
-                    {
-                        $collection->addItem( $collectionItem['email'] );
-                    }
-                }
-            }
-        }
-
-        $db->commit();
-
-        return eZNotificationEventHandler::EVENT_HANDLED;
     }
 
 }

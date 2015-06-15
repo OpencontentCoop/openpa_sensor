@@ -24,21 +24,16 @@ class SensorPostEventHelper
         'on_set_expiry',
         'on_add_comment',
         'on_reopen',
+        'on_add_message',
         'on_add_response',
         'on_edit_comment',
-        'on_edit_message'
+        'on_edit_message',
+        'on_restore'
     );
 
     protected function __construct( SensorPost $post )
     {
         $this->post = $post;
-        $this->createNotificationEvents = array(
-            'on_create',
-            'on_reopen',
-            'on_fix',
-            'on_close',
-            'on_assign'
-        );
     }
 
     public static function instance( SensorPost $post )
@@ -46,11 +41,14 @@ class SensorPostEventHelper
         return new SensorPostEventHelper( $post );
     }
 
-    public function handleEvent( $eventName )
+    public function createEvent( $eventName )
     {
-        if ( in_array( $eventName, $this->createNotificationEvents ) )
-        {
-            $this->post->getCollaborationItem()->createNotificationEvent();
-        }
+        $this->post->getCollaborationItem()->createNotificationEvent( $eventName );
+    }
+
+    public function handleEvent( eZNotificationEvent $event, array &$parameters )
+    {
+        $notificationHelper = SensorNotificationHelper::instance( $this->post );
+        return $notificationHelper->handleEvent( $event, $parameters );
     }
 }

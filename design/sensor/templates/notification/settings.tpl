@@ -18,8 +18,8 @@
 
     {/let}
 
-    <div>
+    {*<div>
         <input class="button btn btn-success" type="submit" name="Store" value="{'Salva le impostazioni'|i18n('openpa_sensor/settings')}" />
-    </div>
+    </div>*}
     
 </form>
