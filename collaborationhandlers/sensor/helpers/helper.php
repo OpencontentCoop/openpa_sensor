@@ -148,8 +148,6 @@ class SensorHelper
 
         $struct->moderation = $objectHelper->defaultModerationStateIdentifier( $authorInfo );
 
-var_dump($struct);
-
         $db = eZDB::instance();
         $res = (array) $db->arrayQuery( "SELECT * FROM ezcollab_item WHERE data_int1 = " . $struct->contentObjectId );
         if ( count( $res ) > 0 )
