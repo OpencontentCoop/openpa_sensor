@@ -2,7 +2,7 @@
 
 class OpenPASensorWhatsAppEvents extends AllEvents
 {
-    const UPDATE_LIMIT_SECONDS = 60;
+    const UPDATE_LIMIT_SECONDS = 120;
 
     /**
      * @var eZCLI
