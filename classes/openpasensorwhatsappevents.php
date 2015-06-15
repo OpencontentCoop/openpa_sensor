@@ -179,8 +179,9 @@ class OpenPASensorWhatsAppEvents extends AllEvents
 
     protected function createPost( SensorUserInfo $user, $data, $time )
     {
+        if ( $user->hasBlockMode() ) return;
         $object = false;
-        $message = 'STO TESTANDO UNA INTEGRAZIONE DI WHATSAPP NON CONSIDERARE LE MIE RISPOSTE';
+        $message = '';
         $updateLimitSeconds = self::UPDATE_LIMIT_SECONDS;
         $timeLeft = $updateLimitSeconds;
         $lastPost = SensorPostFetcher::fetchUserLastPost( $user );
@@ -195,20 +196,20 @@ class OpenPASensorWhatsAppEvents extends AllEvents
             {
                 $timeLeft = $updateLimitSeconds - $timeLeftCount;
                 $object = SensorHelper::factory()->sensorPostObjectFactory( $user, $data, $lastObject );
-                $message .= "Aggiornato messaggio";
+                $message .= "Segnalazione aggiornata";
             }
         }
         if ( !$object )
         {
             $object = SensorHelper::factory()->sensorPostObjectFactory( $user, $data );
-            $message .= "Creato nuovo messaggio";
+            $message .= "Creata nuova segnalazione";
         }
 
         $helper = SensorHelper::instanceFromContentObjectId( $object->attribute( 'id' ), $user );
         $message .= ' ' . $helper->attribute( 'post_url' );
         if ( $timeLeft > 0 )
         {
-            $message .= " (hai ancora $timeLeft secondi per aggiungere informazioni)";
+            $message .= " (hai ancora $timeLeft secondi per aggiungere informazioni alla segnalazione)";
         }
         $this->whatsProt->sendMessage( $user->whatsAppId(), $message );
         $this->cli->warning( $object->attribute( 'id' ), false );

@@ -1452,7 +1452,54 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
 
     public function getPostUrl()
     {
-        return 'https://' . $this->getSensorSiteaccessUrl() . '/sensor/posts/' . $this->getContentObject()->attribute( 'id' );
+        $url = 'http://' . $this->getSensorSiteaccessUrl() . '/sensor/posts/' . $this->getContentObject()->attribute( 'id' );
+        $bitly = $this->bitlyShorten( $url );
+        if ( isset( $bitly['url'] ) )
+        {
+            return $bitly['url'];
+        }
+        return $url;
+    }
+
+    protected function bitlyShorten( $longUrl, $accessToken = '6479f97a71b5793cd933c05723ce54dc5e29596a', $domain = '', $xLogin = 'o_29fu2l6mtt', $xApiKey = 'R_747525e9579e969d1f0e06f58f3896a2' )
+    {
+        $result = array();
+        $url = "https://api-ssl.bit.ly/v3/shorten?access_token=" . $accessToken . "&longUrl=" . urlencode( $longUrl );
+        if ( $domain != '' )
+        {
+            $url .= "&domain=" . $domain;
+        }
+        if ( $xLogin != '' && $xApiKey != '' )
+        {
+            $url .= "&x_login=" . $xLogin . "&x_apiKey=" . $xApiKey;
+        }
+
+        $output = "";
+        try
+        {
+            $ch = curl_init( $url );
+            curl_setopt($ch, CURLOPT_HEADER, 0);
+            curl_setopt($ch, CURLOPT_TIMEOUT, 4);
+            curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 2);
+            curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, FALSE);
+            $output = curl_exec($ch);
+        }
+        catch (Exception $e)
+        {
+        }
+        $output = json_decode( $output );
+        if ( isset( $output->{'data'}->{'hash'} ) )
+        {
+            $result['url'] = $output->{'data'}->{'url'};
+            $result['hash'] = $output->{'data'}->{'hash'};
+            $result['global_hash'] = $output->{'data'}->{'global_hash'};
+            $result['long_url'] = $output->{'data'}->{'long_url'};
+            $result['new_hash'] = $output->{'data'}->{'new_hash'};
+        }
+        $result['status_code'] = $output->status_code;
+        return $result;
     }
 
     public static function createPost( SensorUserInfo $user, $data )
@@ -1462,7 +1509,6 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
         $params['class_identifier'] = self::postContentClass()->attribute( 'identifier' );
         $params['parent_node_id']   = self::postContainerNode()->attribute( 'node_id' );
         $params['attributes']       = $data;
-        print_r($data);
         return eZContentFunctions::createAndPublishObject( $params );
     }
 
@@ -1479,8 +1525,6 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
                 $data[$identifier] = $attribute->toString();
             }
         }
-        print_r($existingData);
-        print_r($data);
         $params = array();
         $params['attributes'] = $data;
         eZContentFunctions::updateAndPublishObject( $contentObject, $params );
