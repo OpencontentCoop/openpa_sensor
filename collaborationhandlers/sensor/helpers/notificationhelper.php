@@ -233,7 +233,7 @@ class SensorNotificationHelper
             $tpl->setVariable( 'collaboration_item', $this->post->getCollaborationItem() );
             $tpl->setVariable( 'collaboration_participant_role', $participantRole );
             $tpl->setVariable( 'collaboration_item_status', $this->post->getCollaborationItem()->attribute( SensorPost::COLLABORATION_FIELD_STATUS ) );
-            $tpl->setVariable( 'sensor_post', $this->post );
+            $tpl->setVariable( 'post_url', $this->post->objectHelper->getPostUrl() );
             $tpl->setVariable( 'object', $this->post->objectHelper->getContentObject() );
             $tpl->setVariable( 'node', $this->post->objectHelper->getContentObject()->attribute( 'main_node' ) );
 
