@@ -40,7 +40,6 @@ class SensorNotificationHelper
         $ruleList = array();
         foreach( $participantIdList as $roleGroup )
         {
-            $ruleList[$roleGroup['role_id']] = array();
             foreach( $roleGroup['items'] as $item )
             {
                 $user = eZUser::fetch( $item['id'] );
@@ -96,7 +95,7 @@ class SensorNotificationHelper
                         'default_notification_transport'
                     );
                 }
-                $ruleList[$roleGroup['role_id']][] = $ruleListItem;
+                $ruleList[$ruleListItem['transport']][$roleGroup['role_id']][] = $ruleListItem;
             }
         }
 print_r($ruleList);die();
