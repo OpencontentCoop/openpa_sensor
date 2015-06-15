@@ -157,7 +157,7 @@ class SensorHelper
             $helper = self::instanceFromCollaborationItem( $collaborationItem );
             $post = $helper->currentSensorPost;
             $post->restoreFormTrash();
-            $post->eventHelper->handleEvent( 'on_restore' );
+            $post->eventHelper->createEvent( 'on_restore' );
             return $post;
         }
 
@@ -210,7 +210,7 @@ class SensorHelper
         }
 
         $post->setStatus( SensorPost::STATUS_WAITING );
-        $post->eventHelper->handleEvent( 'on_create' );
+        $post->eventHelper->createEvent( 'on_create' );
 
         return $post;
     }

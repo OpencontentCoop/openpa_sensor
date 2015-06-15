@@ -196,6 +196,7 @@ class SensorPost
                 }
                 $map[$sortKey]['items'][] = array(
                     'participant_link' => $participant,
+                    'id' => $id,
                     'contentobject' => eZContentObject::fetch( $id )
                 );
             }

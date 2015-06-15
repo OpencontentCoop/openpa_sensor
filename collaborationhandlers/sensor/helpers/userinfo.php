@@ -322,7 +322,8 @@ class SensorUserInfo
             'has_block_mode',
             'has_deny_comment_mode',
             'has_moderation_mode',
-            'has_can_behalf_of_mode'
+            'has_can_behalf_of_mode',
+            'default_notification_language'
         );
     }
 
@@ -335,6 +336,19 @@ class SensorUserInfo
     {
         switch( $name )
         {
+            case 'default_notification_transport':
+                return strpos( $this->user()->attribute( 'email' ), '@s.whatsapp.net' ) !== false ? 'ezwhatsapp' : 'ezmail';
+                break;
+
+            case 'default_notification_language':
+                $object = $this->user->attribute( 'contentobject' );
+                if ( $object instanceof eZContentObject )
+                    return $object->attribute( 'initial_language_code' );
+                else
+                    return false;
+                break;
+
+
             case 'has_block_mode':
                 return $this->hasBlockMode();
                 break;

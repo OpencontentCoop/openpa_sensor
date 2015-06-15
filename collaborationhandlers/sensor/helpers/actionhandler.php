@@ -302,34 +302,34 @@ class SensorPostActionHandler
             $this->post->touch();
         }
         $this->post->timelineHelper->add( SensorPost::STATUS_FIXED, eZUser::currentUserID() )->store();
-        $this->post->eventHelper->handleEvent( 'on_force_fix' );
+        $this->post->eventHelper->createEvent( 'on_force_fix' );
     }
 
     public function close()
     {
         $this->post->setStatus( SensorPost::STATUS_CLOSED );
         $this->post->timelineHelper->add( SensorPost::STATUS_CLOSED, eZUser::currentUserID() )->store();
-        $this->post->eventHelper->handleEvent( 'on_close' );
+        $this->post->eventHelper->createEvent( 'on_close' );
     }
 
     public function makePrivate()
     {
         $this->post->objectHelper->makePrivate();
-        $this->post->eventHelper->handleEvent( 'on_make_private' );
+        $this->post->eventHelper->createEvent( 'on_make_private' );
         $this->post->touch();
     }
 
     public function makePublic()
     {
         $this->post->objectHelper->makePublic();
-        $this->post->eventHelper->handleEvent( 'on_make_public' );
+        $this->post->eventHelper->createEvent( 'on_make_public' );
         $this->post->touch();
     }
 
     public function moderate( $status )
     {
         $this->post->objectHelper->moderate( $status );
-        $this->post->eventHelper->handleEvent( 'on_moderate' );
+        $this->post->eventHelper->createEvent( 'on_moderate' );
         $this->post->touch();
     }
 
@@ -358,7 +358,7 @@ class SensorPostActionHandler
         }
         if ( $isChanged )
         {
-            $this->post->eventHelper->handleEvent( 'on_add_observer' );
+            $this->post->eventHelper->createEvent( 'on_add_observer' );
             $this->post->touch();
         }
     }
@@ -376,7 +376,7 @@ class SensorPostActionHandler
             $categoryIdList = ezpEvent::getInstance()->filter( 'sensor/set_categories',  $categoryIdList );
             $categoryString = implode( '-', $categoryIdList );
             $this->post->objectHelper->setContentObjectAttribute( 'category', $categoryString );
-            $this->post->eventHelper->handleEvent( 'on_add_category' );
+            $this->post->eventHelper->createEvent( 'on_add_category' );
 
             if ( $this->post->configParameters['CategoryAutomaticAssign'] )
             {
@@ -401,7 +401,7 @@ class SensorPostActionHandler
             $areaIdList = ezpEvent::getInstance()->filter( 'sensor/set_areas',  $areaIdList );
             $areasString = implode( '-', $areaIdList );
             $this->post->objectHelper->setContentObjectAttribute( 'area', $areasString );
-            $this->post->eventHelper->handleEvent( 'on_add_area' );
+            $this->post->eventHelper->createEvent( 'on_add_area' );
             $this->post->touch();
         }
     }
@@ -412,7 +412,7 @@ class SensorPostActionHandler
         if ( $value > 0 )
         {
             $this->post->setExpiry( $value );
-            $this->post->eventHelper->handleEvent( 'on_set_expiry' );
+            $this->post->eventHelper->createEvent( 'on_set_expiry' );
             $this->post->touch();
         }
     }
@@ -420,12 +420,12 @@ class SensorPostActionHandler
     public function addComment( $text )
     {
         $this->post->commentHelper->add( $text )->store();
-        $this->post->eventHelper->handleEvent( 'on_add_comment' );
+        $this->post->eventHelper->createEvent( 'on_add_comment' );
         if ( $this->post->isClosed() && $this->userPostRoles->isAuthor() && $this->post->configParameters['AuthorCanReopen'] )
         {
             $this->post->setStatus( SensorPost::STATUS_REOPENED );
             $this->post->timelineHelper->add( SensorPost::STATUS_REOPENED, eZUser::currentUserID() )->store();
-            $this->post->eventHelper->handleEvent( 'on_reopen' );
+            $this->post->eventHelper->createEvent( 'on_reopen' );
         }
         else
         {
@@ -436,14 +436,14 @@ class SensorPostActionHandler
     public function addMessage( $text, $privateReceivers = array() )
     {
         $this->post->messageHelper->add( $text )->to( $privateReceivers )->store();
-        $this->post->eventHelper->handleEvent( 'on_add_message' );
+        $this->post->eventHelper->createEvent( 'on_add_message' );
         $this->post->touch();
     }
 
     public function addResponse( $text )
     {
         $this->post->responseHelper->add( $text )->store();
-        $this->post->eventHelper->handleEvent( 'on_add_response' );
+        $this->post->eventHelper->createEvent( 'on_add_response' );
         $this->post->touch();
     }
 
@@ -453,7 +453,7 @@ class SensorPostActionHandler
         {
             $this->post->commentHelper->edit( $id, $text );
         }
-        $this->post->eventHelper->handleEvent( 'on_edit_comment' );
+        $this->post->eventHelper->createEvent( 'on_edit_comment' );
         $this->post->touch();
     }
 
@@ -463,7 +463,7 @@ class SensorPostActionHandler
         {
             $this->post->messageHelper->edit( $id, $text );
         }
-        $this->post->eventHelper->handleEvent( 'on_edit_message' );
+        $this->post->eventHelper->createEvent( 'on_edit_message' );
         $this->post->touch();
     }
 
