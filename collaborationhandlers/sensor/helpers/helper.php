@@ -34,6 +34,12 @@ class SensorHelper
      */
     public $httpActionHelper;
 
+    /**
+     * @param eZCollaborationItem $collaborationItem
+     * @param SensorUserInfo $user
+     *
+     * @throws Exception
+     */
     protected function __construct( eZCollaborationItem $collaborationItem, SensorUserInfo $user = null )
     {
         $contentObject = eZContentObject::fetch( $collaborationItem->attribute( 'data_int1' ) );
@@ -62,6 +68,9 @@ class SensorHelper
         $this->httpActionHelper = SensorHttpActionHelper::instance( $this->currentSensorUserRoles );
     }
 
+    /**
+     * @return SensorHelperFactoryInterface
+     */
     public static function factory()
     {
         //@todo move in ini
@@ -110,7 +119,7 @@ class SensorHelper
      * @return SensorPost
      * @throws Exception
      */
-    public static function createSensorPost( $object )
+    public static function createSensorPost( eZContentObject $object )
     {
         if ( !$object instanceof eZContentObject )
         {
@@ -215,6 +224,43 @@ class SensorHelper
         return $post;
     }
 
+    /**
+     * @param eZContentObject $object
+     *
+     * @return SensorPost
+     * @throws Exception
+     */
+    public static function updateSensorPost( eZContentObject $object )
+    {
+        if ( !$object instanceof eZContentObject )
+        {
+            throw new Exception( "Object not found" );
+        }
+        $helper = self::instanceFromContentObjectId( $object->attribute( 'id' ) );
+        $helper->collaborationItem->setAttribute( 'modified', $object->attribute( 'modified' ) );
+        $helper->collaborationItem->sync();
+        $post = $helper->currentSensorPost;
+        $post->eventHelper->createEvent( 'on_update' );
+        return $post;
+    }
+
+    /**
+     * @param eZContentObject $object
+     * @param bool $moveInTrash
+     *
+     * @throws Exception
+     */
+    public static function removeSensorPost( eZContentObject $object, $moveInTrash )
+    {
+        $helper = self::instanceFromContentObjectId( $object->attribute( 'id' ) );
+        if ( $moveInTrash )
+            $helper->currentSensorPost->moveToTrash();
+        else
+            $helper->currentSensorPost->delete();
+    }
+    /**
+     * @param eZModule $module
+     */
     public function handleHttpAction( eZModule $module )
     {
         $this->httpActionHelper->handleHttpAction( $module );
@@ -225,6 +271,15 @@ class SensorHelper
         $this->currentSensorUserRoles->handleAction( 'read' );
     }
 
+    /**
+     * @param string $exportType
+     * @param array $filters
+     * @param eZCollaborationGroup $group
+     * @param array $selectedList
+     *
+     * @return SensorPostCsvExporter
+     * @throws Exception
+     */
     public static function instantiateExporter( $exportType, array $filters, eZCollaborationGroup $group, $selectedList )
     {
         //@todo

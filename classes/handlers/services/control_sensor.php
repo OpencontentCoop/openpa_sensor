@@ -783,16 +783,21 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
                 {
                     if ( $object->attribute( 'current_version') == 1  )
                     {
-                        SensorHelper::createSensorPost( $object );
-                        eZSearch::addObject( $object, true );
+                        try
+                        {
+                            SensorHelper::createSensorPost( $object );
+                            eZSearch::addObject( $object, true );
+                        }
+                        catch( Exception $e )
+                        {
+                            eZDebug::writeError( $e->getMessage(), __METHOD__ );
+                        }
                     }
                     else
                     {
                         try
                         {
-                            $helper = SensorHelper::instanceFromContentObjectId( $id );
-                            $helper->collaborationItem->setAttribute( 'modified', $object->attribute( 'modified' ) );
-                            $helper->collaborationItem->sync();
+                            SensorHelper::updateSensorPost( $object );
                         }
                         catch( Exception $e )
                         {
@@ -826,11 +831,7 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
                 {
                     try
                     {
-                        $helper = SensorHelper::instanceFromContentObjectId( $object->attribute( 'id' ) );
-                        if ( $inTrash )
-                            $helper->currentSensorPost->moveToTrash();
-                        else
-                            $helper->currentSensorPost->delete();
+                        SensorHelper::removeSensorPost( $object, $inTrash );
                     }
                     catch( Exception $e )
                     {
@@ -936,7 +937,7 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
      * @return SensorGeoJsonFeatureCollection
      */
     public static function fetchSensorGeoJsonFeatureCollection()
-    {        
+    {
         $data = new SensorGeoJsonFeatureCollection();
         $items = self::fetchPosts( false );
         foreach( $items['SearchResult'] as $item )
@@ -1360,7 +1361,6 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
 
     public function setObjectState( $object, $status )
     {
-        $object = $this->getContentObject();
         if ( $object instanceof eZContentObject )
         {
             if ( $status == SensorPost::STATUS_READ )

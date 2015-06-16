@@ -13,6 +13,12 @@ class OpenPASensorType extends eZWorkflowEventType
         );
     }
 
+    /**
+     * @param eZWorkflowProcess $process
+     * @param eZEvent $event
+     *
+     * @return int
+     */
     function execute( $process, $event )
     {
         $parameters = $process->attribute( 'parameter_list' );

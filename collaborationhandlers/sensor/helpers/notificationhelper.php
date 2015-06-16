@@ -310,11 +310,11 @@ class SensorNotificationHelper
         $postNotificationTypes = array();
 
         $postNotificationTypes[] = array(
+            'identifier' => 'on_create',
             'name' => ezpI18n::tr(
                 'openpa_sensor/notification',
                 'Creazione di una segnalazione'
             ),
-            'identifier' => 'on_create',
             'description' => ezpI18n::tr(
                 'openpa_sensor/notification',
                 'Ricevi una notifica alla creazione di una segnalazione'
@@ -323,11 +323,11 @@ class SensorNotificationHelper
         );
 
         $postNotificationTypes[] = array(
+            'identifier' => 'on_assign',
             'name' => ezpI18n::tr(
                 'openpa_sensor/notification',
                 'Assegnazione di una segnalazione'
             ),
-            'identifier' => 'on_assign',
             'description' => ezpI18n::tr(
                 'openpa_sensor/notification',
                 'Ricevi una notifica quando una tua segnalazione è assegnata a un responsabile'
@@ -336,11 +336,11 @@ class SensorNotificationHelper
         );
 
         $postNotificationTypes[] = array(
+            'identifier' => 'on_add_comment',
             'name' => ezpI18n::tr(
                 'openpa_sensor/notification',
                 'Commento pubblico a una segnalazione'
             ),
-            'identifier' => 'on_add_comment',
             'description' => ezpI18n::tr(
                 'openpa_sensor/notification',
                 'Ricevi una notifica quando è aggiunto un commento pubblico ad una tua segnalazione'
@@ -349,11 +349,11 @@ class SensorNotificationHelper
         );
 
         $postNotificationTypes[] = array(
+            'identifier' => 'on_fix',
             'name' => ezpI18n::tr(
                 'openpa_sensor/notification',
                 'Intervento terminato'
             ),
-            'identifier' => 'on_fix',
             'description' => ezpI18n::tr(
                 'openpa_sensor/notification',
                 "Ricevi una notifica quando un responsabile ha completato l'attività che riguarda una tua segnalazione"
@@ -362,11 +362,11 @@ class SensorNotificationHelper
         );
 
         $postNotificationTypes[] = array(
+            'identifier' => 'on_close',
             'name' => ezpI18n::tr(
                 'openpa_sensor/notification',
                 'Chiusura di una segnalazione'
             ),
-            'identifier' => 'on_close',
             'description' => ezpI18n::tr(
                 'openpa_sensor/notification',
                 "Ricevi una notifica quando una tua segnalazione è stata chiusa"
@@ -377,11 +377,11 @@ class SensorNotificationHelper
         if ( OpenPAINI::variable( 'SensorConfig', 'AuthorCanReopen', 'disabled' ) == 'enabled' )
         {
             $postNotificationTypes[] = array(
+                'identifier' => 'on_reopen',
                 'name' => ezpI18n::tr(
                     'openpa_sensor/notification',
                     'Riapertura di una segnalazione'
                 ),
-                'identifier' => 'on_reopen',
                 'description' => ezpI18n::tr(
                     'openpa_sensor/notification',
                     "Ricevi una notifica alla riapertura di una tua segnalazione"
