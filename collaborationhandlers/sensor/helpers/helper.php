@@ -253,10 +253,12 @@ class SensorHelper
     public static function removeSensorPost( eZContentObject $object, $moveInTrash )
     {
         $helper = self::instanceFromContentObjectId( $object->attribute( 'id' ) );
+        $post = $helper->currentSensorPost;
+        $post->eventHelper->createEvent( 'on_remove' );
         if ( $moveInTrash )
-            $helper->currentSensorPost->moveToTrash();
+            $post->moveToTrash();
         else
-            $helper->currentSensorPost->delete();
+            $post->delete();
     }
     /**
      * @param eZModule $module

@@ -27,7 +27,8 @@ class SensorPostEventHelper implements SensorPostEventHelperInterface
         'on_add_response',
         'on_edit_comment',
         'on_edit_message',
-        'on_restore'
+        'on_restore',
+        'on_remove'
     );
 
     protected function __construct( SensorPost $post )
