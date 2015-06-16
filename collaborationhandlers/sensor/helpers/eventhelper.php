@@ -11,6 +11,7 @@ class SensorPostEventHelper
 
     public $availableEvents = array(
         'on_create',
+        'on_update',
         'on_assign',
         'on_fix',
         'on_force_fix',
