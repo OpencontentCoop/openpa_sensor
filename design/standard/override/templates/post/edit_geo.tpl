@@ -11,7 +11,10 @@
     <div class="input-group">
         <input class="form-control" size="20" type="text" id="input-address" name="{$attribute_base}_data_gmaplocation_address_{$attribute.id}" value="{$attribute.content.address}"/>
       <span class="input-group-btn">
-        <button tabindex="-1" class="btn btn-default" type="button"  type="button" id="mylocation-button" value="{'Rileva la mia posizione'|i18n('openpa_sensor/add')}" title="{'Gets your current position if your browser support GeoLocation and you grant this website access to it! Most accurate if you have a built in gps in your Internet device! Also note that you might still have to type in address manually!'|i18n('extension/ezgmaplocation/datatype')}">
+        <button tabindex="-1" class="btn btn-default hidden-xs" type="button" id="mylocation-button" value="{'Rileva la mia posizione'|i18n('openpa_sensor/add')}" title="{'Gets your current position if your browser support GeoLocation and you grant this website access to it! Most accurate if you have a built in gps in your Internet device! Also note that you might still have to type in address manually!'|i18n('extension/ezgmaplocation/datatype')}">
+            <i class="fa fa-location-arrow"></i>
+        </button>
+        <button tabindex="-1" class="btn btn-default visible-xs-inline-block" type="button" id="sensor_show_map_button">
             <i class="fa fa-map-marker"></i>
         </button>
       </span>
