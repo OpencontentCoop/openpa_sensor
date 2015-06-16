@@ -12,7 +12,7 @@ class SensorCollaborationHandler extends eZCollaborationItemHandler
             ezpI18n::tr( 'openpa_sensor/settings', 'Notifiche SensorCivico' ),
             array(
                 'use-messages' => true,
-                'notification-types' => SensorNotificationHelper::notificationTypes(),
+                'notification-types' => SensorNotificationHelper::instance()->notificationTypes(),
                 'notification-collection-handling' => eZCollaborationItemHandler::NOTIFICATION_COLLECTION_PER_PARTICIPATION_ROLE
             )
         );

@@ -7,6 +7,11 @@ class SensorPostEventHelper implements SensorPostEventHelperInterface
      */
     protected $post;
 
+    /**
+     * @var SensorNotificationHelper
+     */
+    protected $notificationHelper;
+
     public $availableEvents = array(
         'on_create',
         'on_update',
@@ -34,6 +39,7 @@ class SensorPostEventHelper implements SensorPostEventHelperInterface
     protected function __construct( SensorPost $post )
     {
         $this->post = $post;
+        $this->notificationHelper = SensorNotificationHelper::instance( $this->post );
     }
 
     public static function instance( SensorPost $post )
@@ -43,7 +49,7 @@ class SensorPostEventHelper implements SensorPostEventHelperInterface
 
     public function createEvent( $eventName )
     {
-        foreach( SensorNotificationHelper::postNotificationTypes() as $type )
+        foreach( $this->notificationHelper->postNotificationTypes() as $type )
         {
             if ( $type['identifier'] ==  $eventName )
             {
@@ -54,7 +60,6 @@ class SensorPostEventHelper implements SensorPostEventHelperInterface
 
     public function handleEvent( eZNotificationEvent $event, array &$parameters )
     {
-        $notificationHelper = SensorNotificationHelper::instance( $this->post );
-        return $notificationHelper->handleEvent( $event, $parameters );
+        return $this->notificationHelper->handleEvent( $event, $parameters );
     }
 }

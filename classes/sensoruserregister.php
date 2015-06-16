@@ -288,7 +288,7 @@ class SensorUserRegister
                     $Module->redirectTo( '/sensor/home' );
                 }
 
-                SensorNotificationHelper::storeDefaultNotificationRules( $user->id() );
+                SensorNotificationHelper::instance()->storeDefaultNotificationRules( $user->id() );
             }
         }
         else
