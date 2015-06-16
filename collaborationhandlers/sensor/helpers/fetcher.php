@@ -248,6 +248,7 @@ class SensorPostFetcher
             $itemIdArray = array();
             $solr = new eZSolr();
             $search =$solr->search( '', array(
+                    'AsObjects' => false,
                     'Filter' => array( 'attr_subject_t:' . $filters['subject'] ),
                     'SearchContentClassID' => array( ObjectHandlerServiceControlSensor::postContentClass()->attribute( 'id' ) ),
                     'SearchSubTreeArray' => array( 1 ) ) );
@@ -256,7 +257,7 @@ class SensorPostFetcher
                 /** @var eZFindResultNode $item */
                 foreach( $search['SearchResult'] as $item )
                 {
-                    $itemIdArray[] = $item->attribute( 'contentobject_id' );
+                    $itemIdArray[] = isset( $item['id_si'] ) ? $item['id_si'] : $item['id'];
                 }
             }
             if ( !empty( $itemIdArray ) )
@@ -286,6 +287,7 @@ class SensorPostFetcher
             if ( !empty( $categoryFilter ) )
             {
                 $search =$solr->search( '', array(
+                        'AsObjects' => false,
                         'Filter' => $categoryFilter,
                         'SearchContentClassID' => array( ObjectHandlerServiceControlSensor::postContentClass()->attribute( 'id' ) ),
                         'SearchSubTreeArray' => array( 1 ) ) );
@@ -294,7 +296,7 @@ class SensorPostFetcher
                     /** @var eZFindResultNode $item */
                     foreach( $search['SearchResult'] as $item )
                     {
-                        $itemIdArray[] = $item->attribute( 'contentobject_id' );
+                        $itemIdArray[] = isset( $item['id_si'] ) ? $item['id_si'] : $item['id'];;
                     }
                 }
                 if ( !empty( $itemIdArray ) )
@@ -320,6 +322,7 @@ class SensorPostFetcher
             {
                 $solr = new eZSolr();
                 $search = $solr->search( $creatorId, array(
+                        'AsObjects' => false,
                         'Limitation' => array(),
                         'SearchContentClassID' => array( 'user', 'sensor_operator' ),
                         'SearchSubTreeArray' => array( 1 ) ) );
@@ -328,7 +331,7 @@ class SensorPostFetcher
                     /** @var eZFindResultNode $item */
                     foreach( $search['SearchResult'] as $item )
                     {
-                        $creatorIdArray[] = $item->attribute( 'contentobject_id' );
+                        $creatorIdArray[] = isset( $item['id_si'] ) ? $item['id_si'] : $item['id'];
                     }
                 }
             }
