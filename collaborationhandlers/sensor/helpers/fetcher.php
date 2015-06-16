@@ -286,6 +286,7 @@ class SensorPostFetcher
             if ( !empty( $categoryFilter ) )
             {
                 $search =$solr->search( '', array(
+                        'Limitation' => array(),
                         'Filter' => $categoryFilter,
                         'SearchContentClassID' => array( ObjectHandlerServiceControlSensor::postContentClass()->attribute( 'id' ) ),
                         'SearchSubTreeArray' => array( 1 ) ) );
@@ -319,7 +320,8 @@ class SensorPostFetcher
             else
             {
                 $solr = new eZSolr();
-                $search =$solr->search( $creatorId, array(
+                $search = $solr->search( $creatorId, array(
+                        'Limitation' => array(),
                         'SearchContentClassID' => array( 'user', 'sensor_operator' ),
                         'SearchSubTreeArray' => array( 1 ) ) );
                 if ( $search['SearchCount'] > 0 )
