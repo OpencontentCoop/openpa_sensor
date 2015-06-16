@@ -7,8 +7,7 @@
   {else}
     var PointsOfInterest = {$sensor.areas.coords_json};
   {/if}
-</script>  
-
+</script>
 
 <form id="edit" class="post-edit edit col-md-6 col-xs-12" enctype="multipart/form-data" method="post" action={concat("/content/edit/",$object.id,"/",$edit_version,"/",$edit_language|not|choose(concat($edit_language,"/"),''))|ezurl}>
 
@@ -226,3 +225,11 @@
 </div>
 
 </form>
+
+<div id="sensor_full_map"></div>
+<a id="sensor_hide_map_button" class="visible-xs-block btn btn-default" href="#">Nascondi mappa</a>
+<a class="btn btn-default visible-xs-block" id="mylocation-mobile-button"
+   value="{'Rileva la mia posizione'|i18n('openpa_sensor/add')}"
+   title="{'Gets your current position if your browser support GeoLocation and you grant this website access to it! Most accurate if you have a built in gps in your Internet device! Also note that you might still have to type in address manually!'|i18n('extension/ezgmaplocation/datatype')}">
+    <i class="fa fa-location-arrow"></i>
+</a>
