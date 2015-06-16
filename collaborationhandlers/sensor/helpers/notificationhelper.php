@@ -2,14 +2,17 @@
 
 class SensorNotificationHelper
 {
+    /**
+     * @var SensorPost
+     */
     protected $post;
 
-    protected function __construct( SensorPost $post )
+    protected function __construct( SensorPost $post = null )
     {
         $this->post = $post;
     }
 
-    public static function instance( SensorPost $post )
+    public static function instance( SensorPost $post = null )
     {
         return new SensorNotificationHelper( $post );
     }
@@ -23,6 +26,8 @@ class SensorNotificationHelper
      */
     public function handleEvent( eZNotificationEvent $event, array &$parameters )
     {
+        if ( !$this->post instanceof SensorPost ) return;
+
         $eventType = $event->attribute( 'data_text1' );
         $prefix = SensorHelper::factory()->getSensorCollaborationHandlerTypeString() . '_';
         $eventIdentifier = str_replace( $prefix, '', $eventType );
@@ -219,6 +224,8 @@ class SensorNotificationHelper
 
     protected function createWhatsAppNotificationCollections( eZNotificationEvent $event, $userCollection, &$parameters )
     {
+        if ( !class_exists( 'OCWhatsAppConnector' ) ) return;
+
         $db = eZDB::instance();
         $db->begin();
 
@@ -296,16 +303,16 @@ class SensorNotificationHelper
             return false;
     }
 
-    public static function notificationTypes()
+    public function notificationTypes()
     {
         return array_merge(
-            self::postNotificationTypes(),
-            self::transportNotificationTypes(),
-            self::languageNotificationTypes()
+            $this->postNotificationTypes(),
+            $this->transportNotificationTypes(),
+            $this->languageNotificationTypes()
         );
     }
 
-    public static function postNotificationTypes()
+    public function postNotificationTypes()
     {
         $postNotificationTypes = array();
 
@@ -393,7 +400,7 @@ class SensorNotificationHelper
         return $postNotificationTypes;
     }
 
-    protected static function languageNotificationTypes( SensorUserInfo $userInfo = null )
+    protected function languageNotificationTypes( SensorUserInfo $userInfo = null )
     {
         if ( $userInfo === null )
         {
@@ -427,7 +434,7 @@ class SensorNotificationHelper
         return $languagesNotificationTypes;
     }
 
-    protected static function transportNotificationTypes( SensorUserInfo $userInfo = null )
+    protected function transportNotificationTypes( SensorUserInfo $userInfo = null )
     {
         if ( $userInfo === null )
         {
@@ -469,7 +476,7 @@ class SensorNotificationHelper
         return $transportNotificationTypes;
     }
 
-    public static function storeDefaultNotificationRules( $userId )
+    public function storeDefaultNotificationRules( $userId )
     {
         try
         {

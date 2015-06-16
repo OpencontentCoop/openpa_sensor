@@ -34,7 +34,7 @@ try
     foreach( $rules as $rule )
     {
         $userId = $rule->attribute( 'user_id' );
-        SensorNotificationHelper::storeDefaultNotificationRules( $userId );
+        SensorNotificationHelper::instance()->storeDefaultNotificationRules( $userId );
         $rule->remove();
     }
 
