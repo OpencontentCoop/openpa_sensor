@@ -320,6 +320,7 @@ class SensorPostFetcher
             {
                 $solr = new eZSolr();
                 $search = $solr->search( $creatorId, array(
+                        'Limitation' => array(),
                         'SearchContentClassID' => array( 'user', 'sensor_operator' ),
                         'SearchSubTreeArray' => array( 1 ) ) );
                 if ( $search['SearchCount'] > 0 )
