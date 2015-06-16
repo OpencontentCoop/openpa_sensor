@@ -1,13 +1,11 @@
 <?php
 
-class SensorPostEventHelper
+class SensorPostEventHelper implements SensorPostEventHelperInterface
 {
     /**
      * @var SensorPost
      */
     protected $post;
-
-    protected $createNotificationEvents = array();
 
     public $availableEvents = array(
         'on_create',
