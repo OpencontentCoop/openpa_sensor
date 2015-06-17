@@ -102,6 +102,7 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
         $this->data['timed_moderation_is_enabled'] = self::TimedModerationIsEnabled();
 
         $this->fnData['moderation_states'] = 'getModerationStates';
+        $this->fnData['current_moderation_state'] = 'getCurrentModerationState';
 
         // post
         $this->data['use_per_area_approver'] = false; //@todo impostare da ini?

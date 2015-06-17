@@ -1,5 +1,5 @@
 {def $post = object_handler($object.main_node).control_sensor}
-{if $post.current_moderation_status.identifier|ne('waiting')}
+{if $post.current_moderation_state.identifier|ne('waiting')}
 
 {def $sensor = sensor_root_handler()}
 {def $siteurl = $sensor.sensor_url $sitename = $sensor.logo_title}
