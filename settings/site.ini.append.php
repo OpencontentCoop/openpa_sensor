@@ -22,5 +22,7 @@ id=sensor
 tags[]=content
 path=sensor
 
+[RoleSettings]
+PolicyOmitList[]=sensor/alert
 
 */ ?>
