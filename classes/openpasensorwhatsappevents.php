@@ -285,7 +285,10 @@ class OpenPASensorWhatsAppEvents extends AllEvents
         if( is_array( $httpAuth ) )
         {
             if( count( $httpAuth ) != 2 )
-                throw new SQLIContentException( __METHOD__.' => HTTP Auth : Wrong parameter count in $httpAuth array' );
+            {
+                //throw new SQLIContentException( __METHOD__.' => HTTP Auth : Wrong parameter count in $httpAuth array' );
+                return null;
+            }
 
             list( $httpUser, $httpPassword ) = $httpAuth;
             curl_setopt( $ch, CURLOPT_HTTPAUTH, CURLAUTH_ANY );
@@ -298,7 +301,8 @@ class OpenPASensorWhatsAppEvents extends AllEvents
             $error = curl_error( $ch );
             $errorNum = curl_errno( $ch );
             curl_close( $ch );
-            throw new SQLIContentException( "Failed downloading remote file '$url'. $error", $errorNum);
+            //throw new SQLIContentException( "Failed downloading remote file '$url'. $error", $errorNum);
+            return null;
         }
 
         curl_close( $ch );
