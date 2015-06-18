@@ -1,17 +1,15 @@
 <?php
 
-class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase implements SensorPostObjectHelperInterface
+class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase implements SensorPostObjectHelperInterface, SensorHelperFactoryInterface, OCPageDataHandlerInterface
 {
     const SECTION_IDENTIFIER = "sensor";
     const SECTION_NAME = "Sensor";
-
-    public static $context;
 
     /**
      * @var eZContentObjectTreeNode
      */
     protected static $rootNode;
-    
+
     /**
      * @var eZContentObjectAttribute[]
      */
@@ -29,6 +27,8 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
     protected static $postContentClass;
     protected static $postAreas;
     protected static $postCategories;
+
+    public static $context;
 
     public static $stateGroupIdentifier = 'sensor';
     public static $stateIdentifiers = array(
@@ -51,214 +51,40 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
         'refused' => "Rifiutato"
     );
 
-    // sensor/forum
-    /**
-     * @var eZContentObjectTreeNode
-     */
-    protected static $forumContainerNode;
-    protected static $forums;
-    protected static $forumCommentClass;
-
-    // sensor/survey
-    /**
-     * @var eZContentObjectTreeNode
-     */
-    protected static $surveyContainerNode;
-    protected static $surveys;
-
     function run()
     {
-        // general
-        $this->fnData['site_title'] = 'getSiteTitle';
-        $this->data['site_images'] = array(
-            "apple-touch-icon-114x114-precomposed" => null,
-            "apple-touch-icon-72x72-precomposed" => null,
-            "apple-touch-icon-57x57-precomposed" => null,
-            "favicon" => null
-        );
-
-        $this->fnData['logo'] = 'getLogo';
-        $this->fnData['logo_title'] = 'getLogoTitle';
-        $this->fnData['logo_subtitle'] = 'getLogoSubTitle';
-
-        $this->fnData['banner'] = 'getBanner';
-        $this->fnData['banner_title'] = 'getBannerTitle';
-        $this->fnData['banner_subtitle'] = 'getBannerSubTitle';
-
-        $this->fnData['footer'] = 'getFooter';
-        $this->fnData['contacts'] = 'getContacts';
-
+        $this->data['moderation_is_enabled'] = self::ModerationIsEnabled();
+        $this->data['timed_moderation_is_enabled'] = self::TimedModerationIsEnabled();
+        $this->data['use_per_area_approver'] = false; //@todo impostare da ini?
+        $this->fnData['post_container_node'] = 'postContainerNode';
+        $this->fnData['post_categories_container_node'] = 'postCategoriesNode';
+        $this->fnData['post_class'] = 'postContentClass';
+        $this->fnData['areas'] = 'areas';
+        $this->fnData['categories'] = 'categories';
+        $this->fnData['operators'] = 'operators';
         $this->fnData['privacy'] = 'getPrivacy';
         $this->fnData['faq'] = 'getFaq';
         $this->fnData['terms'] = 'getTerms';
         $this->fnData['cookie'] = 'getCookie';
-
-        $this->fnData['sensor_url'] = 'getSensorSiteaccessUrl';
-        $this->fnData['sensor_asset_url'] = 'getAssetUrl';
-
-        $this->data['post_is_enabled'] = self::PostIsEnable();
-        $this->data['forum_is_enabled'] = self::ForumIsEnable();
-        $this->data['survey_is_enabled'] = self::SurveyIsEnabled();
-
-        $this->data['moderation_is_enabled'] = self::ModerationIsEnabled();
-        $this->data['timed_moderation_is_enabled'] = self::TimedModerationIsEnabled();
-
-        $this->fnData['moderation_states'] = 'getModerationStates';
-        $this->fnData['current_moderation_state'] = 'getCurrentModerationState';
-
-        // post
-        $this->data['use_per_area_approver'] = false; //@todo impostare da ini?
-
-        $this->fnData['post_container_node'] = 'postContainerNode';
-        $this->fnData['post_categories_container_node'] = 'postCategoriesNode';
-        $this->fnData['post_class'] = 'postContentClass';
-               
-        $this->fnData['areas'] = 'getPostAreas';
-        $this->fnData['categories'] = 'getPostCategories';
-        $this->fnData['operators'] = 'getOperators';
-
-        // forum
-        $this->fnData['forum_container_node'] = 'forumContainerNode';
-        $this->fnData['forums'] = 'forums';
-
-        // survey
-        $this->fnData['survey_container_node'] = 'surveyContainerNode';
-        $this->fnData['surveys'] = 'surveys';
-        $this->fnData['valid_surveys'] = 'validSurveys';
+//site_title
+//sensor_url
+//sensor_asset_url
+//logo
+//site_title
     }
 
     /**
-     * Ritorna il valore dell'attributo post_enabled di rootNode
-     * @return bool
+     * Inizializza classi, gruppi e sezioni per l'utilizzo di Sensor
+     *
+     * @param array $options
+     * @return void
      */
-    public static function PostIsEnable()
+    public static function init( $options = array() )
     {
-        $dataMap = self::rootNodeDataMap();
-        $isEnabled = isset( $dataMap['post_enabled'] ) && $dataMap['post_enabled']->attribute( 'data_int' ) == 1;
-        $ini = eZINI::instance();
-        if ( $isEnabled && $ini->hasVariable( 'SensorAccessSettings', 'Post' ) )
-        {
-            $isEnabled = $ini->variable( 'SensorAccessSettings', 'Post' ) == 'enabled';
-        }
-        return $isEnabled;
-    }
-
-    /**
-     * Ritorna il valore dell'attributo forum_enabled di rootNode
-     * @return bool
-     */
-    public static function ForumIsEnable()
-    {
-        $dataMap = self::rootNodeDataMap();
-        $isEnabled = isset( $dataMap['forum_enabled'] ) && $dataMap['forum_enabled']->attribute( 'data_int' ) == 1;
-        $ini = eZINI::instance();
-        if ( $isEnabled && $ini->hasVariable( 'SensorAccessSettings', 'Forum' ) )
-        {
-            $isEnabled = $ini->variable( 'SensorAccessSettings', 'Forum' ) == 'enabled';
-        }
-        return $isEnabled;
-    }
-
-    /**
-     * Ritorna il valore dell'attributo survey_enabled di rootNode
-     * @return bool
-     */
-    public static function SurveyIsEnabled()
-    {
-        $dataMap = self::rootNodeDataMap();
-        $isEnabled = isset( $dataMap['survey_enabled'] ) && $dataMap['survey_enabled']->attribute( 'data_int' ) == 1;
-        $ini = eZINI::instance();
-        if ( $isEnabled && $ini->hasVariable( 'SensorAccessSettings', 'Survey' ) )
-        {
-            $isEnabled = $ini->variable( 'SensorAccessSettings', 'Survey' ) == 'enabled';
-        }
-        return $isEnabled;
-    }
-
-    /**
-     * Ritorna l'indirizzo del sito sensor basandosi su site.ini[SiteSettings]SiteURL
-     * @return string
-     */
-    protected function getAssetUrl()
-    {
-        $siteUrl = eZINI::instance()->variable( 'SiteSettings', 'SiteURL' );       
-        $parts = explode( '/', $siteUrl );        
-        if ( count( $parts ) >= 2 )
-        {
-            array_pop( $parts );
-            $siteUrl = implode( '/', $parts );
-        }        
-        return rtrim( $siteUrl, '/' );
-    }
-
-    /**
-     * Ritorna l'indirizzo del sito sensor basandosi su site.ini[SiteSettings]SiteURL
-     * @see OpenPABase::getCustomSiteaccessName
-     * @return string
-     */
-    protected function getSensorSiteaccessUrl()
-    {
-        $currentSiteaccess = eZSiteAccess::current();
-        $sitaccessIdentifier = $currentSiteaccess['name'];
-        if ( !self::isSensorSiteAccessName( $sitaccessIdentifier )
-             || ( self::$context !== null && !$sitaccessIdentifier = self::getSensorSiteAccessName( self::$context ) ) )
-        {
-            $sitaccessIdentifier = self::getSensorSiteAccessName( self::$context );
-        }
-        $path = "settings/siteaccess/{$sitaccessIdentifier}/";
-        $ini = new eZINI( 'site.ini.append', $path, null, null, null, true, true );        
-        if ( $ini->hasVariable( 'SiteSettings', 'SiteURL' ) )
-            return rtrim( $ini->variable( 'SiteSettings', 'SiteURL' ), '/' );
-        else
-        {
-            return $this->getAssetUrl();
-        }
-    }
-
-    public static function isSensorSiteAccessName( $currentSiteAccessName )
-    {
-        $ini = eZINI::instance();
-        if ( $ini->hasVariable( 'SensorAccessSettings', 'SiteAccessName' ) )
-        {
-            $accessNames = (array) $ini->variable( 'SensorAccessSettings', 'SiteAccessName' );
-            return in_array( $currentSiteAccessName, $accessNames );
-        }
-        return OpenPABase::getCustomSiteaccessName( 'sensor' ) == $currentSiteAccessName;
-    }
-
-    public static function getSensorSiteAccessNameByClassIdentifier( $classIdentifier )
-    {
-
-        if ( eZINI::instance()->hasVariable( 'SensorAccessSettings', 'SiteAccessName' ) )
-        {
-            if ( strpos( $classIdentifier, 'sensor_' ) !== false )
-            {
-                return self::getSensorSiteAccessName( 'post' );
-            }
-            elseif ( strpos( $classIdentifier, 'dimmi_' ) !== false )
-            {
-                return self::getSensorSiteAccessName( 'forum' );
-            }
-            elseif ( strpos( $classIdentifier, 'consultation_' ) !== false )
-            {
-                return self::getSensorSiteAccessName( 'survey' );
-            }
-        }
-        return OpenPABase::getCustomSiteaccessName( 'sensor' );
-    }
-
-    public static function getSensorSiteAccessName( $context = null )
-    {
-        $ini = eZINI::instance();
-        if ( $ini->hasVariable( 'SensorAccessSettings', 'SiteAccessName' ) && $context !== null )
-        {
-            $accessNames = $ini->variable( 'SensorAccessSettings', 'SiteAccessName' );
-            if ( isset( $accessNames[$context] ) )
-            {
-                return $accessNames[$context];
-            }
-        }
-        return OpenPABase::getCustomSiteaccessName( 'sensor' );
+        $installer = new OpenPASensorInstaller();
+        $installer->beforeInstall( $options );
+        $installer->install();
+        $installer->afterInstall();
     }
 
     /**
@@ -299,184 +125,6 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
     {
         $dataMap = self::rootNodeDataMap();
         return $dataMap['cookie'];
-    }
-
-
-    protected function getModerationStates()
-    {
-        return OpenPABase::initStateGroup(
-            self::$moderationStateGroupIdentifier,
-            self::$moderationStateIdentifiers
-        );
-    }
-
-    /**
-     * Ritorna l'attributo footer di rootNode
-     * @return eZContentObjectAttribute
-     */
-    protected function getFooter()
-    {
-        $data = '';
-        if ( $this->container->hasAttribute( 'footer' ) )
-        {
-            $attribute = $this->container->attribute( 'footer' )->attribute( 'contentobject_attribute' );
-            if ( $attribute instanceof eZContentObjectAttribute )
-            {
-                $data = $attribute;
-            }
-        }
-        return $data;
-    }
-
-    /**
-     * Ritorna l'attributo contacts di rootNode
-     * @return eZContentObjectAttribute
-     */
-    protected function getContacts()
-    {
-        $data = '';
-        if ( $this->container->hasAttribute( 'contacts' ) )
-        {
-            $attribute = $this->container->attribute( 'contacts' )->attribute( 'contentobject_attribute' );
-            if ( $attribute instanceof eZContentObjectAttribute )
-            {
-                $data = $attribute;
-            }
-        }
-        return $data;
-    }
-
-    /**
-     * Ritorna il full_path dell'immagine banner di rootNode
-     * @return string
-     */
-    protected function getBanner()
-    {
-        $data = false;
-        if ( $this->container->hasAttribute( 'banner' ) )
-        {            
-            $attribute = $this->container->attribute( 'banner' )->attribute( 'contentobject_attribute' );
-            if ( $attribute instanceof eZContentObjectAttribute && $attribute->hasContent() )
-            {
-                /** @var eZImageAliasHandler $content */
-                $content = $attribute->content();
-                $original = $content->attribute( 'original' );
-                $data = $original['full_path'];
-            }
-        }
-        return $data;
-    }
-
-    /**
-     * Restituisce il valore stringa dell'attributo banner_title
-     * @return string
-     */
-    protected function getBannerTitle()
-    {
-        return $this->getAttributeString( 'banner_title' );
-    }
-
-    /**
-     * Restituisce il valore stringa dell'attributo banner_subtitle
-     * @return string
-     */
-    protected function getBannerSubTitle()
-    {
-        return $this->getAttributeString( 'banner_subtitle' );
-    }
-
-    /**
-     * Ritorna il full_path dell'immagine logo di rootNode
-     * @return string
-     */
-    protected function getLogo()
-    {
-        $data = false;
-        if ( $this->container->hasAttribute( 'logo' ) )
-        {
-            $attribute = $this->container->attribute( 'logo' )->attribute( 'contentobject_attribute' );
-            if ( $attribute instanceof eZContentObjectAttribute && $attribute->hasContent() )
-            {
-                /** @var eZImageAliasHandler $content */
-                $content = $attribute->content();
-                $original = $content->attribute( 'original' );
-                $data = $original['full_path'];
-            }
-            else
-            {
-                $data = '/extension/openpa_sensor/design/standard/images/logo_sensor.png';
-            }
-        }
-        return $data;
-    }
-
-    /**
-     * @return string
-     */
-    protected function getSiteTitle()
-    {
-        return strip_tags( $this->getLogoTitle() );
-    }
-
-    /**
-     * @return string
-     */
-    protected function getLogoTitle()
-    {
-        return $this->getAttributeString( 'logo_title' );
-    }
-
-    /**
-     * @return string
-     */
-    protected function getLogoSubTitle()
-    {
-        return $this->getAttributeString( 'logo_subtitle' );
-    }
-
-    /**
-     * @param string $identifier
-     *
-     * @return string
-     */
-    private function getAttributeString( $identifier )
-    {
-        $data = '';
-        if ( $this->container->hasAttribute( $identifier ) )
-        {
-            $attribute = $this->container->attribute( $identifier )->attribute( 'contentobject_attribute' );
-            if ( $attribute instanceof eZContentObjectAttribute )
-            {
-                $data = self::replaceBracket( $attribute->toString() );
-            }
-        }
-        return $data;
-    }
-
-    /**
-     * Replace [ ] with strong html tag
-     * @param string $string
-     * @return string
-     */
-    public static function replaceBracket( $string )
-    {
-        $string = str_replace( '[', '<strong>', $string );
-        $string = str_replace( ']', '</strong>', $string );
-        return $string;
-    }
-
-    /**
-     * Inizializza classi, gruppi e sezioni per l'utilizzo di Sensor
-     *
-     * @param array $options
-     * @return void
-     */
-    public static function init( $options = array() )
-    {
-        $installer = new OpenPASensorInstaller();
-        $installer->beforeInstall( $options );
-        $installer->install();
-        $installer->afterInstall();
     }
 
     /**
@@ -541,42 +189,6 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
     /**
      * @return eZContentObjectTreeNode|null
      */
-    public static function forumContainerNode()
-    {
-        if ( self::$forumContainerNode == null )
-        {
-            $root = eZContentObject::fetchByRemoteID( self::sensorRootRemoteId() . '_dimmi' );
-            if ( $root instanceof eZContentObject )
-            {
-                self::$forumContainerNode = $root->attribute( 'main_node' );
-            }
-        }
-        return self::$forumContainerNode;
-    }
-
-    /**
-     * @return eZContentObjectTreeNode|null
-     */
-    public static function surveyContainerNode()
-    {
-        if ( self::$surveyContainerNode == null )
-        {
-            $root = eZContentObject::fetchByRemoteID( self::sensorRootRemoteId() . '_survey' );
-            if ( $root instanceof eZContentObject )
-            {
-                self::$surveyContainerNode = $root->attribute( 'main_node' );
-            }
-            else
-            {
-                self::$surveyContainerNode = self::rootNode();;
-            }
-        }
-        return self::$surveyContainerNode;
-    }
-
-    /**
-     * @return eZContentObjectTreeNode|null
-     */
     public static function postContainerNode()
     {
         if ( self::$postContainerNode == null )
@@ -604,113 +216,6 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
             self::$postContentClass = eZContentClass::fetchByIdentifier( 'sensor_post' );
         }
         return self::$postContentClass;
-    }
-
-    /**
-     * @return eZContentClass|null
-     */
-    public static function forumCommentClass()
-    {
-        if ( self::$forumCommentClass == null )
-        {
-            self::$forumCommentClass = eZContentClass::fetchByIdentifier( 'dimmi_forum_reply' );
-        }
-        return self::$forumCommentClass;
-    }
-
-    /**
-     * @return array
-     */
-    public static function surveys()
-    {
-        if ( !self::SurveyIsEnabled() ) return array();
-        if ( self::$surveys == null )
-        {
-            $includeClasses = array( 'consultation_survey' );
-            /** @var eZContentObjectTreeNode[] $treeCategories */
-            $surveys = (array) self::surveyContainerNode()->subTree( array(
-                'ClassFilterType' => 'include',
-                'Depth' => 1,
-                'DepthOperator' => 'eq',
-                'ClassFilterArray' => $includeClasses,
-                'Limitation' => array(),
-                'SortBy' => array( 'name', true )
-            ) );
-
-            /** @var eZContentObjectTreeNode[] $surveys */
-            foreach( $surveys as $survey )
-            {
-                /** @var eZContentObject $surveyObject */
-                $surveyObject = $survey->attribute( 'object' );
-                /** @var eZContentObjectAttribute[] $surveyAttributes */
-                $surveyAttributes = $surveyObject->fetchAttributesByIdentifier( array( 'survey' ) );
-                if ( count( $surveyAttributes ) )
-                {
-                    $surveyAttribute = array_shift( $surveyAttributes );
-                    $surveyAttributeContent = $surveyAttribute->content();
-                    self::$surveys[] = array(
-                        'node' => $survey,
-                        'object' => $surveyObject,
-                        'survey_attribute' => $surveyAttribute,
-                        'survey_content' => $surveyAttributeContent
-                    );
-                }
-            }
-        }
-        return self::$surveys;
-    }
-
-    /**
-     * @return array
-     */
-    public static function validSurveys()
-    {
-        if ( !self::SurveyIsEnabled() ) return array();
-        $data = array();
-        foreach( self::surveys() as $item )
-        {
-            /** @var eZSurvey $survey */
-            $survey = $item['survey_content']['survey'];
-            if ( $survey->attribute( 'enabled' ) )
-            {
-                $data[] = $item;
-            }
-        }
-        return $data;
-    }
-
-    /**
-     * @see self::walkSubtree
-     * @return array
-     */
-    public static function forums()
-    {
-        if ( self::$forums == null )
-        {
-            $data = array();
-            $false = false;
-            $includeClasses = array( 'dimmi_forum', 'dimmi_forum_topic' );
-            /** @var eZContentObjectTreeNode[] $treeCategories */
-            $tree = self::forumContainerNode()->subTree( array(
-                'ClassFilterType' => 'include',
-                'Depth' => 1,
-                'DepthOperator' => 'eq',
-                'ClassFilterArray' => $includeClasses,
-                'Limitation' => array(),
-                'SortBy' => array( 'name', true )
-            ) );
-
-            foreach( $tree as $node )
-            {
-                $data[] = array(
-                    'node' => $node,
-                    'children' => self::walkSubtree( $node, $false, $includeClasses )
-                );
-            }
-
-            self::$forums = array( 'tree' => $data );
-        }
-        return self::$forums;
     }
 
     protected static function walkSubtree( eZContentObjectTreeNode $node, &$coords, $includeClasses = array() )
@@ -749,7 +254,7 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
         return $data;
     }
 
-    protected  static function findAreaCoords( eZContentObject $area, &$coords )
+    protected static function findAreaCoords( eZContentObject $area, &$coords )
     {
         /** @var eZContentObjectAttribute[] $dataMap */
         $dataMap = $area->attribute( 'data_map' );
@@ -760,6 +265,30 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
             $data = array( 'lat' => $content->attribute( 'latitude' ), 'lng' => $content->attribute( 'longitude' ) );
             $coords[] = array( 'id' => $area->attribute( 'id' ), 'coords' => array( $data['lat'], $data['lng'] ) );
         }
+    }
+
+    public static function isSensorSiteAccessName( $currentSiteAccessName )
+    {
+        return OpenPABase::getCustomSiteaccessName( 'sensor' ) == $currentSiteAccessName;
+    }
+
+    public static function getSensorSiteAccessName( $context = null )
+    {
+        return OpenPABase::getCustomSiteaccessName( 'sensor' );
+    }
+
+    protected function getSensorSiteaccessUrl()
+    {
+        $currentSiteaccess = eZSiteAccess::current();
+        $sitaccessIdentifier = $currentSiteaccess['name'];
+        if ( !self::isSensorSiteAccessName( $sitaccessIdentifier )
+             || ( self::$context !== null && !$sitaccessIdentifier = self::getSensorSiteAccessName( self::$context ) ) )
+        {
+            $sitaccessIdentifier = self::getSensorSiteAccessName( self::$context );
+        }
+        $path = "settings/siteaccess/{$sitaccessIdentifier}/";
+        $ini = new eZINI( 'site.ini.append', $path, null, null, null, true, true );
+        return rtrim( $ini->variable( 'SiteSettings', 'SiteURL' ), '/' );
     }
 
     /**
@@ -881,15 +410,6 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
                         }
                     }
                 }
-                elseif ( $object->attribute( 'class_identifier' ) == 'dimmi_forum_reply'  )
-                {
-                    if ( self::needModeration() )
-                    {
-                        OpenPABase::sudo( function() use( $object ){
-                            ObjectHandlerServiceControlSensor::setState( $object, 'moderation', 'waiting' );
-                        });
-                    }
-                }
                 elseif ( $object->attribute( 'class_identifier' ) == 'sensor_root'  )
                 {
                     eZCache::clearByTag( 'template' );
@@ -972,7 +492,7 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
      *
      * @return array|eZContentObjectTreeNode[]
      */
-    public static function fetchPosts( $asObject = false )
+    protected static function fetchPosts( $asObject = false )
     {
         $solrFetchParams = array(
             'SearchOffset' => 0,
@@ -1044,7 +564,7 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
         if ( $context !== null  ) self::$context = $context;
         if ( !isset( $GLOBALS['SensorRootHandler'] ) )
         {
-            $root = eZContentObject::fetchByRemoteID( ObjectHandlerServiceControlSensor::sensorRootRemoteId() );
+            $root = eZContentObject::fetchByRemoteID( self::sensorRootRemoteId() );
             $rootHandler = OpenPAObjectHandler::instanceFromContentObject( $root );
             $GLOBALS['SensorRootHandler'] = $rootHandler->attribute( 'control_sensor' );
         }
@@ -1055,7 +575,6 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
     {
         return self::needModeration( null, $userInfo ) ? 'waiting' : null;
     }
-
 
     /**
      * Restituisce l'owner_id dell'oggetto corrente
@@ -1103,7 +622,7 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
         }
         if ( empty( $data ) )
         {
-            $areas = self::getPostAreas();
+            $areas = self::areas();
             $area = isset( $areas['tree'][0]['node'] ) ? $areas['tree'][0]['node'] : false;
             if ( $area instanceof eZContentObjectTreeNode )
             {
@@ -1151,15 +670,7 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
             $content = $this->container->attribute( 'type' )->attribute(
                 'contentobject_attribute'
             )->toString();
-            if ( $content == 'segnalazione' )
-            {
-                $data = array(
-                    'name' => ezpI18n::tr( 'openpa_sensor/type', 'Segnalazione' ),
-                    'identifier' => 'segnalazione',
-                    'css_class' => 'info'
-                );
-            }
-            elseif ( $content == 'suggerimento' )
+            if ( $content == 'suggerimento' )
             {
                 $data = array(
                     'name' => ezpI18n::tr( 'openpa_sensor/type', 'Suggerimento' ),
@@ -1173,6 +684,14 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
                     'name' => ezpI18n::tr( 'openpa_sensor/type', 'Reclamo' ),
                     'identifier' => 'reclamo',
                     'css_class' => 'danger'
+                );
+            }
+            else // $content == 'segnalazione'
+            {
+                $data = array(
+                    'name' => ezpI18n::tr( 'openpa_sensor/type', 'Segnalazione' ),
+                    'identifier' => 'segnalazione',
+                    'css_class' => 'info'
                 );
             }
         }
@@ -1322,7 +841,7 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
     /**
      * @return eZContentObjectTreeNode[]
      */
-    public static function getOperators()
+    public static function operators()
     {
         return self::rootNode()->subTree( array(
             'ClassFilterType' => 'include',
@@ -1336,7 +855,7 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
      * @see self::walkSubtree
      * @return array
      */
-    public function getPostAreas()
+    public static function areas()
     {
         if ( self::$postAreas == null )
         {
@@ -1370,7 +889,7 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
      * @see self::walkSubtree
      * @return array
      */
-    public function getPostCategories()
+    public static function categories()
     {
         if ( self::$postCategories == null )
         {
@@ -1610,5 +1129,291 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
         $params['attributes'] = $data;
         eZContentFunctions::updateAndPublishObject( $contentObject, $params );
         return $contentObject;
+    }
+
+    /**
+     * @param eZContentObject $contentObject
+     *
+     * @return SensorPostObjectHelperInterface
+     */
+    public function getSensorPostObjectHelper( eZContentObject $contentObject )
+    {
+        return OpenPAObjectHandler::instanceFromContentObject( $contentObject )->attribute( 'control_sensor' );
+    }
+
+    /**
+     * @return string
+     */
+    public function getSensorCollaborationHandlerTypeString()
+    {
+        return 'openpasensor';
+    }
+
+    public function sensorPostObjectFactory( SensorUserInfo $user, $data, eZContentObject $update = null )
+    {
+        if ( $update instanceof eZContentObject )
+        {
+            $id = $update->attribute( 'id' );
+            eZContentObject::clearCache( array( $id ) );
+            $update = eZContentObject::fetch( $id );
+            return self::updatePost( $user, $data, $update );
+        }
+        else
+        {
+            return self::createPost( $user, $data );
+        }
+    }
+
+    /**
+     * @return array
+     */
+    public static function getSensorConfigParams()
+    {
+        return array(
+            'DefaultPostExpirationDaysInterval' => OpenPAINI::variable( 'SensorConfig', 'DefaultPostExpirationDaysInterval', 15 ),
+            'UniqueCategoryCount' => OpenPAINI::variable( 'SensorConfig', 'CategoryCount', 'unique' ) == 'unique',
+            'CategoryAutomaticAssign' => OpenPAINI::variable( 'SensorConfig', 'CategoryAutomaticAssign', 'disabled' ) == 'enabled',
+            'AuthorCanReopen' => OpenPAINI::variable( 'SensorConfig', 'AuthorCanReopen', 'disabled' ) == 'enabled',
+            'CloseCommentsAfterSeconds' => OpenPAINI::variable( 'SensorConfig', 'CloseCommentsAfterSeconds', 1 )
+        );
+    }
+
+    public function getWhatsAppUserId()
+    {
+        $postContainerNode = self::postContainerNode();
+        return $postContainerNode->attribute( 'contentobject_id' );
+    }
+
+    /**
+     * @param $identifier
+     *
+     * @return bool
+     */
+    public static function rootNodeHasAttribute( $identifier )
+    {
+        $root = eZContentObject::fetchByRemoteID( self::sensorRootRemoteId() );
+        $rootHandler = OpenPAObjectHandler::instanceFromContentObject( $root );
+        return $rootHandler->hasAttribute( $identifier );
+    }
+
+    public function siteTitle()
+    {
+        return strip_tags( $this->logoTitle() );
+    }
+
+    public function siteUrl()
+    {
+        //@todo
+        return '';
+    }
+
+    public function logoPath()
+    {
+        $data = false;
+        $root = eZContentObject::fetchByRemoteID( self::sensorRootRemoteId() );
+        $rootHandler = OpenPAObjectHandler::instanceFromContentObject( $root );
+        if ( $rootHandler->hasAttribute( 'logo' ) )
+        {
+            $attribute = $rootHandler->attribute( 'logo' )->attribute( 'contentobject_attribute' );
+            if ( $attribute instanceof eZContentObjectAttribute && $attribute->hasContent() )
+            {
+                /** @var eZImageAliasHandler $content */
+                $content = $attribute->content();
+                $original = $content->attribute( 'original' );
+                $data = $original['full_path'];
+            }
+            else
+            {
+                $data = '/extension/openpa_sensor/design/standard/images/logo_sensor.png';
+            }
+        }
+        return $data;
+    }
+
+    public function logoTitle()
+    {
+        return $this->getAttributeString( 'logo_title' );
+    }
+
+    public function logoSubtitle()
+    {
+        return $this->getAttributeString( 'logo_subtitle' );
+    }
+
+    public function headImages()
+    {
+        return array(
+            "apple-touch-icon-114x114-precomposed" => null,
+            "apple-touch-icon-72x72-precomposed" => null,
+            "apple-touch-icon-57x57-precomposed" => null,
+            "favicon" => null
+        );
+    }
+
+    public function needLogin()
+    {
+        // TODO: Implement needLogin() method.
+    }
+
+    public function attributeContacts()
+    {
+        $data = '';
+        $root = eZContentObject::fetchByRemoteID( self::sensorRootRemoteId() );
+        $rootHandler = OpenPAObjectHandler::instanceFromContentObject( $root );
+        if ( $rootHandler->hasAttribute( 'contacts' ) )
+        {
+            $attribute = $rootHandler->attribute( 'contacts' )->attribute( 'contentobject_attribute' );
+            if ( $attribute instanceof eZContentObjectAttribute )
+            {
+                $data = $attribute;
+            }
+        }
+        return $data;
+    }
+
+    public function attributeFooter()
+    {
+        $data = '';
+        $root = eZContentObject::fetchByRemoteID( self::sensorRootRemoteId() );
+        $rootHandler = OpenPAObjectHandler::instanceFromContentObject( $root );
+        if ( $rootHandler->hasAttribute( 'footer' ) )
+        {
+            $attribute = $rootHandler->attribute( 'footer' )->attribute( 'contentobject_attribute' );
+            if ( $attribute instanceof eZContentObjectAttribute )
+            {
+                $data = $attribute;
+            }
+        }
+        return $data;
+    }
+
+    public function textCredits()
+    {
+        return ezpI18n::tr( 'sensor', 'Sensorcivico - progetto di riuso del Consorzio dei Comuni Trentini - realizzato da Opencontent con ComunWeb' );
+    }
+
+    public function googleAnalyticsId()
+    {
+        return OpenPAINI::variable( 'Seo', 'GoogleAnalyticsAccountID', false );
+    }
+
+    public function cookieLawUrl()
+    {
+        $href = 'sensor/info/cookie';
+        eZURI::transformURI( $href, false, 'full' );
+        return $href;
+    }
+
+    public function menu()
+    {
+        $menu = array(
+            array(
+                'name' => ezpI18n::tr( 'sensor/menu', 'Informazioni' ),
+                'url' => 'sensor/info',
+                'highlight' => false,
+                'has_children' => true,
+                'children' => array(
+                    array(
+                        'name' => ezpI18n::tr( 'sensor/menu', 'Faq' ),
+                        'url' => 'sensor/info/faq',
+                        'has_children' => false,
+                    ),
+                    array(
+                        'name' => ezpI18n::tr( 'sensor/menu', 'Privacy' ),
+                        'url' => 'sensor/info/privacy',
+                        'has_children' => false,
+                    ),
+                    array(
+                        'name' => ezpI18n::tr( 'sensor/menu', 'Termini di utilizzo' ),
+                        'url' => 'sensor/info/terms',
+                        'has_children' => false,
+                    )
+                )
+            ),
+            array(
+                'name' => ezpI18n::tr( 'sensor/menu', 'Segnalazioni' ),
+                'url' => 'sensor/posts',
+                'highlight' => false,
+                'has_children' => false
+            )
+        );
+        if ( eZUser::currentUser()->isLoggedIn() )
+        {
+            $menu[] = array(
+                'name' => ezpI18n::tr( 'sensor/menu', 'Le mie attività' ),
+                'url' => 'sensor/dashboard',
+                'highlight' => false,
+                'has_children' => false
+            );
+            $menu[] = array(
+                'name' => ezpI18n::tr( 'sensor/menu', 'Segnala' ),
+                'url' => 'sensor/add',
+                'highlight' => true,
+                'has_children' => false
+            );
+        }
+        return $menu;
+    }
+
+    public function bannerPath()
+    {
+        $data = false;
+        $root = eZContentObject::fetchByRemoteID( self::sensorRootRemoteId() );
+        $rootHandler = OpenPAObjectHandler::instanceFromContentObject( $root );
+        if ( $rootHandler->hasAttribute( 'banner' ) )
+        {
+            $attribute = $rootHandler->attribute( 'banner' )->attribute( 'contentobject_attribute' );
+            if ( $attribute instanceof eZContentObjectAttribute && $attribute->hasContent() )
+            {
+                /** @var eZImageAliasHandler $content */
+                $content = $attribute->content();
+                $original = $content->attribute( 'original' );
+                $data = $original['full_path'];
+            }
+        }
+        return $data;
+    }
+
+    public function bannerTitle()
+    {
+        return $this->getAttributeString( 'banner_title' );
+    }
+
+    public function bannerSubtitle()
+    {
+        return $this->getAttributeString( 'banner_subtitle' );
+    }
+
+    /**
+     * @param string $identifier
+     *
+     * @return string
+     */
+    private function getAttributeString( $identifier )
+    {
+        $data = '';
+        $root = eZContentObject::fetchByRemoteID( self::sensorRootRemoteId() );
+        $rootHandler = OpenPAObjectHandler::instanceFromContentObject( $root );
+        if ( $rootHandler->hasAttribute( $identifier ) )
+        {
+            $attribute = $rootHandler->attribute( $identifier )->attribute( 'contentobject_attribute' );
+            if ( $attribute instanceof eZContentObjectAttribute )
+            {
+                $data = self::replaceBracket( $attribute->toString() );
+            }
+        }
+        return $data;
+    }
+
+    /**
+     * Replace [ ] with strong html tag
+     * @param string $string
+     * @return string
+     */
+    public static function replaceBracket( $string )
+    {
+        $string = str_replace( '[', '<strong>', $string );
+        $string = str_replace( ']', '</strong>', $string );
+        return $string;
     }
 }

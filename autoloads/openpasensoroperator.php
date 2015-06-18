@@ -51,6 +51,7 @@ class OpenPASensorOperator
                     catch( Exception $e )
                     {
                         eZDebug::writeError( $e->getMessage(), __METHOD__ );
+                        $operatorValue = null;
                     }
                 }
             } break;
