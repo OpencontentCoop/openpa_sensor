@@ -48,9 +48,11 @@ $(document).ready(function(){
     <div class="col-md-3">    
       <ul class="nav nav-pills nav-stacked">
         <li role="presentation" {if $current_part|eq('users')}class="active"{/if}><a href="{'sensor/config/users'|ezurl(no)}">{'Utenti'|i18n('openpa_sensor/config')}</a></li>
-        <li role="presentation" {if $current_part|eq('operators')}class="active"{/if}><a href="{'sensor/config/operators'|ezurl(no)}">{'Operatori'|i18n('openpa_sensor/config')}</a></li>
-        <li role="presentation" {if $current_part|eq('categories')}class="active"{/if}><a href="{'sensor/config/categories'|ezurl(no)}">{'Aree tematiche'|i18n('openpa_sensor/config')}</a></li>        
-        <li role="presentation" {if $current_part|eq('areas')}class="active"{/if}><a href="{'sensor/config/areas'|ezurl(no)}">{'Punti sulla mappa'|i18n('openpa_sensor/config')}</a></li>
+        {if $sensor.post_is_enabled}
+          <li role="presentation" {if $current_part|eq('operators')}class="active"{/if}><a href="{'sensor/config/operators'|ezurl(no)}">{'Operatori'|i18n('openpa_sensor/config')}</a></li>
+          <li role="presentation" {if $current_part|eq('categories')}class="active"{/if}><a href="{'sensor/config/categories'|ezurl(no)}">{'Aree tematiche'|i18n('openpa_sensor/config')}</a></li>
+          <li role="presentation" {if $current_part|eq('areas')}class="active"{/if}><a href="{'sensor/config/areas'|ezurl(no)}">{'Punti sulla mappa'|i18n('openpa_sensor/config')}</a></li>
+        {/if}
         {if $sensor.forum_is_enabled}
           <li role="presentation" {if $current_part|eq('dimmi')}class="active"{/if}><a href="{'sensor/config/dimmi'|ezurl(no)}">{'Discussioni Dimmi'|i18n('openpa_sensor/config')}</a></li>
         {/if}
