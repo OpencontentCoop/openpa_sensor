@@ -70,11 +70,11 @@ elseif ( $test == 'post' )
     {
         throw new Exception( 'object not found' );
     }
-
+    ObjectHandlerServiceControlSensor::$context = 'post';
     /** @var SensorCollaborationHandler $itemHandler */
     $itemHandler = $item->attribute( 'handler' );
     
-    $templateName = $itemHandler->notificationParticipantTemplate( $participantRole );
+    $templateName = SensorNotificationHelper::notificationMailTemplate( $participantRole );
     $templatePath = 'design:sensor/mail/' . $templateName;
 
     $tpl->setVariable( 'collaboration_item', $item );

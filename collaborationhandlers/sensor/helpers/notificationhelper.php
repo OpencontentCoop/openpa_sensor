@@ -176,9 +176,14 @@ class SensorNotificationHelper
         $tpl = eZTemplate::factory();
         $tpl->resetVariables();
 
+        ObjectHandlerServiceControlSensor::$context = 'post';
+
         foreach( $userCollection as $participantRole => $collectionItems )
         {
-            $templateName = $this->notificationMailTemplate( $participantRole );
+            $templateName = self::notificationMailTemplate( $participantRole );
+
+            if ( !$templateName ) continue;
+
             $templatePath = 'design:sensor/mail/' . $templateName;
 
             $tpl->setVariable( 'collaboration_item', $this->post->getCollaborationItem() );
@@ -315,7 +320,7 @@ class SensorNotificationHelper
         }
     }
 
-    protected function notificationMailTemplate( $participantRole )
+    public static function notificationMailTemplate( $participantRole )
     {
         if ( $participantRole == eZCollaborationItemParticipantLink::ROLE_APPROVER )
         {
@@ -492,20 +497,23 @@ class SensorNotificationHelper
                 'enabled' => $defaultTransport == 'ezmail'
             );
 
-
-            $transportNotificationTypes[] = array(
-                'name' => 'WhatsApp',
-                'identifier' => $type['identifier'] . ':ezwhatsapp',
-                'description' => ezpI18n::tr(
-                    'openpa_sensor/notification',
-                    'Ricevi la notifica via WhatsApp'
-                ),
-                'transport' => 'ezwhatsapp',
-                'default_transport' => $defaultTransport,
-                'parent' => $type['identifier'],
-                'group' => 'transport',
-                'enabled' => $type['identifier'] != 'on_create' && $userInfo->whatsAppId() //@todo
-            );
+            if ( class_exists( 'OCWhatsAppConnector' ) )
+            {
+                $transportNotificationTypes[] = array(
+                    'name' => 'WhatsApp',
+                    'identifier' => $type['identifier'] . ':ezwhatsapp',
+                    'description' => ezpI18n::tr(
+                        'openpa_sensor/notification',
+                        'Ricevi la notifica via WhatsApp'
+                    ),
+                    'transport' => 'ezwhatsapp',
+                    'default_transport' => $defaultTransport,
+                    'parent' => $type['identifier'],
+                    'group' => 'transport',
+                    'enabled' => $type['identifier'] != 'on_create' && $userInfo->whatsAppId()
+                    //@todo
+                );
+            }
         }
         return $transportNotificationTypes;
     }

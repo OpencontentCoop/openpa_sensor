@@ -1,0 +1,23 @@
+Per abilitare gli ambienti a livello di siteaccess, ad esempio:
+
+http://openpa/dimmi -> solo discussioni
+http://openpa/sensor -> solo segnalazioni
+http://openpa/demos -> solo consultazioni
+
+In tutti i siteaccess (compresi backend, debug e frontend) mettere:
+
+[SensorAccessSettings]
+SiteAccessName[forum]=prototipo_dimmi
+SiteAccessName[post]=prototipo_sensor
+SiteAccessName[survey]=prototipo_demos
+
+La configurazione redirige l'utente al siteaccess giusto e compila correttamente gli url nelle mail
+
+
+Nei siteaccess dedicati a sensor aggiungere:
+[SensorAccessSettings]
+Forum=enabled
+Post=disabled
+Survey=disabled
+
+discriminando in base a cosa si vuole attivare. La configurazione sovrascrive la lettura dell'attributo di sensor_root.

@@ -10,7 +10,14 @@ if ( !is_numeric( $Offset ) )
 if ( !is_numeric( $postId ) )
 {
     $node = ObjectHandlerServiceControlSensor::postContainerNode();
-    $module->redirectTo( $node->attribute( 'url_alias' ) );
+    //$module->redirectTo( $node->attribute( 'url_alias' ) );
+    $contentModule = eZModule::exists( 'content' );
+    return $contentModule->run(
+        'view',
+        array( 'full', $node->attribute( 'node_id' ) ),
+        false,
+        array( 'Offset' => $Offset )
+    );
 }
 else
 {

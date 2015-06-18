@@ -26,7 +26,7 @@ class OpenPASensorOperator
     {
         return array(
             'sensor_root_handler' => array(
-                'params' => array( 'type' => 'array', 'required' => false, 'default' => array() )
+                'context' => array( 'type' => 'string', 'required' => false, 'default' => null )
             ),
             'is_current_sensor_page' => array(
                 'function' => array( 'type' => 'string', 'required' => true )
@@ -107,7 +107,7 @@ class OpenPASensorOperator
 
             case 'sensor_root_handler':
             {
-                return $operatorValue = ObjectHandlerServiceControlSensor::rootHandler();
+                return $operatorValue = ObjectHandlerServiceControlSensor::rootHandler( $namedParameters['context'] );
             } break;
                         
             case 'sensor_postcontainer':

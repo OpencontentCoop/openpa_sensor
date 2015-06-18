@@ -5,6 +5,8 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
     const SECTION_IDENTIFIER = "sensor";
     const SECTION_NAME = "Sensor";
 
+    public static $context;
+
     /**
      * @var eZContentObjectTreeNode
      */
@@ -130,7 +132,12 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
      * @return bool
      */
     public static function PostIsEnable()
-    {        
+    {
+        $ini = eZINI::instance();
+        if ( $ini->hasVariable( 'SensorAccessSettings', 'Post' ) )
+        {
+            return $ini->variable( 'SensorAccessSettings', 'Post' ) == 'enabled';
+        }
         $dataMap = self::rootNodeDataMap();
         return isset( $dataMap['post_enabled'] ) && $dataMap['post_enabled']->attribute( 'data_int' ) == 1;
     }
@@ -141,6 +148,11 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
      */
     public static function ForumIsEnable()
     {
+        $ini = eZINI::instance();
+        if ( $ini->hasVariable( 'SensorAccessSettings', 'Forum' ) )
+        {
+            return $ini->variable( 'SensorAccessSettings', 'Forum' ) == 'enabled';
+        }
         $dataMap = self::rootNodeDataMap();
         return isset( $dataMap['forum_enabled'] ) && $dataMap['forum_enabled']->attribute( 'data_int' ) == 1;
     }
@@ -151,6 +163,11 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
      */
     public static function SurveyIsEnabled()
     {
+        $ini = eZINI::instance();
+        if ( $ini->hasVariable( 'SensorAccessSettings', 'Survey' ) )
+        {
+            return $ini->variable( 'SensorAccessSettings', 'Survey' ) == 'enabled';
+        }
         $dataMap = self::rootNodeDataMap();
         return isset( $dataMap['survey_enabled'] ) && $dataMap['survey_enabled']->attribute( 'data_int' ) == 1;
     }
@@ -178,7 +195,13 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
      */
     protected function getSensorSiteaccessUrl()
     {
-        $sitaccessIdentifier = OpenPABase::getCustomSiteaccessName( 'sensor' );
+        $currentSiteaccess = eZSiteAccess::current();
+        $sitaccessIdentifier = $currentSiteaccess['name'];
+        if ( !self::isSensorSiteAccessName( $sitaccessIdentifier )
+             || ( self::$context !== null && !$sitaccessIdentifier = self::getSensorSiteAccessName( self::$context ) ) )
+        {
+            $sitaccessIdentifier = self::getSensorSiteAccessName( self::$context );
+        }
         $path = "settings/siteaccess/{$sitaccessIdentifier}/";
         $ini = new eZINI( 'site.ini.append', $path, null, null, null, true, true );        
         if ( $ini->hasVariable( 'SiteSettings', 'SiteURL' ) )
@@ -187,6 +210,52 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
         {
             return $this->getAssetUrl();
         }
+    }
+
+    public static function isSensorSiteAccessName( $currentSiteAccessName )
+    {
+        $ini = eZINI::instance();
+        if ( $ini->hasVariable( 'SensorAccessSettings', 'SiteAccessName' ) )
+        {
+            $accessNames = (array) $ini->variable( 'SensorAccessSettings', 'SiteAccessName' );
+            return in_array( $currentSiteAccessName, $accessNames );
+        }
+        return OpenPABase::getCustomSiteaccessName( 'sensor' ) == $currentSiteAccessName;
+    }
+
+    public static function getSensorSiteAccessNameByClassIdentifier( $classIdentifier )
+    {
+
+        if ( eZINI::instance()->hasVariable( 'SensorAccessSettings', 'SiteAccessName' ) )
+        {
+            if ( strpos( $classIdentifier, 'sensor_' ) !== false )
+            {
+                return self::getSensorSiteAccessName( 'post' );
+            }
+            elseif ( strpos( $classIdentifier, 'dimmi_' ) !== false )
+            {
+                return self::getSensorSiteAccessName( 'forum' );
+            }
+            elseif ( strpos( $classIdentifier, 'consultation_' ) !== false )
+            {
+                return self::getSensorSiteAccessName( 'survey' );
+            }
+        }
+        return OpenPABase::getCustomSiteaccessName( 'sensor' );
+    }
+
+    public static function getSensorSiteAccessName( $context = null )
+    {
+        $ini = eZINI::instance();
+        if ( $ini->hasVariable( 'SensorAccessSettings', 'SiteAccessName' ) && $context !== null )
+        {
+            $accessNames = $ini->variable( 'SensorAccessSettings', 'SiteAccessName' );
+            if ( isset( $accessNames[$context] ) )
+            {
+                return $accessNames[$context];
+            }
+        }
+        return OpenPABase::getCustomSiteaccessName( 'sensor' );
     }
 
     /**
@@ -738,7 +807,7 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
         {
             $redirectUrl = $redirectUrlAlias = false;
             $currentSiteaccess = eZSiteAccess::current();
-            if ( OpenPABase::getCustomSiteaccessName( 'sensor' ) != $currentSiteaccess['name']
+            if ( !self::isSensorSiteAccessName( $currentSiteaccess['name'] )
                  && OpenPABase::getBackendSiteaccessName() != $currentSiteaccess['name'] )
             {
                 $nodeId = $parameters['node_id'];
@@ -747,23 +816,26 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
                 {
                     if ( in_array( $node->attribute( 'class_identifier' ), OpenPASensorInstaller::sensorClassIdentifiers() ) )
                     {
+                        $sensorSA = self::getSensorSiteAccessNameByClassIdentifier( $node->attribute( 'class_identifier' ) );
                         if ( $node->attribute( 'class_identifier' ) == 'dimmi_forum_reply' )
                         {
-                            $redirectUrlAlias = $node->attribute( 'parent' )->attribute( 'url_alias' );
+                            $parent = $node->attribute( 'parent' );
+                            if ( $parent instanceof eZContentObjectTreeNode )
+                            {
+                                $redirectUrlAlias = $parent->attribute( 'url_alias' );
+                            }
                         }
                         else
                         {
                             $redirectUrlAlias = $node->attribute( 'url_alias' );
                         }
-                    }
-
-                    if ( $redirectUrlAlias )
-                    {
-                        $sensorSA = OpenPABase::getCustomSiteaccessName( 'sensor' );
-                        $path = "settings/siteaccess/{$sensorSA}/";
-                        $iniFile = "site.ini";
-                        $ini = new eZINI( $iniFile . '.append', $path, null, null, null, true, true );
-                        $redirectUrl = 'http://' . $ini->variable( 'SiteSettings', 'SiteURL' ) . '/' . $redirectUrlAlias;
+                        if ( $redirectUrlAlias )
+                        {
+                            $path = "settings/siteaccess/{$sensorSA}/";
+                            $iniFile = "site.ini";
+                            $ini = new eZINI( $iniFile . '.append', $path, null, null, null, true, true );
+                            $redirectUrl = 'http://' . $ini->variable( 'SiteSettings', 'SiteURL' ) . '/' . $redirectUrlAlias;
+                        }
                     }
                 }
             }
@@ -866,18 +938,19 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
                 $timestamp = time();
             }
             $current = DateTime::createFromFormat( 'U', $timestamp );
-            $node = self::rootNode();
-            $dataMap = $node->attribute( 'data_map' );
-            $officeTimeTable = $dataMap['office_timetable']->content();
-            return !$officeTimeTable->contains( $current );
+            $dataMap = self::rootNodeDataMap();
+            if ( $dataMap['office_timetable']->attribute( 'data_type_string' ) == 'ocrecurrence' )
+            {
+                $officeTimeTable = $dataMap['office_timetable']->content();
+                return !$officeTimeTable->contains( $current );
+            }
         }
         return false;
     }
 
     public static function ModerationIsEnabled()
     {
-        $node = self::rootNode();
-        $dataMap = $node->attribute( 'data_map' );
+        $dataMap = self::rootNodeDataMap();
         return isset( $dataMap['enable_moderation'] )
                && $dataMap['enable_moderation']->attribute( 'data_int' ) == 1
                && $dataMap['enable_moderation']->attribute( 'data_type_string' ) == 'ezboolean';
@@ -885,8 +958,7 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
 
     public static function TimedModerationIsEnabled()
     {
-        $node = self::rootNode();
-        $dataMap = $node->attribute( 'data_map' );
+        $dataMap = self::rootNodeDataMap();
         return isset( $dataMap['office_timetable'] )
                && $dataMap['office_timetable']->attribute( 'has_content' )
                && $dataMap['office_timetable']->attribute( 'data_type_string' ) == 'ocrecurrence';
@@ -964,8 +1036,9 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
         return $data;
     }
 
-    public static function rootHandler()
+    public static function rootHandler( $context = null )
     {
+        if ( $context !== null  ) self::$context = $context;
         if ( !isset( $GLOBALS['SensorRootHandler'] ) )
         {
             $root = eZContentObject::fetchByRemoteID( ObjectHandlerServiceControlSensor::sensorRootRemoteId() );
@@ -1015,6 +1088,7 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
                 foreach ( $areaRelationList as $item )
                 {
                     $area = eZContentObject::fetch( $item );
+                    /** @var eZContentObjectAttribute[] $areaDataMap */
                     $areaDataMap = $area->attribute( 'data_map' );
                     if ( isset( $areaDataMap['approver'] ) )
                     {
@@ -1030,6 +1104,7 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
             $area = isset( $areas['tree'][0]['node'] ) ? $areas['tree'][0]['node'] : false;
             if ( $area instanceof eZContentObjectTreeNode )
             {
+                /** @var eZContentObjectAttribute[] $areaDataMap */
                 $areaDataMap = $area->attribute( 'data_map' );
                 if ( isset( $areaDataMap['approver'] ) )
                 {
@@ -1051,6 +1126,7 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
         if ( $this->container->hasAttribute( 'geo' )
              &&  $this->container->attribute( 'geo' )->attribute( 'has_content' ) )
         {
+            /** @var eZGmapLocation $content */
             $content = $this->container->attribute( 'geo' )->attribute(
                 'contentobject_attribute'
             )->content();
@@ -1105,6 +1181,7 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
         $name = '?';
         if ( $this->container->getContentObject() instanceof eZContentObject )
         {
+            /** @var eZContentObject $owner */
             $owner = $this->container->getContentObject()->attribute( 'owner' );
             if ( $owner )
             {
