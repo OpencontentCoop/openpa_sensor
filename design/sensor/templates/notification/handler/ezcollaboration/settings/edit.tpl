@@ -25,11 +25,14 @@ $selection=$handler.collaboration_selections}
                         {/if}
                     {/foreach}
 
-                    {def $hasTransports = false()}
+                    {def $hasTransports = false()
+                         $transportNames = array()}
                     {foreach $current_handler.info.notification-types as $type}
                         {if $type.group|eq( 'transport' )}
                             {set $hasTransports = true()}
-                            {break}
+                            {if $transportNames|contains($type.name)|not()}
+                                {set $transportNames = $transportNames|append($type.name)}
+                            {/if}
                         {/if}
                     {/foreach}
                     <table class="table table-striped">
@@ -45,8 +48,9 @@ $selection=$handler.collaboration_selections}
                                 {/foreach}
                             {/if}
                             {if $hasTransports}
-                                <th width="1" class="text-center">Email</th>
-                                <th width="1" class="text-center">WhatsApp</th>
+                                {foreach $transportNames as $name}
+                                    <th width="1" class="text-center">{$name|wash()}</th>
+                                {/foreach}
                             {/if}
                         </tr>
 
