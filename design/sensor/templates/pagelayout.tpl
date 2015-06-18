@@ -1,1 +1,0 @@
-{include uri='design:sensor/pagelayout.tpl'}
