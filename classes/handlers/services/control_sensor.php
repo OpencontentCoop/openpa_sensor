@@ -133,13 +133,14 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
      */
     public static function PostIsEnable()
     {
-        $ini = eZINI::instance();
-        if ( $ini->hasVariable( 'SensorAccessSettings', 'Post' ) )
-        {
-            return $ini->variable( 'SensorAccessSettings', 'Post' ) == 'enabled';
-        }
         $dataMap = self::rootNodeDataMap();
-        return isset( $dataMap['post_enabled'] ) && $dataMap['post_enabled']->attribute( 'data_int' ) == 1;
+        $isEnabled = isset( $dataMap['post_enabled'] ) && $dataMap['post_enabled']->attribute( 'data_int' ) == 1;
+        $ini = eZINI::instance();
+        if ( $isEnabled && $ini->hasVariable( 'SensorAccessSettings', 'Post' ) )
+        {
+            $isEnabled = $ini->variable( 'SensorAccessSettings', 'Post' ) == 'enabled';
+        }
+        return $isEnabled;
     }
 
     /**
@@ -148,13 +149,14 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
      */
     public static function ForumIsEnable()
     {
-        $ini = eZINI::instance();
-        if ( $ini->hasVariable( 'SensorAccessSettings', 'Forum' ) )
-        {
-            return $ini->variable( 'SensorAccessSettings', 'Forum' ) == 'enabled';
-        }
         $dataMap = self::rootNodeDataMap();
-        return isset( $dataMap['forum_enabled'] ) && $dataMap['forum_enabled']->attribute( 'data_int' ) == 1;
+        $isEnabled = isset( $dataMap['forum_enabled'] ) && $dataMap['forum_enabled']->attribute( 'data_int' ) == 1;
+        $ini = eZINI::instance();
+        if ( $isEnabled && $ini->hasVariable( 'SensorAccessSettings', 'Forum' ) )
+        {
+            $isEnabled = $ini->variable( 'SensorAccessSettings', 'Forum' ) == 'enabled';
+        }
+        return $isEnabled;
     }
 
     /**
@@ -163,13 +165,14 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
      */
     public static function SurveyIsEnabled()
     {
-        $ini = eZINI::instance();
-        if ( $ini->hasVariable( 'SensorAccessSettings', 'Survey' ) )
-        {
-            return $ini->variable( 'SensorAccessSettings', 'Survey' ) == 'enabled';
-        }
         $dataMap = self::rootNodeDataMap();
-        return isset( $dataMap['survey_enabled'] ) && $dataMap['survey_enabled']->attribute( 'data_int' ) == 1;
+        $isEnabled = isset( $dataMap['survey_enabled'] ) && $dataMap['survey_enabled']->attribute( 'data_int' ) == 1;
+        $ini = eZINI::instance();
+        if ( $isEnabled && $ini->hasVariable( 'SensorAccessSettings', 'Survey' ) )
+        {
+            $isEnabled = $ini->variable( 'SensorAccessSettings', 'Survey' ) == 'enabled';
+        }
+        return $isEnabled;
     }
 
     /**
