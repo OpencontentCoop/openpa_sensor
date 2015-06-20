@@ -28,8 +28,6 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
     protected static $postAreas;
     protected static $postCategories;
 
-    public static $context;
-
     public static $stateGroupIdentifier = 'sensor';
     public static $stateIdentifiers = array(
         'pending' => "Inviato",
@@ -66,11 +64,6 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
         $this->fnData['faq'] = 'getFaq';
         $this->fnData['terms'] = 'getTerms';
         $this->fnData['cookie'] = 'getCookie';
-//site_title
-//sensor_url
-//sensor_asset_url
-//logo
-//site_title
     }
 
     /**
@@ -272,23 +265,9 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
         return OpenPABase::getCustomSiteaccessName( 'sensor' ) == $currentSiteAccessName;
     }
 
-    public static function getSensorSiteAccessName( $context = null )
+    public static function getSensorSiteAccessName()
     {
         return OpenPABase::getCustomSiteaccessName( 'sensor' );
-    }
-
-    protected function getSensorSiteaccessUrl()
-    {
-        $currentSiteaccess = eZSiteAccess::current();
-        $sitaccessIdentifier = $currentSiteaccess['name'];
-        if ( !self::isSensorSiteAccessName( $sitaccessIdentifier )
-             || ( self::$context !== null && !$sitaccessIdentifier = self::getSensorSiteAccessName( self::$context ) ) )
-        {
-            $sitaccessIdentifier = self::getSensorSiteAccessName( self::$context );
-        }
-        $path = "settings/siteaccess/{$sitaccessIdentifier}/";
-        $ini = new eZINI( 'site.ini.append', $path, null, null, null, true, true );
-        return rtrim( $ini->variable( 'SiteSettings', 'SiteURL' ), '/' );
     }
 
     /**
@@ -559,9 +538,8 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
         return $data;
     }
 
-    public static function rootHandler( $context = null )
+    public static function rootHandler()
     {
-        if ( $context !== null  ) self::$context = $context;
         if ( !isset( $GLOBALS['SensorRootHandler'] ) )
         {
             $root = eZContentObject::fetchByRemoteID( self::sensorRootRemoteId() );
@@ -1052,7 +1030,7 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
 
     public function getPostUrl()
     {
-        $url = 'http://' . $this->getSensorSiteaccessUrl() . '/sensor/posts/' . $this->getContentObject()->attribute( 'id' );
+        $url = 'http://' . $this->siteUrl() . '/sensor/posts/' . $this->getContentObject()->attribute( 'id' );
         $bitly = $this->bitlyShorten( $url );
         if ( isset( $bitly['url'] ) )
         {
@@ -1203,8 +1181,27 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
 
     public function siteUrl()
     {
-        //@todo
-        return '';
+        $currentSiteaccess = eZSiteAccess::current();
+        $sitaccessIdentifier = $currentSiteaccess['name'];
+        if ( !self::isSensorSiteAccessName( $sitaccessIdentifier ) )
+        {
+            $sitaccessIdentifier = self::getSensorSiteAccessName();
+        }
+        $path = "settings/siteaccess/{$sitaccessIdentifier}/";
+        $ini = new eZINI( 'site.ini.append', $path, null, null, null, true, true );
+        return rtrim( $ini->variable( 'SiteSettings', 'SiteURL' ), '/' );
+    }
+
+    public function assetUrl()
+    {
+        $siteUrl = eZINI::instance()->variable( 'SiteSettings', 'SiteURL' );
+        $parts = explode( '/', $siteUrl );
+        if ( count( $parts ) >= 2 )
+        {
+            array_pop( $parts );
+            $siteUrl = implode( '/', $parts );
+        }
+        return rtrim( $siteUrl, '/' );
     }
 
     public function logoPath()
