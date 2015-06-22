@@ -1352,6 +1352,40 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
         return $menu;
     }
 
+    public function userMenu()
+    {
+        $userMenu = array(
+            array(
+                'name' => ezpI18n::tr( 'sensor/menu', 'Profilo' ),
+                'url' => 'user/edit',
+                'highlight' => false,
+                'has_children' => false
+            ),
+            array(
+                'name' => ezpI18n::tr( 'sensor/menu', 'Notifiche' ),
+                'url' => 'notification/settings',
+                'highlight' => false,
+                'has_children' => false
+            )
+        );
+        if ( eZUser::currentUser()->hasAccessTo( 'sensor', 'config' ) )
+        {
+            $userMenu[] = array(
+                'name' => ezpI18n::tr( 'sensor/menu', 'Settings' ),
+                'url' => 'sensor/config',
+                'highlight' => false,
+                'has_children' => false
+            );
+        }
+        $userMenu[] = array(
+            'name' => ezpI18n::tr( 'sensor/menu', 'Esci' ),
+            'url' => 'user/logout',
+            'highlight' => false,
+            'has_children' => false
+        );
+        return $userMenu;
+    }
+
     public function bannerPath()
     {
         $data = false;
