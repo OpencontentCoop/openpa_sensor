@@ -5,27 +5,22 @@ class OpenPASensorInstaller implements OpenPAInstaller
     protected $options = array();
 
     protected $steps = array(
-        '[0] segnalazioni',
-        '[1] discussioni',
-        '[2] consultazioni',
-        '[3] ruoli',
-        '[4] configurazioni ini',
+        'a' => '[a] alberatura',
+        'r' => '[r] ruoli',
+        'c' => '[c] configurazioni ini',
     );
 
     protected $installOnlyStep;
 
-    protected $environments = array();
-
     public function setScriptOptions( eZScript $script )
     {
         return $script->getOptions(
-            '[parent-node:][step:][enable:][sa_suffix:][clean]',
+            '[parent-node:][step:][sa_suffix:][clean]',
             '',
             array(
                 'parent-node' => 'Nodo id contenitore di sensor (Applicazioni di default)',
                 'step' => 'Esegue solo lo step selezionato: gli step possibili sono' . implode( ', ', $this->steps ),
-                'enable' => 'Abilita gli ambienti: [s] segnalazioni, [d] discussioni, [c] consultazioni (esempio: --enable=sd abilita le segnalazioni e le discussioni)',
-                'sa_suffix' => 'Suffisso del siteaccess (default: partecipa)',
+                'sa_suffix' => 'Suffisso del siteaccess (default: sensor)',
                 'clean' => 'Elimina tutti i contenuti presenti di sensor prima di eseguire l\'installazione'
             )
         );
@@ -38,7 +33,7 @@ class OpenPASensorInstaller implements OpenPAInstaller
 
         if ( !isset( $this->options['sa_suffix'] ) )
         {
-            $this->options['sa_suffix'] = 'partecipa';
+            $this->options['sa_suffix'] = 'sensor';
         }
 
         if ( isset( $this->options['step'] ) )
@@ -57,30 +52,6 @@ class OpenPASensorInstaller implements OpenPAInstaller
         if ( isset( $this->options['clean'] ) )
         {
             self::cleanup();
-        }
-
-        if ( isset( $this->options['enable'] ) )
-        {
-            $environments = str_split( $this->options['enable'] );
-            foreach( $environments as $environment )
-            {
-                if ( $environment == 's' )
-                {
-                    $this->environments['post'] = true;
-                }
-                elseif ( $environment == 'd' )
-                {
-                    $this->environments['forum'] = true;
-                }
-                elseif ( $environment == 'c' )
-                {
-                    $this->environments['survey'] = true;
-                }
-                else
-                {
-                    throw new Exception( "Environment '{$environment}' does not exist, , run script with -h for help" );
-                }
-            }
         }
     }
 
@@ -113,38 +84,26 @@ class OpenPASensorInstaller implements OpenPAInstaller
             $parentNodeId = $this->options['parent-node'];
         else
             $parentNodeId = OpenPAAppSectionHelper::instance()->rootNode()->attribute( 'node_id' );
-        $root = self::installAppRoot( $parentNodeId, $section, $this->environments );
+        $root = self::installAppRoot( $parentNodeId, $section );
 
         if ( $this->installOnlyStep !== null )
         {
             OpenPALog::warning( "Install step " . $this->steps[$this->installOnlyStep] );
         }
 
-        if ( ( $this->installOnlyStep !== null && $this->installOnlyStep == 0 ) || $this->installOnlyStep === null )
+        if ( ( $this->installOnlyStep !== null && $this->installOnlyStep == 'a' ) || $this->installOnlyStep === null )
         {
             OpenPALog::warning( "Installazione Sensor segnalazioni" );
             self::installSensorPostStuff( $root, $section, $this->installOnlyStep === null );
         }
 
-        if ( ( $this->installOnlyStep !== null && $this->installOnlyStep == 1 ) || $this->installOnlyStep === null )
-        {
-            OpenPALog::warning( "Installazione Sensor dimmi" );
-            self::installSensorDimmiStuff( $root, $section, $this->installOnlyStep === null );
-        }
-
-        if ( ( $this->installOnlyStep !== null && $this->installOnlyStep == 2 ) || $this->installOnlyStep === null )
-        {
-            OpenPALog::warning( "Installazione Sensor consultazioni" );
-            self::installSensorSurveyStuff( $root, $section, $this->installOnlyStep === null );
-        }
-
-        if ( ( $this->installOnlyStep !== null && $this->installOnlyStep == 3 ) || $this->installOnlyStep === null )
+        if ( ( $this->installOnlyStep !== null && $this->installOnlyStep == 'r' ) || $this->installOnlyStep === null )
         {
             OpenPALog::warning( "Installazione ruoli" );
             self::installRoles( $section, $states );
         }
 
-        if ( ( $this->installOnlyStep !== null && $this->installOnlyStep == 4 ) || $this->installOnlyStep === null )
+        if ( ( $this->installOnlyStep !== null && $this->installOnlyStep == 'c' ) || $this->installOnlyStep === null )
         {
             OpenPALog::warning( 'Salvo configurazioni' );
             self::installIniParams( $this->options['sa_suffix'] );
@@ -159,141 +118,6 @@ class OpenPASensorInstaller implements OpenPAInstaller
     public function afterInstall()
     {
         return false;
-    }
-
-    protected static function installSensorSurveyStuff( eZContentObject $rootObject, eZSection $section, $installDemoContent = true )
-    {
-        OpenPALog::setOutputLevel( OpenPALog::ERROR );
-        $surveyInstaller = new OpenPASurveyInstaller();
-        $surveyInstaller->install();
-        OpenPALog::setOutputLevel( OpenPALog::ALL );
-
-        $containerObject = eZContentObject::fetchByRemoteID( ObjectHandlerServiceControlSensor::sensorRootRemoteId() . '_survey' );
-        if ( !$containerObject instanceof eZContentObject )
-        {
-            // Post container
-            OpenPALog::warning( "Install Consultazioni container" );
-            $params = array(
-                'parent_node_id' => $rootObject->attribute( 'main_node_id' ),
-                'section_id' => $section->attribute( 'id' ),
-                'remote_id' => ObjectHandlerServiceControlSensor::sensorRootRemoteId() . '_survey',
-                'class_identifier' => 'consultation_root',
-                'attributes' => array(
-                    'name' => 'Consultazioni',
-                    'short_description' => SQLIContentUtils::getRichContent( "<p>Uno strumento di consultazione per conoscere la tua opinione.</p>" ),
-                    'description' => SQLIContentUtils::getRichContent( "<p>Uno strumento di consultazione per conoscere la tua opinione.</p>" ),
-                    'image' => 'extension/openpa_sensor/doc/default/consultation_root.png'
-                )
-            );
-            /** @var eZContentObject $containerObject */
-            $containerObject = eZContentFunctions::createAndPublishObject( $params );
-            if( !$containerObject instanceof eZContentObject )
-            {
-                throw new Exception( 'Failed creating Consultazioni container' );
-            }
-        }
-
-        if ( $containerObject->attribute( 'main_node' )->attribute( 'children_count' ) > 0 )
-        {
-            $installDemoContent = false;
-        }
-
-        if ( $installDemoContent )
-        {
-            OpenPALog::warning( "Install Survey demo " );
-            $params = array(
-                'parent_node_id' => $containerObject->attribute( 'main_node_id' ),
-                'section_id' => $section->attribute( 'id' ),
-                'class_identifier' => 'consultation_survey',
-                'attributes' => array(
-                    'name' => 'Demo Consultazione',
-                    'abstract' => SQLIContentUtils::getRichContent( "<p>Uno consultazione demo per conoscere la tua opinione.</p>" ),
-                    'description' => SQLIContentUtils::getRichContent( "<p>Uno strumento di consultazione per conoscere la tua opinione.</p>" ),
-                    'image' => 'extension/openpa_sensor/doc/default/consultation_root.png'
-                )
-            );
-            /** @var eZContentObject $categoryObject */
-            $surveyObject = eZContentFunctions::createAndPublishObject( $params );
-            if ( !$surveyObject instanceof eZContentObject )
-            {
-                throw new Exception( 'Failed creating Survey demo' );
-            }
-        }
-    }
-
-    protected static function installSensorDimmiStuff( eZContentObject $rootObject, eZSection $section, $installDemoContent = true )
-    {
-$installDemoContent = false;        
-        $containerObject = eZContentObject::fetchByRemoteID( ObjectHandlerServiceControlSensor::sensorRootRemoteId() . '_dimmi' );
-        if ( !$containerObject instanceof eZContentObject )
-        {
-            // Post container
-            OpenPALog::warning( "Install Dimmi container" );
-            $params = array(
-                'parent_node_id' => $rootObject->attribute( 'main_node_id' ),
-                'section_id' => $section->attribute( 'id' ),
-                'remote_id' => ObjectHandlerServiceControlSensor::sensorRootRemoteId() . '_dimmi',
-                'class_identifier' => 'dimmi_root',
-                'attributes' => array(
-                    'title' => 'Quali sono le principali sfide che il tuo Comune sta affrontando?',
-                    'subtitle' => 'Discutine qui con i tuoi concittadini',
-                    'description' => SQLIContentUtils::getRichContent( "<p>Questo media civico istituzionale è aperto alla consultazione, confronto e partecipazione dei cittadini.</p><p>Per partecipare, basta effettuare una rapida registrazione.</p>" ),
-                    'image' => 'extension/openpa_sensor/doc/default/dimmi_root.jpg'
-
-                )
-            );
-            /** @var eZContentObject $containerObject */
-            $containerObject = eZContentFunctions::createAndPublishObject( $params );
-            if( !$containerObject instanceof eZContentObject )
-            {
-                throw new Exception( 'Failed creating Dimmi container' );
-            }
-        }
-
-        if ( $containerObject->attribute( 'main_node' )->attribute( 'children_count' ) > 0 )
-        {
-            $installDemoContent = false;
-        }
-
-        if ( $installDemoContent )
-        {
-            // Forum sample
-            OpenPALog::warning( "Install Forum demo " );
-            $params = array(
-                'parent_node_id' => $containerObject->attribute( 'main_node_id' ),
-                'section_id' => $section->attribute( 'id' ),
-                'class_identifier' => 'dimmi_forum',
-                'attributes' => array(
-                    'title' => 'Demo'
-                )
-            );
-            /** @var eZContentObject $categoryObject */
-            $forumObject = eZContentFunctions::createAndPublishObject( $params );
-            if ( !$forumObject instanceof eZContentObject )
-            {
-                throw new Exception( 'Failed creating Dimmi forum demo' );
-            }
-
-            for ( $i = 1; $i <= 2; $i++ )
-            {
-                // Topic sample
-                OpenPALog::warning( "Install Topic demo " );
-                $params = array(
-                    'parent_node_id' => $forumObject->attribute( 'main_node_id' ),
-                    'section_id' => $section->attribute( 'id' ),
-                    'class_identifier' => 'dimmi_forum_topic',
-                    'attributes' => array(
-                        'subject' => 'Demo'
-                    )
-                );
-                /** @var eZContentObject $categoryObject */
-                $topicObject = eZContentFunctions::createAndPublishObject( $params );
-                if ( !$topicObject instanceof eZContentObject )
-                {
-                    throw new Exception( 'Failed creating Dimmi topic demo' );
-                }
-            }
-        }
     }
 
     protected static function installStates()
@@ -333,14 +157,7 @@ $installDemoContent = false;
             "sensor_category",
             "sensor_operator",
             "sensor_post",
-            "sensor_post_root",
-            "dimmi_category",
-            "dimmi_forum_reply",
-            "dimmi_forum",
-            "dimmi_root",
-            "dimmi_forum_topic",
-            "consultation_root",
-            "consultation_survey"
+            "sensor_post_root"
         );
     }
     
@@ -569,10 +386,6 @@ $installDemoContent = false;
                     'FunctionName' => '*'
                 ),
                 array(
-                    'ModuleName' => 'survey',
-                    'FunctionName' => '*'
-                ),
-                array(
                     'ModuleName' => 'content',
                     'FunctionName' => 'edit',
                     'Limitation' => array( 'Section' => $section->attribute( 'id' ) )
@@ -587,11 +400,7 @@ $installDemoContent = false;
                     'FunctionName' => 'remove',
                     'Limitation' => array(
                         'Class' => array(
-                            eZContentClass::classIDByIdentifier( 'sensor_post' ),
-                            eZContentClass::classIDByIdentifier( 'dimmi_forum' ),
-                            eZContentClass::classIDByIdentifier( 'dimmi_forum_topic' ),
-                            eZContentClass::classIDByIdentifier( 'dimmi_forum_reply' ),
-                            eZContentClass::classIDByIdentifier( 'consultation_survey' )
+                            eZContentClass::classIDByIdentifier( 'sensor_post' )
                         ),
                         'Section' => $section->attribute( 'id' )
                     )
@@ -636,23 +445,10 @@ $installDemoContent = false;
                 ),
                 array(
                     'ModuleName' => 'content',
-                    'FunctionName' => 'create',
-                    'Limitation' => array(
-                        'Class' => eZContentClass::classIDByIdentifier( 'dimmi_forum_reply' ),
-                        'ParentClass' => array(
-                            eZContentClass::classIDByIdentifier( 'dimmi_forum_topic' ),
-                            eZContentClass::classIDByIdentifier( 'dimmi_forum_reply' )
-                        ),
-                        'Section' => $section->attribute( 'id' )
-                    )
-                ),
-                array(
-                    'ModuleName' => 'content',
                     'FunctionName' => 'read',
                     'Limitation' => array(
                         'Class' => array(
-                            eZContentClass::classIDByIdentifier( 'sensor_post' ),
-                            eZContentClass::classIDByIdentifier( 'dimmi_forum_reply' )
+                            eZContentClass::classIDByIdentifier( 'sensor_post' )
                         ),
                         'Owner' => 1,
                         'Section' => $section->attribute( 'id' )
@@ -700,28 +496,10 @@ $installDemoContent = false;
                     'ModuleName' => 'content',
                     'FunctionName' => 'read',
                     'Limitation' => array(
-                        'Class' => eZContentClass::classIDByIdentifier( 'dimmi_forum_reply' ),
-                        'Section' => $section->attribute( 'id' ),
-                        'StateGroup_moderation' => array(
-                            $states['moderation.skipped']->attribute( 'id' ),
-                            $states['moderation.accepted']->attribute( 'id' )
-                        )
-                    )
-                ),
-                array(
-                    'ModuleName' => 'content',
-                    'FunctionName' => 'read',
-                    'Limitation' => array(
                         'Class' => array(
                             eZContentClass::classIDByIdentifier( 'sensor_area' ),
                             eZContentClass::classIDByIdentifier( 'sensor_post_root' ),
-                            eZContentClass::classIDByIdentifier( 'folder' ),
-                            eZContentClass::classIDByIdentifier( 'dimmi_category' ),
-                            eZContentClass::classIDByIdentifier( 'dimmi_forum_topic' ),
-                            eZContentClass::classIDByIdentifier( 'dimmi_forum' ),
-                            eZContentClass::classIDByIdentifier( 'dimmi_root' ),
-                            eZContentClass::classIDByIdentifier( 'consultation_survey' ),
-                            eZContentClass::classIDByIdentifier( 'consultation_root' )
+                            eZContentClass::classIDByIdentifier( 'folder' )
                         ),
                         'Section' => $section->attribute( 'id' )
                     )
@@ -791,16 +569,27 @@ $installDemoContent = false;
         $backendPath = "settings/siteaccess/{$backend}/";
         $iniFile = "contentstructuremenu.ini";
         $ini = new eZINI( $iniFile . '.append', $backendPath, null, null, null, true, true );
-        $value = array_unique( array_merge( (array) $ini->variable( 'TreeMenu', 'ShowClasses' ), array( 'sensor_root', 'dimmi_root', 'sensor_post_root', 'consultation_root' ) ) );
+        $value = array_unique( array_merge( (array) $ini->variable( 'TreeMenu', 'ShowClasses' ), array( 'sensor_root' ) ) );
         $ini->setVariable( 'TreeMenu', 'ShowClasses', $value );
         if ( !$ini->save() ) throw new Exception( "Non riesco a salvare {$backendPath}{$iniFile}" );
 
         $iniFile = "site.ini";
         $ini = new eZINI( $iniFile . '.append', $backendPath, null, null, null, true, true );
-        $value = array_unique( array_merge( (array) $ini->variable( 'ExtensionSettings', 'ActiveAccessExtensions' ), array( 'openpa_sensor' ) ) );
+        $value = array_unique(
+            array_merge(
+                (array) $ini->variable( 'ExtensionSettings', 'ActiveAccessExtensions' ),
+                array(
+                    'ocoperatorscollection',
+                    'ocsocialuser',
+                    'ocsocialdesign',
+                    'ocsensor',
+                    'openpa_sensor'
+                )
+            )
+        );
         $ini->setVariable( 'ExtensionSettings', 'ActiveAccessExtensions', $value );
-        $value = array_unique( array_merge( (array) $ini->variable( 'SiteAccessSettings', 'RelatedSiteAccessList' ), array( $sensor ) ) );
-        $ini->setVariable( 'SiteAccessSettings', 'RelatedSiteAccessList', $value );
+        $relatedSiteAccessList = array_unique( array_merge( (array) $ini->variable( 'SiteAccessSettings', 'RelatedSiteAccessList' ), array( $sensor ) ) );
+        $ini->setVariable( 'SiteAccessSettings', 'RelatedSiteAccessList', $relatedSiteAccessList );
         if ( !$ini->save() ) throw new Exception( "Non riesco a salvare {$backendPath}{$iniFile}" );
 
         // impostatzioni in sensor
@@ -815,13 +604,27 @@ $installDemoContent = false;
         eZFileHandler::copy( $frontendPath . 'site.ini.append.php', $sensorPath . 'site.ini.append.php' );
         $iniFile = "site.ini";
         $ini = new eZINI( $iniFile . '.append', $sensorPath, null, null, null, true, true );
-        $ini->setVariable( 'ExtensionSettings', 'ActiveAccessExtensions', array( '', 'openpa_theme_2014', 'ocbootstrap', 'ocoperatorscollection', 'openpa_sensor' ) );
+        $ini->setVariable(
+            'ExtensionSettings',
+            'ActiveAccessExtensions',
+            array(
+                '',
+                'openpa_theme_2014',
+                'ocbootstrap',
+                'ocoperatorscollection',
+                'ocsocialuser',
+                'ocsocialdesign',
+                'ocsensor',
+                'openpa_sensor'
+            )
+        );
         $ini->setVariable( 'SiteSettings', 'SiteURL', $frontendSiteUrl . '/' . $saSuffix );
         $ini->setVariable( 'SiteSettings', 'DefaultPage', 'sensor/home' );
         $ini->setVariable( 'SiteSettings', 'IndexPage', 'sensor/home' );
         $ini->setVariable( 'SiteSettings', 'LoginPage', 'embedded' );
+        $ini->setVariable( 'SiteAccessSettings', 'RelatedSiteAccessList', $relatedSiteAccessList );
         $ini->setVariable( 'DesignSettings', 'SiteDesign', 'sensor' );
-        $ini->setVariable( 'DesignSettings', 'AdditionalSiteDesignList', array( '', 'ocbootstrap', 'standard' ) );
+        $ini->setVariable( 'DesignSettings', 'AdditionalSiteDesignList', array( '', 'social', 'ocbootstrap', 'standard' ) );
         if ( !$ini->save() ) throw new Exception( "Non riesco a salvare {$sensorPath}{$iniFile}" );
 
         $iniFile = "ezcomments.ini";

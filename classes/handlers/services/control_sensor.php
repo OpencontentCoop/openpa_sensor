@@ -314,50 +314,7 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
     {
         $trigger = $parameters['trigger_name'];
         eZDebug::writeNotice( "Sensor workflow for $trigger", __METHOD__ );
-        if ( $trigger == 'pre_read' )
-        {
-            $redirectUrl = $redirectUrlAlias = false;
-            $currentSiteaccess = eZSiteAccess::current();
-            if ( !self::isSensorSiteAccessName( $currentSiteaccess['name'] )
-                 && OpenPABase::getBackendSiteaccessName() != $currentSiteaccess['name'] )
-            {
-                $nodeId = $parameters['node_id'];
-                $node = eZContentObjectTreeNode::fetch( $nodeId );
-                if ( $node instanceof eZContentObjectTreeNode )
-                {
-                    if ( in_array( $node->attribute( 'class_identifier' ), OpenPASensorInstaller::sensorClassIdentifiers() ) )
-                    {
-                        $sensorSA = self::getSensorSiteAccessNameByClassIdentifier( $node->attribute( 'class_identifier' ) );
-                        if ( $node->attribute( 'class_identifier' ) == 'dimmi_forum_reply' )
-                        {
-                            $parent = $node->attribute( 'parent' );
-                            if ( $parent instanceof eZContentObjectTreeNode )
-                            {
-                                $redirectUrlAlias = $parent->attribute( 'url_alias' );
-                            }
-                        }
-                        else
-                        {
-                            $redirectUrlAlias = $node->attribute( 'url_alias' );
-                        }
-                        if ( $redirectUrlAlias )
-                        {
-                            $path = "settings/siteaccess/{$sensorSA}/";
-                            $iniFile = "site.ini";
-                            $ini = new eZINI( $iniFile . '.append', $path, null, null, null, true, true );
-                            $redirectUrl = 'http://' . $ini->variable( 'SiteSettings', 'SiteURL' ) . '/' . $redirectUrlAlias;
-                        }
-                    }
-                }
-            }
-
-            if ( $redirectUrl )
-            {
-                eZDebug::writeNotice($redirectUrl);
-                header( 'Location: ' . $redirectUrl );
-            }
-        }
-        elseif ( $trigger == 'post_publish' )
+        if ( $trigger == 'post_publish' )
         {
             $id = $parameters['object_id'];
             $object = eZContentObject::fetch( $id );
@@ -1101,6 +1058,12 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
             if ( $attribute->hasContent() && !isset( $data[$identifier] ) )
             {
                 $data[$identifier] = $attribute->toString();
+            }
+            elseif ( $attribute->hasContent()
+                     && $attribute->attribute( 'data_type-string' ) == 'eztext'
+                     && isset( $data[$identifier] ) )
+            {
+                $data[$identifier] = $existingData[$identifier] . ' ' . $data[$identifier];
             }
         }
         $params = array();
