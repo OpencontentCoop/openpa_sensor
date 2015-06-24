@@ -1055,19 +1055,25 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
         foreach( $contentObjectDataMap as $identifier => $attribute )
         {
             $existingData[$identifier] = $attribute->toString();
-            if ( $attribute->hasContent() && !isset( $data[$identifier] ) )
-            {
-                $data[$identifier] = $attribute->toString();
-            }
-            elseif ( $attribute->hasContent()
-                     && $attribute->attribute( 'data_type-string' ) == 'eztext'
+            if ( $attribute->hasContent()
+                     && $attribute->attribute( 'data_type_string' ) == 'eztext'
                      && isset( $data[$identifier] ) )
             {
                 $data[$identifier] = $existingData[$identifier] . ' ' . $data[$identifier];
             }
+            if ( $attribute->hasContent()
+                     && $identifier == 'subject' )
+            {
+                $data[$identifier] = $existingData[$identifier];
+            }
+            elseif ( $attribute->hasContent() && !isset( $data[$identifier] ) )
+            {
+                $data[$identifier] = $existingData[$identifier];
+            }
+            
         }
         $params = array();
-        $params['attributes'] = $data;
+        $params['attributes'] = $data;        
         eZContentFunctions::updateAndPublishObject( $contentObject, $params );
         return $contentObject;
     }
