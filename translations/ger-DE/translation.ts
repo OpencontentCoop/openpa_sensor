@@ -64,7 +64,7 @@
     </message>
     <message>
         <location filename="control_sensor.php" line="1340"/>
-        <source>Le mie attività </source>
+        <source>Le mie attività</source>
         <translation>Meine Tätigkeit</translation>
     </message>
     <message>
