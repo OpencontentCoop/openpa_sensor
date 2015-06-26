@@ -1141,12 +1141,23 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
     public static function getSensorConfigParams()
     {
         return array(
-            'DefaultPostExpirationDaysInterval' => OpenPAINI::variable( 'SensorConfig', 'DefaultPostExpirationDaysInterval', 15 ),
-            'UniqueCategoryCount' => OpenPAINI::variable( 'SensorConfig', 'CategoryCount', 'unique' ) == 'unique',
-            'CategoryAutomaticAssign' => OpenPAINI::variable( 'SensorConfig', 'CategoryAutomaticAssign', 'disabled' ) == 'enabled',
-            'AuthorCanReopen' => OpenPAINI::variable( 'SensorConfig', 'AuthorCanReopen', 'disabled' ) == 'enabled',
-            'CloseCommentsAfterSeconds' => OpenPAINI::variable( 'SensorConfig', 'CloseCommentsAfterSeconds', 1 )
+            'DefaultPostExpirationDaysInterval' => self::iniVariable( 'SensorConfig', 'DefaultPostExpirationDaysInterval', 15 ),
+            'UniqueCategoryCount' => self::iniVariable( 'SensorConfig', 'CategoryCount', 'unique' ) == 'unique',
+            'CategoryAutomaticAssign' => self::iniVariable( 'SensorConfig', 'CategoryAutomaticAssign', 'disabled' ) == 'enabled',
+            'AuthorCanReopen' => self::iniVariable( 'SensorConfig', 'AuthorCanReopen', 'disabled' ) == 'enabled',
+            'CloseCommentsAfterSeconds' => self::iniVariable( 'SensorConfig', 'CloseCommentsAfterSeconds', 1 )
         );
+    }
+
+    protected static function iniVariable( $block, $value, $default = null )
+    {
+        $ini = eZINI::instance( 'ocsensor.ini' );
+        $result = $default;
+        if ( $ini->hasVariable( $block, $value ) )
+        {
+            $result = $ini->variable( $block, $value );
+        }
+        return $result;
     }
 
     public function getWhatsAppUserId()
