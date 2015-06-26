@@ -592,6 +592,29 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
         return $data;
     }
 
+    public function getPostGeoArray()
+    {
+        $data = array(
+            'latitude' => null,
+            'longitude' => null,
+            'address' => null
+        );
+        if ( $this->container->hasAttribute( 'geo' )
+             &&  $this->container->attribute( 'geo' )->attribute( 'has_content' ) )
+        {
+            /** @var eZGmapLocation $content */
+            $content = $this->container->attribute( 'geo' )->attribute(
+                'contentobject_attribute'
+            )->content();
+            $data = array(
+                'latitude' => $content->attribute( 'latitude' ),
+                'longitude' => $content->attribute( 'longitude' ),
+                'address' => $content->attribute( 'address' )
+            );
+        }
+        return $data;
+    }
+
     /**
      * Restituisce un hash con il valore dell'attributo type dell'oggetto corrente tradotto
      * @return array|bool
@@ -1023,6 +1046,7 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
         }
         catch (Exception $e)
         {
+            eZDebug::writeError( $e->getMessage(), __METHOD__ );
         }
         $output = json_decode( $output );
         if ( isset( $output->{'data'}->{'hash'} ) )
