@@ -7,7 +7,7 @@ class TrentoWsSensorPost
         'operazione' => null,
         'tipo' => null,
         'modalita_comunicazione' => 8,
-        'categoria' => 0,
+        'categoria' => 1, //default la prima in attesa di un "Senza categoria"
         'segnalatore' => null,
         'email' => null,
         'descrizione' => null,  
