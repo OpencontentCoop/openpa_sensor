@@ -21,9 +21,15 @@ class TrentoWsSensorPost
         'spi' => null,
         'visibilita' => null
     );
-    
+
+    /**
+     * @var SensorPost
+     */
     protected $post;
-    
+
+    /**
+     * @var eZContentObject
+     */
     protected $object;
     
     protected $handler;
@@ -38,7 +44,7 @@ class TrentoWsSensorPost
     
     public $outputDebug = false;
     
-    public $logFileName = 'trento_ws_sensorcivico.log';
+    public static $logFileName = 'trento_ws_sensorcivico.log';
     
     public function __construct( SensorPost $post, $outputDebug = false )
     {
@@ -135,6 +141,7 @@ class TrentoWsSensorPost
         $settings = eZINI::instance( 'ocsensor.ini' )->group( 'TrentoWebServiceSettings' );
         $client = new ggPhpSOAPClient( $settings['Server'], $settings['Path'], $settings['Port'], $settings['Protocol'], $settings['Wsld'] );
         $request = new ggPhpSOAPRequest( "setComunicazione", array( $this->data ) );
+        /** @var ggPhpSOAPResponse $response */
         $response = $client->send( $request );
         if ( $this->outputDebug )
         {
@@ -178,7 +185,7 @@ class TrentoWsSensorPost
         }
         
         $log = implode( " - ",  $logData );
-        eZLog::write( $log, $this->logFileName );
+        eZLog::write( $log, self::$logFileName );
         
         $state = $this->states['sensor_ws.sent'];        
         if ( $state instanceof eZContentObjectState )

@@ -61,7 +61,7 @@ class TrentoSensorPostEventHelper implements SensorPostEventHelperInterface
             }
             catch( Exception $e )
             {
-                eZLog::write( $this->post->objectHelper->getContentObject()->attribute( 'id' ) . ' - ' . $e->getMessage(), $this->logFileName );
+                eZLog::write( $this->post->objectHelper->getContentObject()->attribute( 'id' ) . ' - ' . $e->getMessage(), TrentoWsSensorPost::$logFileName );
             }
         }
     }
