@@ -1,7 +1,22 @@
 <?php
 
+/**
+ *
+ * Per controllare i pending
+ * php extension/openpa_sensor/classes/custom/trento/script/ws.php -strentosensor_backend -v --list_pendings
+ *
+ * Per inviare i pending
+ * php extension/openpa_sensor/classes/custom/trento/script/ws.php -strentosensor_backend -v --send_pendings
+ *
+ * Per inviare
+ * php extension/openpa_sensor/classes/custom/trento/script/ws.php -strentosensor_backend --id=1902 -v
+ *
+ */
+
 class TrentoWsSensorPost
 {
+    const PENDING_ACTION_SEND_TO_WS = 'send_to_trento_ws_sensor';
+    
     protected $data = array(
         'id' => null,
         'operazione' => null,
@@ -79,7 +94,7 @@ class TrentoWsSensorPost
                 $email = $authorUser->attribute( 'email' );
             }
         }
-        $this->data['segnalatore'] = $author;
+        $this->data['segnalatore'] = substr( $author, 0, 47 ) . '...';
         $this->data['email'] = $email;
         
         $description = '';        
@@ -166,9 +181,66 @@ class TrentoWsSensorPost
                 $message = "(internal error) setComunicazioneReturn non trovato";
                 $result = false;
             }
-        }
+        }        
         $this->log( $message, $result );
+        if ( $result == true )
+        {
+            if ( $this->isNew() )
+                $this->setSent();            
+        }
+        else
+        {
+            $this->makePending();            
+        }
         return $result;
+    }
+    
+    protected function makePending()
+    {
+        $pendingAction = eZPendingActions::fetchObject( eZPendingActions::definition(), null, array( 'action' => TrentoWsSensorPost::PENDING_ACTION_SEND_TO_WS, 'param' => $this->object->attribute( 'id' ) ) );        
+        if ( !$pendingAction instanceof eZPendingActions )
+        {
+            $pendingAction = new eZPendingActions(
+                array(
+                    'action' => TrentoWsSensorPost::PENDING_ACTION_SEND_TO_WS,
+                    'created' => time(),
+                    'param' => $this->object->attribute( 'id' )
+                )
+            );
+            $pendingAction->store();
+        }
+        if ( $this->outputDebug )
+        {
+            print_r( $pendingAction );
+        }
+    }
+    
+    protected function setSent()
+    {
+        $state = $this->states['sensor_ws.sent'];  
+        if ( $state instanceof eZContentObjectState )
+        {
+            $object = $this->object;
+            OpenPABase::sudo(
+                function () use ( $object, $state )
+                {
+                    if ( eZOperationHandler::operationIsAvailable( 'content_updateobjectstate' ) )
+                    {
+                        eZOperationHandler::execute( 'content', 'updateobjectstate',
+                            array( 'object_id' => $object->attribute( 'id' ),
+                                   'state_id_list' => array( $state->attribute( 'id' ) ) ) );
+                    }
+                    else
+                    {
+                        eZContentOperationCollection::updateObjectState( $object->attribute( 'id' ), array( $state->attribute( 'id' ) ) );
+                    }
+                }
+            );
+        }
+        else
+        {
+            throw new Exception( "State 'sensor_ws.sent' not found" );
+        }
     }
     
     public function log( $message, $result )
@@ -185,34 +257,51 @@ class TrentoWsSensorPost
         }
         
         $log = implode( " - ",  $logData );
-        eZLog::write( $log, self::$logFileName );
+        eZLog::write( $log, self::$logFileName );        
+    }
+    
+    public static function listPendingItems()
+    {
+        $entries = eZPendingActions::fetchByAction( TrentoWsSensorPost::PENDING_ACTION_SEND_TO_WS );
+        return $entries;
+    }
+    
+    public static function sendPendingItems( $outputDebug = false )
+    {        
+        $entries = self::listPendingItems();
         
-        $state = $this->states['sensor_ws.sent'];        
-        if ( $state instanceof eZContentObjectState )
+        if ( !empty( $entries ) )
         {
-            if ( $result == true && $this->isNew() )
+            $postIDList = array();
+            foreach ( $entries as $entry )
             {
-                $object = $this->object;
-                OpenPABase::sudo(
-                    function () use ( $object, $state )
+                $postID = $entry->attribute( 'param' );                
+        
+                try
+                {
+                    $helper = SensorHelper::instanceFromContentObjectId( $postID );
+                    if ( $helper instanceof SensorHelper )
                     {
-                        if ( eZOperationHandler::operationIsAvailable( 'content_updateobjectstate' ) )
+                        $post = $helper->currentSensorPost;
+                        $wsPost = new TrentoWsSensorPost( $post, $outputDebug );
+                        if ( $wsPost->send() )
                         {
-                            eZOperationHandler::execute( 'content', 'updateobjectstate',
-                                array( 'object_id' => $object->attribute( 'id' ),
-                                       'state_id_list' => array( $state->attribute( 'id' ) ) ) );
-                        }
-                        else
-                        {
-                            eZContentOperationCollection::updateObjectState( $object->attribute( 'id' ), array( $state->attribute( 'id' ) ) );
+                            $postIDList[] = (int)$postID;
                         }
                     }
-                );
+                }
+                catch( Exception $e )
+                {
+                    eZLog::write( $e->getMessage(), self::$logFileName );  
+                }
             }
-        }
-        else
-        {
-            throw new Exception( "State 'sensor_ws.sent' not found" );
+        
+            eZPendingActions::removeByAction(
+                TrentoWsSensorPost::PENDING_ACTION_SEND_TO_WS,
+                array(
+                    'param' => array( $postIDList )
+                )
+            );
         }
     }
     
