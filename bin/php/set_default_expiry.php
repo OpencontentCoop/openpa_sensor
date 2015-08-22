@@ -18,15 +18,16 @@ OpenPALog::setOutputLevel( OpenPALog::ALL );
 
 try
 {
+    /** @var eZCollaborationItem[] $items */
     $items = eZPersistentObject::fetchObjectList(
         eZCollaborationItem::definition(),
         null,
-        array( 'type_identifier' => OpenPASensorCollaborationHandler::TYPE_STRING )
+        array( 'type_identifier' => SensorHelper::factory()->getSensorCollaborationHandlerTypeString() )
     );
 
     foreach( $items as $item )
     {
-        if ( $item->attribute( SensorHelper::ITEM_EXPIRY ) == '' )
+        if ( $item->attribute( SensorPost::COLLABORATION_FIELD_EXPIRY ) == '' )
         {
             $helper = SensorHelper::instanceFromCollaborationItem( $item );
             $helper->currentSensorPost->setExpiry(
