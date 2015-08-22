@@ -75,8 +75,21 @@ class TrentoWsSensorPost
         
         $this->data['operazione'] = $this->isNew() ? 'ADD' : 'UPDATE';
         
-        $type = $this->handler->attribute( 'type' );        
-        $this->data['tipo'] = $type['identifier'] == 'suggerimento' ? 3 : $type['identifier'] == 'reclamo' ? 2 : 1;         
+        $type = $this->handler->attribute( 'type' );
+        
+        $this->data['tipo'] = 1;
+        if ( $type['identifier'] == 'suggerimento' )
+        {
+            $this->data['tipo'] = 3;    
+        }
+        elseif ( $type['identifier'] == 'reclamo' )
+        {
+            $this->data['tipo'] = 2;    
+        }
+        elseif ( $type['identifier'] == 'segnalazione' )
+        {
+            $this->data['tipo'] = 1;    
+        }        
         
         $author = '?';
         $email = '?';
@@ -86,7 +99,12 @@ class TrentoWsSensorPost
             $behalf = $this->post->objectHelper->getContentObjectAttribute( 'on_behalf_of' );
             if ( $behalf instanceof eZContentObjectAttribute && $behalf->hasContent() )
             {
-                $author .= ' (' . $behalf->toString() . ')';     
+                $author = $behalf->toString();
+                $behalfDetails = $this->post->objectHelper->getContentObjectAttribute( 'on_behalf_of_detail' );
+                if ( $behalfDetails instanceof eZContentObjectAttribute && $behalfDetails->hasContent() )
+                {
+                    $author .=  ', ' . $behalfDetails->toString();     
+                }
             }
             $authorUser = eZUser::fetch( $this->object->attribute( 'owner' )->attribute( 'id' ) );
             if ( $authorUser instanceof eZUser )
@@ -100,7 +118,9 @@ class TrentoWsSensorPost
         $description = '';        
         $subjectAttribute = $this->post->objectHelper->getContentObjectAttribute( 'subject' );
         if ( $subjectAttribute && $subjectAttribute->hasContent() )
-            $description = '== ' . $subjectAttribute->toString() . ' == ';
+            $description = ' ' . $subjectAttribute->toString() . '
+
+ ';
         $descriptionAttribute = $this->post->objectHelper->getContentObjectAttribute( 'description' );
         if ( $descriptionAttribute )
             $description .= $descriptionAttribute->toString();
@@ -122,15 +142,56 @@ class TrentoWsSensorPost
         $this->data['longitudine'] = $longitude;
         
         $this->data['url'] = $this->handler->attribute( 'post_url' );
+                
+        $this->data['spi'] = 0;
+        $spi = $this->post->objectHelper->getContentObjectAttribute( 'spi' );
+        if ( $spi instanceof eZContentObjectAttribute && $spi->attribute( 'data_int' ) == 1 )
+        {
+            $this->data['spi'] = 1;    
+        }
         
-        $this->data['spi'] = 0; //@todo
-        $privacyState = $this->handler->attribute( 'current_privacy_state' );
-        $this->data['visibilita'] = (int) $privacyState['identifier'] == 'public';
+        $behalfMode = $this->post->objectHelper->getContentObjectAttribute( 'on_behalf_of_mode' );
+        if ( $behalfMode instanceof eZContentObjectAttribute && $behalfMode->hasContent() )
+        {
+            $this->data['modalita_comunicazione'] = $this->parseMode( $behalfMode );    
+        }
+        
+        $privacyState = $this->handler->attribute( 'current_privacy_state' );        
+        $this->data['visibilita'] = intval( $privacyState['identifier'] == 'public' );
         
         if ( $this->outputDebug )
         {
             print_r( $this->data );
         }
+    }
+    
+    protected function parseMode( eZContentObjectAttribute $behalfMode )
+    {
+        $value = 8;
+        $stringValue = $behalfMode->toString();
+        $data = array(
+            '1' => 'Telefono',
+            '2' => 'Posta o Fax',
+            '3' => 'E-mail',
+            '4' => 'Rete Civica In dirett@',
+            '5' => 'Front office',
+            '6' => 'Bussola',
+            '8' => 'sensoRcivico',
+            '9' => 'Linea verde',
+            '10' => 'Sul posto',
+            '11' => 'Richiesta Difensore civico',
+            '12' => 'Istanza / Petizione',
+            '13' => 'Aiutaci a migliorare'
+        );
+        foreach( $data as $id => $match )
+        {
+            if ( strtolower( $stringValue ) == strtolower( $match ) )
+            {
+                $value = $id;
+                break;
+            }
+        }
+        return $value;
     }
     
     protected function isNew()
