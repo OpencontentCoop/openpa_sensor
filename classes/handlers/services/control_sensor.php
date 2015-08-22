@@ -517,8 +517,8 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
      */
     public function getPostAuthorId()
     {
-        if ( $this->container->getContentObject() instanceof eZContentObject )
-            return $this->container->getContentObject()->attribute( 'owner_id' );
+        if ( $this->getContentObject() instanceof eZContentObject )
+            return $this->getContentObject()->attribute( 'owner_id' );
         return null;
     }
 
@@ -659,10 +659,10 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
     public function getPostAuthorName()
     {
         $name = '?';
-        if ( $this->container->getContentObject() instanceof eZContentObject )
+        if ( $this->getContentObject() instanceof eZContentObject )
         {
             /** @var eZContentObject $owner */
-            $owner = $this->container->getContentObject()->attribute( 'owner' );
+            $owner = $this->getContentObject()->attribute( 'owner' );
             if ( $owner )
             {
                 $name = $owner->attribute( 'name' );
@@ -706,7 +706,7 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
      */
     public function getCurrentModerationState()
     {
-        if ( $this->container->getContentObject() instanceof eZContentObject )
+        if ( $this->getContentObject() instanceof eZContentObject )
         {
             $states = OpenPABase::initStateGroup(
                 self::$moderationStateGroupIdentifier,
@@ -714,7 +714,7 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
             );
             foreach ( $states as $state )
             {
-                if ( in_array( $state->attribute( 'id' ), $this->container->getContentObject()->attribute( 'state_id_array' ) ) )
+                if ( in_array( $state->attribute( 'id' ), $this->getContentObject()->attribute( 'state_id_array' ) ) )
                 {
                     return array(
                         'name' => $state->attribute( 'current_translation' )->attribute( 'name' ),
@@ -734,7 +734,7 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
      */
     public function getCurrentPrivacyState()
     {
-        if ( $this->container->getContentObject() instanceof eZContentObject )
+        if ( $this->getContentObject() instanceof eZContentObject )
         {
             $states = OpenPABase::initStateGroup(
                 self::$privacyStateGroupIdentifier,
@@ -742,7 +742,7 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
             );
             foreach ( $states as $state )
             {
-                if ( in_array( $state->attribute( 'id' ), $this->container->getContentObject()->attribute( 'state_id_array' ) ) )
+                if ( in_array( $state->attribute( 'id' ), $this->getContentObject()->attribute( 'state_id_array' ) ) )
                 {
                     return array(
                         'name' => $state->attribute( 'current_translation' )->attribute( 'name' ),
@@ -762,7 +762,7 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
      */
     public function getCurrentState()
     {
-        if ( $this->container->getContentObject() instanceof eZContentObject )
+        if ( $this->getContentObject() instanceof eZContentObject )
         {
             $states = OpenPABase::initStateGroup(
                 self::$stateGroupIdentifier,
@@ -783,7 +783,7 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
                 {
                     $cssClass = 'success';
                 }
-                if ( in_array( $state->attribute( 'id' ), $this->container->getContentObject()->attribute( 'state_id_array' ) ) )
+                if ( in_array( $state->attribute( 'id' ), $this->getContentObject()->attribute( 'state_id_array' ) ) )
                 {
                     return array(
                         'name' => $state->attribute( 'current_translation' )->attribute( 'name' ),
@@ -953,8 +953,9 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
 
     public function getContentObject()
     {
+        // re-fetch to workaround OpenPAObjectHandler memory cache
         $id = $this->container->getContentObject()->attribute( 'id' );
-        eZContentObject::clearCache( array( $id ) );
+        //eZContentObject::clearCache( array( $id ) );
         return eZContentObject::fetch( $id );
     }
 
