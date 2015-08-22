@@ -953,7 +953,9 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
 
     public function getContentObject()
     {
-        return $this->container->getContentObject();
+        $id = $this->container->getContentObject()->attribute( 'id' );
+        eZContentObject::clearCache( array( $id ) );
+        return eZContentObject::fetch( $id );
     }
 
     public function getContentObjectAttribute( $identifier )
@@ -1097,7 +1099,7 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
             
         }
         $params = array();
-        $params['attributes'] = $data;        
+        $params['attributes'] = $data;
         eZContentFunctions::updateAndPublishObject( $contentObject, $params );
         return $contentObject;
     }
