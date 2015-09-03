@@ -131,7 +131,7 @@ class TrentoWsSensorPost
         $longitude = '?';
         $geoAttribute = $this->post->objectHelper->getContentObjectAttribute( 'geo' );
 
-        if ( !$geoAttribute instanceof eZContentObjectAttribute )
+        if ( !$geoAttribute instanceof eZContentObjectAttribute || ( $geoAttribute instanceof eZContentObjectAttribute && !$geoAttribute->hasContent() ) )
         {
             $areas = ObjectHandlerServiceControlSensor::areas();
             $firstArea = $areas['tree'][0]['node'];
