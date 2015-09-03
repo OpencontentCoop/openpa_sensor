@@ -130,6 +130,21 @@ class TrentoWsSensorPost
         $latitude = '?';
         $longitude = '?';
         $geoAttribute = $this->post->objectHelper->getContentObjectAttribute( 'geo' );
+
+        if ( !$geoAttribute instanceof eZContentObjectAttribute )
+        {
+            $areas = ObjectHandlerServiceControlSensor::areas();
+            $firstArea = $areas['tree'][0]['node'];
+            if ( $firstArea instanceof eZContentObjectTreeNode )
+            {
+                $firstAreaDataMap = $firstArea->attribute( 'data_map' );
+                if ( isset( $firstAreaDataMap['geo'] ) && $firstAreaDataMap['geo']->hasContent() )
+                {
+                    $geoAttribute = $firstAreaDataMap;
+                }
+            }
+        }
+
         if ( $geoAttribute )
         {
             $geoAttributeContent = $geoAttribute->attribute( 'content' );            
