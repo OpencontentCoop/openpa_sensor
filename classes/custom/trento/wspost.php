@@ -112,7 +112,7 @@ class TrentoWsSensorPost
                 $email = $authorUser->attribute( 'email' );
             }
         }
-        $this->data['segnalatore'] = substr( $author, 0, 197 ) . '...';
+        $this->data['segnalatore'] = mb_strlen( $author ) > 197 ? substr( $author, 0, 197 ) . '...' : $author;
         $this->data['email'] = $email;
         
         $description = '';        
