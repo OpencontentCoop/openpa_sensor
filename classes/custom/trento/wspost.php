@@ -112,7 +112,7 @@ class TrentoWsSensorPost
                 $email = $authorUser->attribute( 'email' );
             }
         }
-        $this->data['segnalatore'] = substr( $author, 0, 47 ) . '...';
+        $this->data['segnalatore'] = substr( $author, 0, 197 ) . '...';
         $this->data['email'] = $email;
         
         $description = '';        
