@@ -435,7 +435,7 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
             'SearchLimit' => 1000,
             'Facet' => null,
             'SortBy' => array( 'published' => 'desc' ),
-            'Filter' => array( 'attr_privacy_b:1' ),
+            'Filter' => array(),
             'SearchContentClassID' => array( 'sensor_post' ),
             'SearchSectionID' => null,
             'SearchSubTreeArray' => array( self::postContainerNode()->attribute( 'node_id' ) ),
@@ -469,9 +469,9 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
      * @return SensorGeoJsonFeatureCollection
      */
     public static function fetchSensorGeoJsonFeatureCollection()
-    {
-        $data = new SensorGeoJsonFeatureCollection();
+    {        
         $items = self::fetchPosts( false );
+        $data = $items['SearchCount'] > 0 ? new SensorGeoJsonFeatureCollection() : null;
         foreach( $items['SearchResult'] as $item )
         {
             $geo = isset( $item['fields']['subattr_geo___coordinates____gpt'] ) ? $item['fields']['subattr_geo___coordinates____gpt'] : array();
