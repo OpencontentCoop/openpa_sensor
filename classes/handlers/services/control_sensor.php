@@ -1014,10 +1014,13 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
     public function getPostUrl()
     {
         $url = 'http://' . $this->siteUrl() . '/sensor/posts/' . $this->getContentObject()->attribute( 'id' );
-        $bitly = $this->bitlyShorten( $url );
-        if ( isset( $bitly['url'] ) )
+        if ( $this->iniVariable( 'SensorConfig', 'UseShortUrl', 'disabled' ) == 'enabled' )
         {
-            return $bitly['url'];
+            $bitly = $this->bitlyShorten( $url );
+            if ( isset( $bitly['url'] ) )
+            {
+                return $bitly['url'];
+            }
         }
         return $url;
     }
