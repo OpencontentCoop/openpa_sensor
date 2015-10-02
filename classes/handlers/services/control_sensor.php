@@ -376,14 +376,21 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
 
     protected static function needModeration( $timestamp = null, SensorUserInfo $userInfo = null )
     {
-        $result = false;
+        if ( !$userInfo instanceof SensorUserInfo )
+        {
+            $userInfo = SensorUserInfo::current();
+        }
+        if ( $userInfo->hasModerationMode() )
+        {
+            return true;
+        }
 
         if ( self::ModerationIsEnabled() )
         {
-            $result = true;
+            return true;
         }
 
-        if ( !$result && self::TimedModerationIsEnabled() )
+        if ( self::TimedModerationIsEnabled() )
         {
             if ( !$timestamp )
             {
@@ -394,20 +401,10 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
             if ( $dataMap['office_timetable']->attribute( 'data_type_string' ) == 'ocrecurrence' )
             {
                 $officeTimeTable = $dataMap['office_timetable']->content();
-                $result = !$officeTimeTable->contains( $current );
+                return !$officeTimeTable->contains( $current );
             }
         }
-
-        if ( !$userInfo instanceof SensorUserInfo )
-        {
-            $userInfo = SensorUserInfo::current();
-        }
-        if ( !$result  )
-        {
-            $result = $userInfo->hasModerationMode();
-        }
-
-        return $result;
+        return false;
     }
 
     public static function ModerationIsEnabled()
