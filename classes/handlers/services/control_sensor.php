@@ -644,11 +644,21 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
                     'css_class' => 'danger'
                 );
             }
-            else // $content == 'segnalazione'
+            elseif ( $content == 'segnalazione' )
             {
                 $data = array(
                     'name' => ezpI18n::tr( 'openpa_sensor/type', 'Segnalazione' ),
                     'identifier' => 'segnalazione',
+                    'css_class' => 'info'
+                );
+            }
+            else
+            {
+                $trans = eZCharTransform::instance();
+                $identifier = $trans->transformByGroup( $content, 'identifier' );
+                $data = array(
+                    'name' => $content,
+                    'identifier' => $identifier,
                     'css_class' => 'info'
                 );
             }
