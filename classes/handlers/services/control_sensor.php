@@ -813,7 +813,7 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
     {
         return self::rootNode()->subTree( array(
             'ClassFilterType' => 'include',
-            'ClassFilterArray' => array( 'user', 'sensor_operator', 'dipendente' ),
+            'ClassFilterArray' => eZUser::fetchUserClassNames(),
             'SortBy' => array( 'name', true )
         ) );
     }
