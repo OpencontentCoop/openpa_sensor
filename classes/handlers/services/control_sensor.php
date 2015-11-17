@@ -236,7 +236,7 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
             {
                 if ( is_array( $coords ) )
                 {
-                    self::findAreaCoords( $subNode->attribute( 'object' ), $coords, $includeClasses );
+                    self::findAreaCoords( $subNode->attribute( 'object' ), $coords );
                 }
                 $data[] = array(
                     'node' => $subNode,
@@ -807,10 +807,51 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
     }
 
     /**
+     * @param SensorPost|null $post
+     *
      * @return eZContentObjectTreeNode[]
      */
-    public static function operators()
+    public static function operators( SensorPost $post = null )
     {
+        $setting = self::getSensorConfigParams();
+        if (
+            $setting['FilterOperatorsByOwner']
+            && $post instanceof SensorPost
+            && $post->isAssigned()
+            && !SensorUserPostRoles::instance( $post, SensorUserInfo::current() )->isApprover()
+        )
+        {
+            $struttureIds = array();
+            $owners = $post->getOwners( true );
+            foreach( $owners as $owner )
+            {
+                if ( $owner->attribute( 'class_identifier' ) == 'sensor_operator' )
+                {
+                    /** @var eZContentObjectAttribute[] $operatorDataMap */
+                    $operatorDataMap = $owner->attribute( 'data_map' );
+                    if ( isset( $operatorDataMap['struttura_di_competenza'] ) )
+                    {
+                        $struttureIds = array_merge( $struttureIds, explode( '-', $operatorDataMap['struttura_di_competenza']->toString() ) );
+                    }
+                }
+            }
+            $struttureIds = array_unique( $struttureIds );
+            if ( !empty( $struttureIds ) )
+            {
+                $filters = count( $struttureIds ) > 1 ? array( 'or' ) : array();
+                foreach( $struttureIds as $struttureId )
+                {
+                    $filters[] = 'submeta_struttura_di_competenza___id_si:' . $struttureId;
+                }
+                $searchOperators = eZFunctionHandler::execute( 'ezfind', 'search', array(
+                    'subtree_array' => array( self::rootNode()->attribute( 'node_id' ) ),
+                    'class_id' => array( 'sensor_operator' ),
+                    'filter' => array( $filters, '-meta_id_si:' . eZUser::currentUserID() ),
+                    'limitation' => array()
+                ));
+                return $searchOperators['SearchResult'];
+            }
+        }
         return self::rootNode()->subTree( array(
             'ClassFilterType' => 'include',
             'ClassFilterArray' => eZUser::fetchUserClassNames(),
@@ -1162,7 +1203,8 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
             'CategoryAutomaticAssign' => self::iniVariable( 'SensorConfig', 'CategoryAutomaticAssign', 'disabled' ) == 'enabled',
             'AuthorCanReopen' => self::iniVariable( 'SensorConfig', 'AuthorCanReopen', 'disabled' ) == 'enabled',
             'CloseCommentsAfterSeconds' => self::iniVariable( 'SensorConfig', 'CloseCommentsAfterSeconds', 1 ),
-            'ModerateNewWhatsAppUser' => self::iniVariable( 'SensorConfig', 'ModerateNewWhatsAppUser', 'enabled' ) == 'enabled'
+            'ModerateNewWhatsAppUser' => self::iniVariable( 'SensorConfig', 'ModerateNewWhatsAppUser', 'enabled' ) == 'enabled',
+            'FilterOperatorsByOwner' => self::iniVariable( 'SensorConfig', 'FilterOperatorsByOwner', 'enabled' ) == 'enabled'
         );
     }
 
