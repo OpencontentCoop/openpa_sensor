@@ -214,7 +214,7 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
     protected static function walkSubtree( eZContentObjectTreeNode $node, &$coords, $includeClasses = array() )
     {
         $data = array();
-        if ( $node->childrenCount() > 0 )
+        if ( $node->childrenCount( false ) > 0 )
         {
             if ( empty( $includeClasses ) )
             {
@@ -223,9 +223,9 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
             else
             {
                 $children = $node->subTree( array(
-                    'ClassFilterType' => 'include',
                     'Depth' => 1,
                     'DepthOperator' => 'eq',
+                    'ClassFilterType' => 'include',
                     'ClassFilterArray' => $includeClasses,
                     'Limitation' => array(),
                     'SortBy' => $node->attribute( 'sort_array' )
@@ -687,26 +687,17 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
         return $name;
     }
 
-    public function getPostCategoryName()
+    public function getPostCategories()
     {
-        $name = '';
+        $data = array();
         if ( $this->container->hasAttribute( 'category' )
              && $this->container->attribute( 'category' ) instanceof OpenPAAttributeHandler
              && $this->container->attribute( 'category' )->attribute( 'has_content' ) )
         {
-            $names = array();
             $categoryIds = explode( '-', $this->container->attribute( 'category' )->attribute( 'contentobject_attribute' )->toString() );
-            foreach( $categoryIds as $categoryId )
-            {
-                $category = eZContentObject::fetch( $categoryId );
-                if ( $category instanceof eZContentObject )
-                {
-                    $names[] = $category->attribute( 'name' );
-                }
-            }
-            $name = implode( ' - ', $names );
+            $data = eZContentObject::fetchIDArray( $categoryIds );
         }
-        return $name;
+        return $data;
     }
 
     /**
@@ -879,13 +870,14 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
     {
         if ( self::$postAreas == null )
         {
+            $includeClasses = array( 'sensor_area' );
             $data = $coords = array();
             /** @var eZContentObjectTreeNode[] $treeAreas */
             $treeAreas = self::rootNode()->subTree( array(
                     'ClassFilterType' => 'include',
                     'Depth' => 1,
                     'DepthOperator' => 'eq',
-                    'ClassFilterArray' => array( 'sensor_area' ),
+                    'ClassFilterArray' => $includeClasses,
                     'Limitation' => array(),
                     'SortBy' => array( 'name', true )
                 ) );
@@ -895,7 +887,7 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
                 self::findAreaCoords( $node->attribute( 'object' ), $coords );
                 $data[] = array(
                     'node' => $node,
-                    'children' => self::walkSubtree( $node, $coords )
+                    'children' => self::walkSubtree( $node, $coords, $includeClasses )
                 );
             }
 
@@ -913,14 +905,15 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
     {
         if ( self::$postCategories == null )
         {
+            $includeClasses = array( 'sensor_category' );
             $data = array();
             $false = false;
             /** @var eZContentObjectTreeNode[] $treeCategories */
             $treeCategories = self::postCategoriesNode()->subTree( array(
-                    'ClassFilterType' => 'include',
                     'Depth' => 1,
                     'DepthOperator' => 'eq',
-                    'ClassFilterArray' => array( 'sensor_category' ),
+                    'ClassFilterType' => 'include',
+                    'ClassFilterArray' => $includeClasses,
                     'Limitation' => array(),
                     'SortBy' => array( 'name', true )
                 ) );
@@ -929,10 +922,9 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
             {                
                 $data[] = array(
                     'node' => $node,
-                    'children' => self::walkSubtree( $node, $false )
+                    'children' => self::walkSubtree( $node, $false, $includeClasses )
                 );
             }
-
             self::$postCategories = array( 'tree' => $data );
         }
         return self::$postCategories;
