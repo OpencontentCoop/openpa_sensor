@@ -806,6 +806,12 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
         return array();
     }
 
+    public static function observers( SensorPost $post = null )
+    {
+        $setting = self::getSensorConfigParams();
+        return self::fetchOperators( $post, $setting['FilterObserversByOwner'] );
+    }
+
     /**
      * @param SensorPost|null $post
      *
@@ -814,8 +820,13 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
     public static function operators( SensorPost $post = null )
     {
         $setting = self::getSensorConfigParams();
+        return self::fetchOperators( $post, $setting['FilterOperatorsByOwner'] );
+    }
+
+    protected static function fetchOperators( SensorPost $post = null, $filterByOwner = false )
+    {
         if (
-            $setting['FilterOperatorsByOwner']
+            $filterByOwner
             && $post instanceof SensorPost
             && $post->isAssigned()
             && !SensorUserPostRoles::instance( $post, SensorUserInfo::current() )->isApprover()
@@ -1204,7 +1215,8 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
             'AuthorCanReopen' => self::iniVariable( 'SensorConfig', 'AuthorCanReopen', 'disabled' ) == 'enabled',
             'CloseCommentsAfterSeconds' => self::iniVariable( 'SensorConfig', 'CloseCommentsAfterSeconds', 1 ),
             'ModerateNewWhatsAppUser' => self::iniVariable( 'SensorConfig', 'ModerateNewWhatsAppUser', 'enabled' ) == 'enabled',
-            'FilterOperatorsByOwner' => self::iniVariable( 'SensorConfig', 'FilterOperatorsByOwner', 'enabled' ) == 'enabled'
+            'FilterOperatorsByOwner' => self::iniVariable( 'SensorConfig', 'FilterOperatorsByOwner', 'disabled' ) == 'enabled',
+            'FilterObserversByOwner' => self::iniVariable( 'SensorConfig', 'FilterObserversByOwner', 'disabled' ) == 'enabled'
         );
     }
 
