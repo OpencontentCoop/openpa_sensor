@@ -15,7 +15,6 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
      */
     protected static $rootNodeDataMap;
 
-    // sensor/post
     /**
      * @var eZContentObjectTreeNode
      */
@@ -24,6 +23,11 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
      * @var eZContentObjectTreeNode
      */
     protected static $postCategoriesNode;
+    /**
+     * @var eZContentObjectTreeNode
+     */
+    protected static $operatorsNode;
+
     protected static $postContentClass;
     protected static $postAreas;
     protected static $postCategories;
@@ -197,6 +201,23 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
             }
         }
         return self::$postContainerNode;
+    }
+
+    public static function operatorsNode()
+    {
+        if ( self::$operatorsNode == null )
+        {
+            $root = eZContentObject::fetchByRemoteID( self::sensorRootRemoteId() . '_operators' );
+            if ( $root instanceof eZContentObject )
+            {
+                self::$operatorsNode = $root->attribute( 'main_node' );
+            }
+            else
+            {
+                self::$operatorsNode = self::rootNode();;
+            }
+        }
+        return self::$operatorsNode;
     }
 
     /**
@@ -816,6 +837,7 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
 
     protected static function fetchOperators( SensorPost $post = null, $filterByOwner = false )
     {
+        $searchFilters = array();
         if (
             $filterByOwner
             && $post instanceof SensorPost
@@ -840,25 +862,21 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
             $struttureIds = array_unique( $struttureIds );
             if ( !empty( $struttureIds ) )
             {
-                $filters = count( $struttureIds ) > 1 ? array( 'or' ) : array();
+                $searchFilters = count( $struttureIds ) > 1 ? array( 'or' ) : array();
                 foreach( $struttureIds as $struttureId )
                 {
-                    $filters[] = 'submeta_struttura_di_competenza___id_si:' . $struttureId;
+                    $searchFilters[] = 'submeta_struttura_di_competenza___id_si:' . $struttureId;
                 }
-                $searchOperators = eZFunctionHandler::execute( 'ezfind', 'search', array(
-                    'subtree_array' => array( self::rootNode()->attribute( 'node_id' ) ),
-                    'class_id' => array( 'sensor_operator' ),
-                    'filter' => array( $filters, '-meta_id_si:' . eZUser::currentUserID() ),
-                    'limitation' => array()
-                ));
-                return $searchOperators['SearchResult'];
             }
         }
-        return self::rootNode()->subTree( array(
-            'ClassFilterType' => 'include',
-            'ClassFilterArray' => eZUser::fetchUserClassNames(),
-            'SortBy' => array( 'name', true )
-        ) );
+        $searchOperators = eZFunctionHandler::execute( 'ezfind', 'search', array(
+            'subtree_array' => array( self::operatorsNode()->attribute( 'node_id' ) ),
+            'class_id' => eZUser::fetchUserClassNames(),
+            'filter' => $searchFilters,
+            'limitation' => array(),
+            'limit' => 1500
+        ));
+        return $searchOperators['SearchResult'];
     }
 
     /**
