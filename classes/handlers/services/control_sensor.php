@@ -818,26 +818,51 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
         return array();
     }
 
-    public static function observers( SensorPost $post = null )
+    /**
+     * @param SensorPost|null $post
+     * @param array $queryParams
+     *
+     * @return eZFindResultNode[]
+     */
+    public static function observers( SensorPost $post = null, $queryParams = null )
     {
         $setting = self::getSensorConfigParams();
-        return self::fetchOperators( $post, $setting['FilterObserversByOwner'] );
+        return self::fetchOperators( $post, $setting['FilterObserversByOwner'], $queryParams );
     }
 
     /**
      * @param SensorPost|null $post
+     * @param array $queryParams
      *
-     * @return eZContentObjectTreeNode[]
+     * @return eZFindResultNode[]
      */
-    public static function operators( SensorPost $post = null )
+    public static function operators( SensorPost $post = null, $queryParams = null )
     {
         $setting = self::getSensorConfigParams();
-        return self::fetchOperators( $post, $setting['FilterOperatorsByOwner'] );
+        return self::fetchOperators( $post, $setting['FilterOperatorsByOwner'], $queryParams );
     }
 
-    protected static function fetchOperators( SensorPost $post = null, $filterByOwner = false )
+    protected static function fetchOperators( SensorPost $post = null, $filterByOwner = false, $queryParams = null )
     {
-        $searchFilters = array();
+        $searchParams = array(
+            'subtree_array' => array( self::operatorsNode()->attribute( 'node_id' ) ),
+            'class_id' => eZUser::fetchUserClassNames(),
+            'limitation' => array(),
+            'limit' => 1500
+        );
+
+        if ( is_array( $queryParams ) )
+        {
+            if ( isset( $queryParams['query'] ) )
+                $searchParams['query'] = $queryParams['query'];
+
+            if ( isset( $queryParams['limit'] ) )
+                $searchParams['limit'] = $queryParams['limit'];
+
+            if ( isset( $queryParams['offset'] ) )
+                $searchParams['offset'] = $queryParams['offset'];
+        }
+
         if (
             $filterByOwner
             && $post instanceof SensorPost
@@ -867,15 +892,17 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
                 {
                     $searchFilters[] = 'submeta_struttura_di_competenza___id_si:' . $struttureId;
                 }
+                $searchParams['filter'] = $searchFilters;
             }
         }
-        $searchOperators = eZFunctionHandler::execute( 'ezfind', 'search', array(
-            'subtree_array' => array( self::operatorsNode()->attribute( 'node_id' ) ),
-            'class_id' => eZUser::fetchUserClassNames(),
-            'filter' => $searchFilters,
-            'limitation' => array(),
-            'limit' => 1500
-        ));
+
+        $searchOperators = eZFunctionHandler::execute(
+            'ezfind', 'search', $searchParams
+        );
+
+        if ( isset( $queryParams['raw_result'] ) )
+            return $searchOperators;
+
         return $searchOperators['SearchResult'];
     }
 
