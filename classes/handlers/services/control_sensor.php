@@ -1250,6 +1250,7 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
             'UniqueCategoryCount' => self::iniVariable( 'SensorConfig', 'CategoryCount', 'unique' ) == 'unique',
             'CategoryAutomaticAssign' => self::iniVariable( 'SensorConfig', 'CategoryAutomaticAssign', 'disabled' ) == 'enabled',
             'AuthorCanReopen' => self::iniVariable( 'SensorConfig', 'AuthorCanReopen', 'disabled' ) == 'enabled',
+            'ApproverCanReopen' => self::iniVariable( 'SensorConfig', 'ApproverCanReopen', 'disabled' ) == 'enabled',
             'CloseCommentsAfterSeconds' => self::iniVariable( 'SensorConfig', 'CloseCommentsAfterSeconds', 1 ),
             'ModerateNewWhatsAppUser' => self::iniVariable( 'SensorConfig', 'ModerateNewWhatsAppUser', 'enabled' ) == 'enabled',
             'FilterOperatorsByOwner' => self::iniVariable( 'SensorConfig', 'FilterOperatorsByOwner', 'disabled' ) == 'enabled',
