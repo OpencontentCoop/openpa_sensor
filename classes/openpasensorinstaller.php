@@ -12,6 +12,15 @@ class OpenPASensorInstaller implements OpenPAInstaller
 
     protected $installOnlyStep;
 
+    protected static $textContent = array(
+        'faq'      => "Da compilare",
+        'privacy'  => "Da compilare",
+        'terms'    => "Da compilare",
+        'cookie'   => "Da compilare",
+        'footer'   => "Da compilare",
+        'contacts' => "Da compilare"
+    );
+
     public function setScriptOptions( eZScript $script )
     {
         return $script->getOptions(
@@ -80,11 +89,14 @@ class OpenPASensorInstaller implements OpenPAInstaller
         self::installClasses();
 
         OpenPALog::warning( "Installazione Sensor root" );
-        if ( isset( $this->options['parent-node'] ) )
+        if ( isset( $this->options['parent-node'] ) ) {
             $parentNodeId = $this->options['parent-node'];
+        }
         else
-            $parentNodeId = OpenPAAppSectionHelper::instance()->rootNode()->attribute( 'node_id' );
-        $root = self::installAppRoot( $parentNodeId, $section );
+        {
+            $parentNodeId = OpenPAAppSectionHelper::instance()->rootNode()->attribute('node_id');
+        }
+        $root = self::installAppRoot( $parentNodeId, $section, $this->options );
 
         if ( $this->installOnlyStep !== null )
         {
@@ -160,6 +172,26 @@ class OpenPASensorInstaller implements OpenPAInstaller
             "sensor_post_root"
         );
     }
+
+    public static function sensorPostCategories()
+    {
+
+        //Todo: get a repo, in caso di problemi fallback su array
+        return array(
+            "Ambiente",
+            "Anagrafe/Stato Civile",
+            "Attività produttive/Tributi",
+            "Cultura, Sport e Tempo Libero",
+            "Disabilità/Accessibilità",
+            "Edilizia pubblica/privata",
+            "Famiglia, Scuola, Giovani e Politiche sociali",
+            "Illuminazione pubblica, semafori",
+            "Manutenzione Stradale",
+            "Sicurezza Pubblica e Polizia Municipale",
+            "Viabilità e parcheggi",
+            "Altro"
+        );
+    }
     
     protected static function installClasses()
     {
@@ -185,11 +217,11 @@ class OpenPASensorInstaller implements OpenPAInstaller
                     'banner' => 'extension/openpa_sensor/doc/default/banner.png',
                     'banner_title' => "[Sensor]Civico: la [tua voce] conta",
                     'banner_subtitle' => "Aiutaci a migliorare: [insieme] è meglio",
-                    'faq' => SQLIContentUtils::getRichContent( "<p>Attraverso la<b>&nbsp;piattaforma SensorCivico</b>&nbsp;i/le cittadini/e possono formulare suggerimenti e problematiche rivolte a migliorare la vivibilità della tua Città.</p>" ),
-                    'privacy' => SQLIContentUtils::getRichContent( "Da compilare" ),
-                    'terms' => SQLIContentUtils::getRichContent( "Da compilare" ),
-                    'footer' => SQLIContentUtils::getRichContent( "Da compilare" ),
-                    'contacts' => SQLIContentUtils::getRichContent( "Da compilare" ),
+                    'faq' => SQLIContentUtils::getRichContent( OpenPASensorInstaller::prepareTextContent( 'faq', $options['saSuffix'] ) ),
+                    'privacy' => SQLIContentUtils::getRichContent( OpenPASensorInstaller::prepareTextContent( 'privacy', $options['saSuffix'] ) ),
+                    'terms' => SQLIContentUtils::getRichContent( OpenPASensorInstaller::prepareTextContent( 'terms', $options['saSuffix'] ) ),
+                    'footer' => SQLIContentUtils::getRichContent( OpenPASensorInstaller::prepareTextContent( 'footer', $options['saSuffix'] ) ),
+                    'contacts' => SQLIContentUtils::getRichContent( OpenPASensorInstaller::prepareTextContent( 'contacts', $options['saSuffix'] ) ),
                     'forum_enabled' => isset( $options['forum'] ),
                     'survey_enabled' => isset( $options['survey'] ),
                     'post_enabled' => isset( $options['post'] )
@@ -335,7 +367,8 @@ class OpenPASensorInstaller implements OpenPAInstaller
             }
         }
 
-        if ( $installDemoContent )
+
+        if (false && $installDemoContent )
         {
             // Category sample
             OpenPALog::warning( "Install Category demo" );
@@ -354,6 +387,79 @@ class OpenPASensorInstaller implements OpenPAInstaller
                 throw new Exception( 'Failed creating Sensor category node' );
             }
         }
+
+
+        OpenPALog::warning( "Install Categories" );
+        $categories = OpenPASensorInstaller::sensorPostCategories();
+        OpenPASensorInstaller::installPostCategories($categories, $categoriesObject->attribute( 'main_node_id' ), $section->attribute( 'id' ));
+
+
+    }
+
+    /**
+     * @param $categories
+     * @param $parentNodeID
+     * @param $sectionID
+     * @throws Exception
+     */
+    protected static function installPostCategories( $categories, $parentNodeID, $sectionID )
+    {
+        OpenPALog::warning( "Install Categories" );
+        foreach ($categories as $k => $v )
+        {
+            if (is_array($v))
+            {
+                OpenPASensorInstaller::installPostCategory($k, $parentNodeID, $sectionID);
+                OpenPASensorInstaller::installPostCategories($v, $parentNodeID, $sectionID);
+            }
+            else
+            {
+                OpenPASensorInstaller::installPostCategory($v, $parentNodeID, $sectionID);
+            }
+        }
+    }
+
+    /**
+     * @param $category
+     * @param $parentNodeID
+     * @param $sectionID
+     * @throws Exception
+     */
+    protected static function installPostCategory( $category, $parentNodeID, $sectionID )
+    {
+        $params = array(
+            'parent_node_id' => $parentNodeID,
+            'section_id' => $sectionID,
+            'class_identifier' => 'sensor_category',
+            'attributes' => array(
+                'name' => $category
+            )
+        );
+        /** @var eZContentObject $categoryObject */
+        $categoryObject = eZContentFunctions::createAndPublishObject( $params );
+        if( !$categoryObject instanceof eZContentObject )
+        {
+            throw new Exception( 'Failed creating Sensor category node - ' . $category );
+        }
+    }
+
+    /**
+     * @param $type
+     * @param $saSuffix
+     * @return mixed
+     */
+    protected static function prepareTextContent( $type, $saSuffix )
+    {
+        $search  = array(
+            '[privacy-link]',
+            '[nome-comune]'
+        );
+        $replace = array(
+            'http://' . eZINI::instance()->variable( 'SiteSettings', 'SiteURL' ) . '/' . $saSuffix . '/sensor/privacy',
+            eZINI::instance()->variable( 'SiteSettings', 'SiteName' )
+
+        );
+        return str_replace($search, $replace, OpenPASensorInstaller::$textContent[$type]);
     }
 
     protected static function installRoles( eZSection $section, array $states )
