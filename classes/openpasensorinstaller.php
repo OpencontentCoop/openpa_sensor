@@ -13,10 +13,10 @@ class OpenPASensorInstaller implements OpenPAInstaller
     protected $installOnlyStep;
 
     protected static $textContent = array(
-        'faq'      => "Da compilare",
-        'privacy'  => "Da compilare",
-        'terms'    => "Da compilare",
-        'cookie'   => "Da compilare",
+        'faq'      => "<p>Attraverso la <strong>piattaforma SensorCivico</strong> i/le cittadini/e possono formulare suggerimenti, segnalazioni e reclami su mappa (OpenStreetMap) per il miglioramento della qualità dei servizi offerti e la vivibilità del nucleo abitato.<br>Tutti i suggerimenti, segnalazioni e reclami saranno resi pubblici a meno che il/la cittadino/a non abbia indicato diversamente in fase di caricamento della “segnalazione”.</p><h3>Cosa si intende per suggerimento, segnalazione e reclamo?</h3><p>Per <strong>suggerimento</strong> si intende: qualsiasi proposta o comunicazione, anche di apprezzamento, da parte del cittadino finalizzata al miglioramento della qualità dei servizi offerti. <br>Per <strong>segnalazione</strong> si intende: comunicazione da parte del cittadino rispetto a situazioni di criticità e/o malfunzionamenti (es. segnaletica, illuminazione pubblica, buche nelle strade, ecc…) <br>Per <strong>reclamo</strong> si intende: qualsiasi espressione di insoddisfazione rispetto a disservizi o inefficienze dei servizi offerti.</p><h3>Come avviene l'accesso alla piattaforma SensorCivico?</h3><p>Per poter effettuare l'attività di segnalazione e quindi utilizzare la piattaforma è necessario registrarsi una prima volta attraverso la procedura di registrazione presente nella home “Non sei ancora registrato?”, quindi gli accessi successivi saranno possibili attraverso username e password forniti.<br>Per l'iscrizione e quindi l'accesso al servizio online è sufficiente fornire le seguenti generalità: nome, cognome, indirizzo email e password.</p><h3>Come viene tutelata la riservatezza delle segnalazioni inviate?</h3><p>Vedere <a href=\"[privacy-link]\" title=\"informativa Privacy\">Informazioni/Privacy</a></p><h3>Vengono pubblicati tutti i suggerimenti, segnalazioni e reclami?</h3><p>No, solamente quelli per cui l'autore abbia indicato in fase di caricamento di accettare di renderli pubblici. Tuttavia la redazione si riserva di non rendere pubblici quei reclami, suggerimenti o segnalazioni dai contenuti inopportuni, indecenti, contrari all'ordine pubblico o offensivi della privacy o della dignità delle persone, o comunque non conformi a quanto espressamente stabilito nei termini di utilizzo.</p><h3>Che cosa significa “rendi pubblica questa segnalazione”?</h3><p>Significa che la stessa sarà visibile a tutti coloro che accedono al servizio online.</p><p>Nota: dalle ore 18.00 alle ore 8.00 del giorno successivo e nei giorni festivi e/o di chiusura del Municipio la moderazione da parte della redazione non è attiva, quindi tutte le segnalazioni restano in sospeso e in attesa di pubblicazione.</p><h3>Che cosa significa che i/le cittadini/e possono formulare proposte, suggerimenti e segnalazioni su mappa?</h3><p>Accedendo con il pulsante “segnala” si attiva la procedura di segnalazione che consente di georeferenziare il luogo del suggerimento, segnalazione o reclamo; ossia è possibile indicare la via attraverso lo spostamento sulla mappa del cursore cliccando sul punto che interessa: il puntatore rosso si posizionerà nel punto indicato.</p><h3>E' possibile inviare una segnalazione anonima?</h3><p>Non è possibile inviare una segnalazione anonima perché l'Amministrazione ha bisogno di avere un dato identificativo del segnalante, al fine di accertare la sua volontaria partecipazione all'azione amministrativa; le segnalazioni anonime non verranno prese in considerazione.</p><h3>In che modo è possibile individuare correttamente l'ufficio responsabile per la problematica esposta?</h3><p>Dopo aver indicato l´indirizzo è sufficiente indicare il quartiere, se conosciuto, quindi se si tratta di suggerimento, segnalazione o reclamo, la “segnalazione” viene presa in carico dagli operatori della redazione che provvederanno all'inoltro ai responsabili competenti per materia.</p><h3>Entro quanto tempo si può ottenere una risposta?</h3><p>La risposta verrà fornita mediamente entro 15 giorni. Il/La cittadino/a potrà ricevere una risposta intermedia non definitiva nel caso in cui la conclusione della “segnalazione” sia complessa e richieda più tempo.</p><h3>Che cosa significano i grafici presenti nella home del servizio on-line?</h3><p>I grafici sono la rappresentazione dei suggerimenti, segnalazioni e reclami raggruppati per aree tematiche.</p><p>Aree tematiche</p><ul><li>Ambiente</li><li>Anagrafe/Stato Civile</li><li>Attività produttive/Tributi</li><li>Cultura, Sport e Tempo Libero</li><li>Disabilità/Accessibilità</li><li>Edilizia pubblica/privata</li><li>Famiglia, Scuola, Giovani e Politiche sociali</li><li>Illuminazione pubblica, semafori</li><li>Manutenzione Stradale</li><li>Sicurezza Pubblica e Polizia Municipale</li><li>Viabilità e parcheggi</li><li>Altro</li></ul><p>I colori utilizzati</p><ul><li>Suggerimento=colore giallo</li><li>Segnalazione=colore azzurro</li><li>Reclamo=colore rosso</li><li>Chiuso=colore verde</li><li>In carico=colore giallo</li><li>Inviato=colore rosso</li></ul><h3>I suggerimenti, segnalazioni o reclami possono essere trasmessi solo online?</h3><p>No, i suggerimenti, le segnalazioni e i reclami possono essere presentati anche di persona presso i Centri Civici-Ufficio Relazioni con il Pubblico (U.R.P.), o in altra modalità. Tuttavia si consiglia l'utilizzo dell'apposito strumento SensorCivico.<br>L'Ente si impegna a rispondere nelle stesse modalità di inoltro a tutti i suggerimenti, segnalazioni e reclami.<br>La presentazione del reclamo non preclude il ricorso ad altri mezzi di tutela, amministrativi e/o giurisdizionali.</p><h3>SensorCivico è compatibile con dispositivi mobili (smartphone ecc..)?</h3><p>Sì, è possibile utilizzare l'applicazione con un'interfaccia semplificata e dedicata a smartphone o tablet.</p><h3>Come posso cancellare il mio profilo?</h3><p>Per cancellare il proprio profilo dalla lista degli utenti, è sufficiente inviare una e-mail (vedi contatti). In ogni momento è possibile riscriversi.</p>",
+        'privacy'  => "<h3>Informativa ex art. 13, D.lgs 30 giugno 2003, n. 196</h3><p>La informiamo che i Suoi dati, siano essi personali, sensibili e/o giudiziari, sono trattati, con procedure informatizzate e manuali, nel rispetto delle disposizioni di tutela contenute nel Codice per la protezione dei dati personali, sia sotto il profilo procedimentale che della custodia atta a garantirne la riservatezza.</p><h3>Trattamento dei dati sensibili e/o giudiziari</h3><p>I dati da Lei conferiti, personali, sensibili e giudiziari sono trattati ai fini della gestione dello sportello online suggerimenti, segnalazioni, reclami SensorCivico e dei procedimenti.</p><h3>Conferimento dei dati</h3><p>Il conferimento dei dati ha natura obbligatoria limitatamente a nome, cognome ed e mail; il mancato conferimento comporta l’impossibilità di avvalersi del servizio online.</p><p>Il conferimento di ogni altro dato ha natura volontaria.</p><h3>Comunicazione e diffusione</h3><p>I dati che La riguardano sono comunicati nei limiti e con le procedure individuate dal Codice in materia di protezione dei dati personali, oltre che in evasione di eventuali compatibili istanze dei titolari di corrispondente diritto di accesso ai sensi di legge.</p><p>I dati possono essere comunicati tra URP e Centri Civici e uffici comunali competenti (di cui all'Allegato A del Regolamento organico e di organizzazione approvato nel testo vigente con deliberazione della Giunta Comunale n. 180 del 31.03.2014) ad evadere il reclamo, la segnalazione e a prendere nota del suggerimento; potranno essere altresì comunicati ai fini delle procedure di cui alla Carta dei Servizi di ciascun servizio, ove prevista.</p><p>I dati inoltre possono essere comunicati dal responsabile del trattamento ai suoi incaricati, agli incaricati dell’elaborazione di report statistici e all'amministrazione di sistema.</p><p>I dati verranno diffusi nelle sole forme aggregate ed anonime.</p><h3>Diritti dell’interessato</h3><p>L’articolo 7 del D.lgs. 30.6.2003, n. 196, “Codice in materia di protezione dei dati personali”, dispone che l’interessato ha diritto di:</p><ul> <li>ottenere la conferma dell’esistenza o meno di dati personali che lo riguardano, anche se non ancora registrati, e la loro comunicazione in forma intellegibile;</li> <li>conoscere l’origine dei dati personali, finalità e modalità del trattamento, logica applicata in caso di trattamento effettuato con l’ausilio di strumenti elettronici, gli estremi identificativi del titolare, e dei responsabili del trattamento dei dati.</li> <li>conoscere i soggetti o le categorie di soggetti ai quali i dati personali possono essere comunicati, anche in qualità di responsabili o incaricati;</li> <li>ottenere l’aggiornamento, la rettificazione ovvero, quando vi ha interesse, l’integrazione dei dati, la cancellazione, la trasformazione in forma anonima o il blocco dei dati trattati in violazione di legge, compresi quelli di cui non è necessaria la conservazione in relazione agli scopi per i quali i dati sono stati raccolti o successivamente trattati;</li> <li>opporsi, in tutto o in parte, per motivi legittimi, al trattamento dei dati personali che lo riguardano, ancorché pertinenti allo scopo della raccolta, o ai fini di invio di materiale pubblicitario o di vendita diretta o per il compimento di ricerche di mercato o comunicazione commerciale.</li></ul><h3>Titolare del trattamento</h3><p>Titolare del trattamento dei dati personali è [sitename].</p><h3>Responsabile del trattamento</h3><p>Responsabile del trattamento dei dati è [sitename]</p>",
+        'terms'    => "<ol> <li><strong>Oggetto e definizioni</strong><ol><li>Le presenti clausole di utilizzo regolano e disciplinano l'utilizzo della piattaforma “SensorCivico” da parte dell'Utente, nonché le responsabilità di quest'ultimo relativamente all'utilizzo della piattaforma anzidetta.</li><li>Per “SensorCivico” si intende una piattaforma online tramite la quale l'Utente può inoltrare gratuitamente all'Ente suggerimenti, segnalazioni e reclami che possono essere georeferenziati per il miglioramento della qualità dei servizi offerti dall'Ente per migliorare la vivibilità del centro abitato. La piattaforma in riuso è di esclusiva proprietà del Consorzio dei Comuni Trentini (Consorzio) con sede in Trento, Via Torre Verde, 23 (P.IVA 01533550222).</li><li>Per “Utente” si intende la persona fisica o giuridica registrata ai sensi dell'art. 2 che effettua suggerimenti, o invia segnalazioni e reclami alla piattaforma “SensorCivico”.</li><li>Per “Amministratore” si intende il funzionario dell'Ente a cui sono indirizzati i suggerimenti, le segnalazioni e i reclami, e a cui compete la presa in carico e la risposta all'Utente.</li><li>Le presenti clausole di utilizzo si applicano a tutti i suggerimenti, le segnalazioni e i reclami comunque effettuati, anche tramite eventuali apposite applicazioni per smartphone o sistemi di terze parti integrate con il portale.</li><li>Di seguito l´attività di inoltro suggerimenti, segnalazioni e reclami verrà genericamente definita “attività di segnalazione”.</li></ol></li> <li><strong>Registrazione</strong><ol> <li>Per poter effettuare “l'attività di segnalazione” di cui all'articolo precedente, l'Utente deve necessariamente registrarsi tramite l'apposita procedura di registrazione.</li><li>L’Utente si impegna a fornire dati rispondenti al vero. Sono da considerarsi falsi i dati personali riconducibili a terzi.</li><li>L'Utente si assume ogni responsabilità civile e penale per l’eventuale falsità o non correttezza delle informazioni e dei dati comunicati. </li></ol></li> <li><strong>Attività di inoltro suggerimenti, segnalazioni e reclami</strong><ol><li>Oggetto dei suggerimenti, delle segnalazioni e dei reclami dell'Utente sono situazioni che possono contribuire al miglioramento della qualità dei servizi offerti dall'Ente e della vivibilità del centro abitato.</li><li>“L´attività di segnalazione” da parte dell'Utente potrà essere arricchita tramite l'invio informatico di fotografie e l’inserimento di commenti nel rispetto della normativa sulla privacy.</li> <li>“L´attività di segnalazione” dovrà riguardare esclusivamente situazioni attinenti l’attività e i servizi pubblici offerti dall'Ente</li><li>Con l'invio “delle segnalazioni” l'Utente dichiara di essere titolare di ogni diritto eventualmente connesso alla segnalazione (a titolo meramente esemplificativo e non esaustivo: le fotografie).</li><li>Il suggerimento, la segnalazione o il reclamo inseriti dall’Utente saranno visibili sulla piattaforma anche dagli Utenti non registrati, solo se l’Utente avrà scelto di renderli pubblici. L’Amministratore del sistema potrà in ogni momento eliminare dalla piattaforma il suggerimento, la segnalazione o il reclamo o oscurare parte del suggerimento, della segnalazione o del reclamo qualora essa/esso possa ledere il diritto di soggetti terzi o comunque contrasti con quanto previsto al punto 4.3.. L'Amministratore può, qualora ricorrano motivi di opportunità, rispondere all'Utente in forma privata tramite mail.</li><li>In ogni caso, la pubblicazione e l'eliminazione della segnalazione del suggerimento o del reclamo all'interno della piattaforma “SensorCivico” sono rimessi , per i motivi sopraindicati, alla valutazione dell’Amministratore del sistema.</li><li>Nel caso in cui il suggerimento, la segnalazione o il reclamo sia stato pubblicato sulla piattaforma “SensorCivico” su indicazione dell'Utente, è riservata allo stesso la possibilità di chiederne l'eliminazione via email in ogni momento e, a tal fine, l´Amministratore vi provvederà entro 5 giorni lavorativi.</li><li>Chiunque, previa registrazione, può inviare commenti su suggerimenti, segnalazioni, e reclami precedentemente pubblicati. Ai commenti non verrà data risposta da parte dell'Amministratore del sistema. L’Amministratore del sistema potrà altresì eliminare dalla piattaforma il commento qualora esso possa ledere il diritto di soggetti terzi o comunque contrasti con quanto previsto al punto 4.3.</li><li>I dati personali forniti dall’Utente registrato nell’ambito dell'“attività di segnalazione”, serviranno a fini esclusivamente statistici e verranno comunque trattati nel pieno rispetto della normativa vigente in materia di privacy (D.lgs. 196/2003). </li></ol></li> <li><strong>Responsabilità dell'Utente</strong><ol><li>L’Utente risponde direttamente secondo le leggi civili, penali e amministrative di tutti i contenuti caricati sulla piattaforma SensorCivico.</li><li>L'Utente si assume ogni responsabilità nonché ogni conseguenza diretta o indiretta derivanti da eventuali lesioni dei diritti di terzi (a titolo meramente esemplificativo e non esaustivo, diritti d’autore o altri diritti di proprietà, diritti relativi alla riservatezza delle persone etc.) dipendenti dall'inserimento nella segnalazione dell'Utente di testi, commenti, fotografie e/o qualsiasi altro materiale nella piattaforma.</li><li>L'Utente si impegna a non inserire nelle segnalazioni, nei suggerimenti o nei reclami materiale o estratti di materiale:<ul><li>coperti da diritto d'autore e di cui non sia esso stesso titolare; </li><li>che abbiano un contenuto diffamatorio o calunnioso; </li><li>contrari alla morale e all'ordine pubblico, ovvero in grado di turbare la quiete pubblica o privata o di recare offesa, o danno diretto o indiretto a chiunque o ad una specifica categoria di persone (per esempio è vietato l’inserimento di materiali o estratti di materiale che possano ledere la sensibilità di gruppi etnici o religiosi etc.); </li><li>contrari al diritto alla riservatezza di soggetti terzi; </li><li>lesivi dell'onore, del decoro o della reputazione di soggetti terzi; </li><li>comunque contrari alla legge.</li></ul></li></ol></li> <li><strong>Limitazioni di responsabilità</strong><ol><li>Il Consorzio e l’Amministratore non rispondono dei danni diretti, indiretti o consequenziali subiti dall'Utente o da terzi in dipendenza della pubblicazione della segnalazione e/o per danni di qualsiasi genere o a qualsiasi titolo connessi con dette situazioni e a tal fine l'Utente dichiara di manlevare il Consorzio e l’Amministratore da ogni forma di responsabilità.</li><li>Il Consorzio e l’Amministratore non sono responsabili per l’uso non opportuno dei dati di login, né per la loro diffusione.</li><li>Il Consorzio e l’Amministratore non sono responsabili per l’uso illegittimo che terzi possano fare del sito e della riproduzione totale o parziale dei contenuti.</li><li>Il materiale inviato dall'Utente non sarà restituito.</li></ol></li> <li><strong>Comunicazioni</strong><ol><li>L'Utente prende atto ed accetta che tutte le eventuali comunicazioni, notifiche, informazioni e comunque ogni documentazione relativa alle operazioni eseguite e riferite all'utilizzo della piattaforma “SensorCivico” vengano inviate all'indirizzo di posta elettronica indicato dall'Utente durante la procedura di registrazione.</li></ol></li></ol>",
+        'cookie'   => "<p>Nessun dato personale degli utenti viene in proposito acquisito dal sito.</p><p>Non viene fatto uso di cookies per la trasmissione di informazioni di carattere personale, né vengono utilizzati c.d. cookies persistenti di alcun tipo, ovvero sistemi per il tracciamento degli utenti.</p><p>L'uso di c.d. cookies di sessione (che non vengono memorizzati in modo persistente sul computer dell'utente e svaniscono con la chiusura del browser) è strettamente limitato alla trasmissione di identificativi di sessione (costituiti da numeri casuali generati dal server) necessari per consentire l'esplorazione sicura ed efficiente del sito.</p><p>I c.d. cookies di sessione utilizzati in questo sito evitano il ricorso ad altre tecniche informatiche potenzialmente pregiudizievoli per la riservatezza della navigazione degli utenti e non consentono l'acquisizione di dati personali identificativi dell'utente.</p>",
         'footer'   => "Da compilare",
         'contacts' => "Da compilare"
     );
@@ -178,17 +178,39 @@ class OpenPASensorInstaller implements OpenPAInstaller
 
         //Todo: get a repo, in caso di problemi fallback su array
         return array(
-            "Ambiente",
-            "Anagrafe/Stato Civile",
-            "Attività produttive/Tributi",
-            "Cultura, Sport e Tempo Libero",
-            "Disabilità/Accessibilità",
-            "Edilizia pubblica/privata",
-            "Famiglia, Scuola, Giovani e Politiche sociali",
-            "Illuminazione pubblica, semafori",
-            "Manutenzione Stradale",
-            "Sicurezza Pubblica e Polizia Municipale",
-            "Viabilità e parcheggi",
+            "Ambiente" => array(
+                "Parchi, giardini e aree gioco", "Potatura e cura del verde pubblico", "Panchine-Parchi", "Animali in città (Deiezioni e altro)", "Rifiuti", "Aria", "Rumore ed elettromagnetismo"
+            ),
+            "Anagrafe/Stato Civile" => array(
+                "Servizi demografici/Stato civile"
+            ),
+            "Attività produttive/Tributi" => array(
+                "Commercio", "Pubblici esercizi", "Rumore - Pubblici esercizi", "Tributi"
+            ),
+            "Cultura, Sport e Tempo Libero" => array(
+                "Cultura/Eventi e spettacoli", "Biblioteche", "Servizi Museali", "Impianti sportivi"
+            ),
+            "Disabilità/Accessibilità" => array(
+                "Disabilità/Barriere architettoniche"
+            ),
+            "Edilizia pubblica/privata" => array(
+                "Edlilizia scolastica", "Edilizia privata - cantieri", "Controllo costruzioni", "Edilizia pubblica - edilizia abitativa", "Edilizia pubblica - opere pubbliche edifici"
+            ),
+            "Famiglia, Scuola, Giovani e Politiche sociali" => array(
+                "Giovani", "Servizi cimiteriali", "Scuole materne", "Servizi scolastici: refezione scolastiche", "Senior - Silver Card", "Senio - Soggiorni anziani"
+            ),
+            "Illuminazione pubblica, semafori" => array(
+                "Illuminazione pubblica", "Semafori-manutenzione", "Seganletica-manutenzione", "Posizionamento cassonetti"
+            ),
+            "Manutenzione Stradale" => array(
+                "Strade", "Marciapiedi", "Tombini", "Ciclabili-manutenzione", "Dossi-manutenzione"
+            ),
+            "Sicurezza Pubblica e Polizia Municipale" => array(
+                "Contravvenzioni", "Controllo urbano", "Degrado urbano/Vandalismo"
+            ),
+            "Viabilità e parcheggi" => array(
+                "Viabilità", "Zone colorate/Bollini", "Parcheggi/Soste selvagge", "Dossi-viabilità", "Ciclabili-viabilità", "Segnaletica-viabilità", "Specchi parabolici", "Semafori-viabilità"
+            ),
             "Altro"
         );
     }
@@ -251,8 +273,8 @@ class OpenPASensorInstaller implements OpenPAInstaller
                 'class_identifier' => 'sensor_post_root',
                 'attributes' => array(
                     'name' => 'Segnala!',
-                    'short_description' => SQLIContentUtils::getRichContent( "<p>Attraverso la piattaforma SensorCivico i cittadini possono formulare suggerimenti, segnalazioni e reclami su mappa per il miglioramento della qualità dei servizi offerti dall´Amministrazione e per migliorare la vivibilità della Città.</p>" ),
-                    'description' => SQLIContentUtils::getRichContent( "<p>Attraverso la<b>&nbsp;piattaforma SensorCivico</b> i/le cittadini/e possono formulare suggerimenti, segnalazioni e reclami su mappa (OpenStreet map) per il miglioramento della qualità dei servizi offerti dall´Amministrazione e per migliorare la vivibilità della Città.<br>Tutti i suggerimenti, segnalazioni e reclami saranno resi pubblici a meno che il/la cittadino/a non abbiamo indicato diversamente in fase di caricamento della “segnalazione”.</p>" ),
+                    'short_description' => SQLIContentUtils::getRichContent( "<p>Attraverso la piattaforma SensorCivico i cittadini possono formulare suggerimenti, segnalazioni e reclami su mappa per il miglioramento della qualità dei servizi offerti e la vivibilità del nucleo abitato.</p>" ),
+                    'description' => SQLIContentUtils::getRichContent( "<p>Attraverso la <b>piattaforma SensorCivico</b> i/le cittadini/e possono formulare suggerimenti, segnalazioni e reclami su mappa (OpenStreet map) per il miglioramento della qualità dei servizi offerti e la vivibilità del nucleo abitato.<br>Tutti i suggerimenti, segnalazioni e reclami saranno resi pubblici a meno che il/la cittadino/a non abbia indicato diversamente in fase di caricamento della “segnalazione”.</p>" ),
                     'image' => 'extension/openpa_sensor/doc/default/sensor_post_root.png'
                 )
             );
@@ -404,13 +426,12 @@ class OpenPASensorInstaller implements OpenPAInstaller
      */
     protected static function installPostCategories( $categories, $parentNodeID, $sectionID )
     {
-        OpenPALog::warning( "Install Categories" );
         foreach ($categories as $k => $v )
         {
             if (is_array($v))
             {
-                OpenPASensorInstaller::installPostCategory($k, $parentNodeID, $sectionID);
-                OpenPASensorInstaller::installPostCategories($v, $parentNodeID, $sectionID);
+                $pId = OpenPASensorInstaller::installPostCategory($k, $parentNodeID, $sectionID);
+                OpenPASensorInstaller::installPostCategories($v, $pId, $sectionID);
             }
             else
             {
@@ -423,10 +444,12 @@ class OpenPASensorInstaller implements OpenPAInstaller
      * @param $category
      * @param $parentNodeID
      * @param $sectionID
+     * @return Int
      * @throws Exception
      */
     protected static function installPostCategory( $category, $parentNodeID, $sectionID )
     {
+        OpenPALog::warning( "Install Category " .  $category  );
         $params = array(
             'parent_node_id' => $parentNodeID,
             'section_id' => $sectionID,
@@ -441,6 +464,10 @@ class OpenPASensorInstaller implements OpenPAInstaller
         {
             throw new Exception( 'Failed creating Sensor category node - ' . $category );
         }
+        else
+        {
+            return $categoryObject->attribute( 'main_node_id' );
+        }
     }
 
     /**
@@ -452,7 +479,7 @@ class OpenPASensorInstaller implements OpenPAInstaller
     {
         $search  = array(
             '[privacy-link]',
-            '[nome-comune]'
+            '[sitename]'
         );
         $replace = array(
             'http://' . eZINI::instance()->variable( 'SiteSettings', 'SiteURL' ) . '/' . $saSuffix . '/sensor/privacy',
