@@ -451,10 +451,11 @@ class OpenPASensorInstaller implements OpenPAInstaller
     {
         OpenPALog::warning( "Install Category " .  $category  );
         $params = array(
-            'parent_node_id' => $parentNodeID,
-            'section_id' => $sectionID,
+            'parent_node_id'   => $parentNodeID,
+            'section_id'       => $sectionID,
+            'remote_id'        => md5( $category ),
             'class_identifier' => 'sensor_category',
-            'attributes' => array(
+            'attributes'       => array(
                 'name' => $category
             )
         );
