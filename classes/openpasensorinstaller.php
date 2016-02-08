@@ -197,7 +197,7 @@ class OpenPASensorInstaller implements OpenPAInstaller
                 "Edlilizia scolastica", "Edilizia privata - cantieri", "Controllo costruzioni", "Edilizia pubblica - edilizia abitativa", "Edilizia pubblica - opere pubbliche edifici"
             ),
             "Famiglia, Scuola, Giovani e Politiche sociali" => array(
-                "Giovani", "Servizi cimiteriali", "Scuole materne", "Servizi scolastici: refezione scolastiche", "Senior - Silver Card", "Senio - Soggiorni anziani"
+                "Giovani", "Servizi cimiteriali", "Scuole materne", "Servizi scolastici: refezione scolastiche", "Senior - Silver Card", "Senior - Soggiorni anziani"
             ),
             "Illuminazione pubblica, semafori" => array(
                 "Illuminazione pubblica", "Semafori-manutenzione", "Seganletica-manutenzione", "Posizionamento cassonetti"
@@ -225,6 +225,7 @@ class OpenPASensorInstaller implements OpenPAInstaller
         $rootObject = eZContentObject::fetchByRemoteID( ObjectHandlerServiceControlSensor::sensorRootRemoteId() );
         if ( !$rootObject instanceof eZContentObject )
         {
+
             // root
             $params = array(
                 'parent_node_id' => $parentNodeId,
@@ -239,11 +240,11 @@ class OpenPASensorInstaller implements OpenPAInstaller
                     'banner' => 'extension/openpa_sensor/doc/default/banner.png',
                     'banner_title' => "[Sensor]Civico: la [tua voce] conta",
                     'banner_subtitle' => "Aiutaci a migliorare: [insieme] è meglio",
-                    'faq' => SQLIContentUtils::getRichContent( OpenPASensorInstaller::prepareTextContent( 'faq', $options['saSuffix'] ) ),
-                    'privacy' => SQLIContentUtils::getRichContent( OpenPASensorInstaller::prepareTextContent( 'privacy', $options['saSuffix'] ) ),
-                    'terms' => SQLIContentUtils::getRichContent( OpenPASensorInstaller::prepareTextContent( 'terms', $options['saSuffix'] ) ),
-                    'footer' => SQLIContentUtils::getRichContent( OpenPASensorInstaller::prepareTextContent( 'footer', $options['saSuffix'] ) ),
-                    'contacts' => SQLIContentUtils::getRichContent( OpenPASensorInstaller::prepareTextContent( 'contacts', $options['saSuffix'] ) ),
+                    'faq' => SQLIContentUtils::getRichContent( OpenPASensorInstaller::prepareTextContent( 'faq', $options['sa_suffix'] ) ),
+                    'privacy' => SQLIContentUtils::getRichContent( OpenPASensorInstaller::prepareTextContent( 'privacy', $options['sa_suffix'] ) ),
+                    'terms' => SQLIContentUtils::getRichContent( OpenPASensorInstaller::prepareTextContent( 'terms', $options['sa_suffix'] ) ),
+                    'footer' => SQLIContentUtils::getRichContent( OpenPASensorInstaller::prepareTextContent( 'footer', $options['sa_suffix'] ) ),
+                    'contacts' => SQLIContentUtils::getRichContent( OpenPASensorInstaller::prepareTextContent( 'contacts', $options['sa_suffix'] ) ),
                     'forum_enabled' => isset( $options['forum'] ),
                     'survey_enabled' => isset( $options['survey'] ),
                     'post_enabled' => isset( $options['post'] )
@@ -390,32 +391,12 @@ class OpenPASensorInstaller implements OpenPAInstaller
         }
 
 
-        if (false && $installDemoContent )
+        if ($installDemoContent )
         {
-            // Category sample
-            OpenPALog::warning( "Install Category demo" );
-            $params = array(
-                'parent_node_id' => $categoriesObject->attribute( 'main_node_id' ),
-                'section_id' => $section->attribute( 'id' ),
-                'class_identifier' => 'sensor_category',
-                'attributes' => array(
-                    'name' => 'Esempio'
-                )
-            );
-            /** @var eZContentObject $categoryObject */
-            $categoryObject = eZContentFunctions::createAndPublishObject( $params );
-            if( !$categoryObject instanceof eZContentObject )
-            {
-                throw new Exception( 'Failed creating Sensor category node' );
-            }
+            OpenPALog::warning( "Install Categories" );
+            $categories = OpenPASensorInstaller::sensorPostCategories();
+            OpenPASensorInstaller::installPostCategories($categories, $categoriesObject->attribute( 'main_node_id' ), $section->attribute( 'id' ));
         }
-
-
-        OpenPALog::warning( "Install Categories" );
-        $categories = OpenPASensorInstaller::sensorPostCategories();
-        OpenPASensorInstaller::installPostCategories($categories, $categoriesObject->attribute( 'main_node_id' ), $section->attribute( 'id' ));
-
-
     }
 
     /**
@@ -478,12 +459,17 @@ class OpenPASensorInstaller implements OpenPAInstaller
      */
     protected static function prepareTextContent( $type, $saSuffix )
     {
+        $frontendSiteUrl = eZINI::instance()->variable( 'SiteSettings', 'SiteURL' );
+        $parts = explode( '/', $frontendSiteUrl );
+        $siteAccess = array_pop($parts);
+        $frontendSiteUrl = implode('/', $parts);
+
         $search  = array(
             '[privacy-link]',
             '[sitename]'
         );
         $replace = array(
-            'http://' . eZINI::instance()->variable( 'SiteSettings', 'SiteURL' ) . '/' . $saSuffix . '/sensor/privacy',
+            $frontendSiteUrl . '/' . $saSuffix . '/sensor/privacy',
             eZINI::instance()->variable( 'SiteSettings', 'SiteName' )
 
         );
@@ -731,9 +717,14 @@ class OpenPASensorInstaller implements OpenPAInstaller
 
         $frontend = OpenPABase::getFrontendSiteaccessName();
         $frontendPath = "settings/siteaccess/{$frontend}/";
+        // Se la siteurl contiene http:// genera una stringa sbagliata
+        //$frontendSiteUrl = eZINI::instance()->variable( 'SiteSettings', 'SiteURL' );
+        //$parts = explode( '/', $frontendSiteUrl ); //bugfix
+        //$frontendSiteUrl = $parts[0];
         $frontendSiteUrl = eZINI::instance()->variable( 'SiteSettings', 'SiteURL' );
-        $parts = explode( '/', $frontendSiteUrl ); //bugfix
-        $frontendSiteUrl = $parts[0];
+        $parts = explode( '/', $frontendSiteUrl );
+        $siteAccess = array_pop($parts);
+        $frontendSiteUrl = implode('/', $parts);
 
         eZFileHandler::copy( $frontendPath . 'site.ini.append.php', $sensorPath . 'site.ini.append.php' );
         $iniFile = "site.ini";
