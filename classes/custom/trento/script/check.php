@@ -51,12 +51,57 @@ try
         $doc->parse();
 
         $data = array();
-
+        $states = array();
         foreach( $doc->rows as $row )
-        {
-            $row = (array) $row;
-            print_r($row);
+        {            
+            $states[$row->chstat] = $row->chstat;
+            try
+            {
+                $helper = SensorHelper::instanceFromContentObjectId( $row->chidsr );
+                $statusId = $helper->currentSensorPost->getCurrentStatus();
+                if ( $statusId == SensorPost::STATUS_WAITING ) $status = 'waiting';
+                elseif ( $statusId == SensorPost::STATUS_READ ) $status = 'read';
+                elseif ( $statusId == SensorPost::STATUS_ASSIGNED ) $status = 'assigned';
+                elseif ( $statusId == SensorPost::STATUS_CLOSED ) $status = 'closed';
+                elseif ( $statusId == SensorPost::STATUS_FIXED ) $status = 'fixed';
+                elseif ( $statusId == SensorPost::STATUS_REOPENED ) $status = 'reopened';
+                else $status = '?';                
+                
+/*
+K = Comunicata
+A = Aperta
+C = Chiusa
+R = Rifiutata
+*/
+                if ( ( $row->chstat == 'C' || $row->chstat == 'R' ) && $status != 'closed' )
+                {
+                    $cli->warning( $status . ' -> ', false );
+                    $cli->error( $row->chstat );
+                    $cli->error( "  -> CORREGGERE" );
+                }
+                
+                if ( $row->chstat == 'A'  && $status != 'read' )
+                {
+                    $cli->warning( $status . ' -> ', false );
+                    $cli->error( $row->chstat );
+                    $cli->error( "  -> CORREGGERE" );
+                }
+                
+                if ( $row->chstat == 'K'  && $status != 'waiting' )
+                {
+                    $cli->warning( $status . ' -> ', false );
+                    $cli->error( $row->chstat );
+                    $cli->error( "  -> CORREGGERE" );
+                }
+                
+            }
+            catch( Exception $e )
+            {                
+                //$cli->warning( '? -> ', false );
+                //$cli->error( $row->chstat );
+            }
         }
+        print_r( $states );
     }
 
     $script->shutdown();

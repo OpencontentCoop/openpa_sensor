@@ -29,7 +29,7 @@ class OpenPASensorInstaller implements OpenPAInstaller
             array(
                 'parent-node' => 'Nodo id contenitore di sensor (Applicazioni di default)',
                 'step' => 'Esegue solo lo step selezionato: gli step possibili sono' . implode( ', ', $this->steps ),
-                'sa_suffix' => 'Suffisso del siteaccess (default: sensor)',
+                'sa_suffix' => 'Suffisso del siteaccess (default: sensorcivico)',
                 'clean' => 'Elimina tutti i contenuti presenti di sensor prima di eseguire l\'installazione'
             )
         );
@@ -42,7 +42,7 @@ class OpenPASensorInstaller implements OpenPAInstaller
 
         if ( !isset( $this->options['sa_suffix'] ) )
         {
-            $this->options['sa_suffix'] = 'sensor';
+            $this->options['sa_suffix'] = 'sensorcivico';
         }
 
         if ( isset( $this->options['step'] ) )
