@@ -689,7 +689,7 @@ class OpenPASensorInstaller implements OpenPAInstaller
         $backendPath = "settings/siteaccess/{$backend}/";
         $iniFile = "contentstructuremenu.ini";
         $ini = new eZINI( $iniFile . '.append', $backendPath, null, null, null, true, true );
-        $value = array_unique( array_merge( (array) $ini->variable( 'TreeMenu', 'ShowClasses' ), array( 'sensor_root' ) ) );
+        $value = array_unique( array_merge( (array) $ini->variable( 'TreeMenu', 'ShowClasses' ), array( 'sensor_root', 'sensor_post_root', 'sensor_area', 'sensor_category' ) ) );
         $ini->setVariable( 'TreeMenu', 'ShowClasses', $value );
         if ( !$ini->save() ) throw new Exception( "Non riesco a salvare {$backendPath}{$iniFile}" );
 
@@ -732,8 +732,7 @@ class OpenPASensorInstaller implements OpenPAInstaller
         $ini->setVariable(
             'ExtensionSettings',
             'ActiveAccessExtensions',
-            array(
-                '',
+            array(                
                 'openpa_theme_2014',
                 'ocbootstrap',
                 'ocoperatorscollection',
