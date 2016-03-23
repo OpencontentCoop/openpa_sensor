@@ -147,12 +147,12 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
                 {
                     $GLOBALS['SensorRootNode'] = $root->attribute( 'main_node' );
                 }
-            }            
+            }
             self::$rootNode = $GLOBALS['SensorRootNode'];
         }
         return self::$rootNode;
     }
-    
+
     public static function rootNodeDataMap()
     {
         if ( self::$rootNodeDataMap == null )
@@ -422,7 +422,8 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
             if ( $dataMap['office_timetable']->attribute( 'data_type_string' ) == 'ocrecurrence' )
             {
                 $officeTimeTable = $dataMap['office_timetable']->content();
-                return !$officeTimeTable->contains( $current );
+                if ( method_exists( $officeTimeTable, 'contains' ) )
+                    return !$officeTimeTable->contains( $current );
             }
         }
         return false;
@@ -490,7 +491,7 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
      * @return SensorGeoJsonFeatureCollection
      */
     public static function fetchSensorGeoJsonFeatureCollection()
-    {        
+    {
         $items = self::fetchPosts( false );
         $data = $items['SearchCount'] > 0 ? new SensorGeoJsonFeatureCollection() : null;
         foreach( $items['SearchResult'] as $item )
@@ -578,17 +579,7 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
         }
         if ( empty( $data ) )
         {
-            $areas = self::areas();
-            $area = isset( $areas['tree'][0]['node'] ) ? $areas['tree'][0]['node'] : false;
-            if ( $area instanceof eZContentObjectTreeNode )
-            {
-                /** @var eZContentObjectAttribute[] $areaDataMap */
-                $areaDataMap = $area->attribute( 'data_map' );
-                if ( isset( $areaDataMap['approver'] ) )
-                {
-                    $data = explode( '-', $areaDataMap['approver']->toString() );
-                }
-            }
+            $data = self::defaultApproverIdArray();
         }
 
         return $data;
@@ -739,7 +730,7 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
                 if ( in_array( $state->attribute( 'id' ), $this->getContentObject()->attribute( 'state_id_array' ) ) )
                 {
                     return array(
-                        'name' => $state->attribute( 'current_translation' )->attribute( 'name' ),
+                        'name' => $state->currentTranslation()->attribute( 'name' ),
                         'identifier' => $state->attribute( 'identifier' ),
                         'css_class' => 'danger'
                     );
@@ -767,7 +758,7 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
                 if ( in_array( $state->attribute( 'id' ), $this->getContentObject()->attribute( 'state_id_array' ) ) )
                 {
                     return array(
-                        'name' => $state->attribute( 'current_translation' )->attribute( 'name' ),
+                        'name' => $state->currentTranslation()->attribute( 'name' ),
                         'identifier' => $state->attribute( 'identifier' ),
                         'css_class' => $state->attribute( 'identifier' ) == 'private' ? 'default' : 'info'
                     );
@@ -808,7 +799,7 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
                 if ( in_array( $state->attribute( 'id' ), $this->getContentObject()->attribute( 'state_id_array' ) ) )
                 {
                     return array(
-                        'name' => $state->attribute( 'current_translation' )->attribute( 'name' ),
+                        'name' => $state->currentTranslation()->attribute( 'name' ),
                         'identifier' => $state->attribute( 'identifier' ),
                         'css_class' => $cssClass
                     );
@@ -919,13 +910,13 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
             $data = $coords = array();
             /** @var eZContentObjectTreeNode[] $treeAreas */
             $treeAreas = self::rootNode()->subTree( array(
-                    'ClassFilterType' => 'include',
-                    'Depth' => 1,
-                    'DepthOperator' => 'eq',
-                    'ClassFilterArray' => $includeClasses,
-                    'Limitation' => array(),
-                    'SortBy' => array( 'name', true )
-                ) );
+                'ClassFilterType' => 'include',
+                'Depth' => 1,
+                'DepthOperator' => 'eq',
+                'ClassFilterArray' => $includeClasses,
+                'Limitation' => array(),
+                'SortBy' => array( 'name', true )
+            ) );
 
             foreach( $treeAreas as $node )
             {
@@ -955,16 +946,16 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
             $false = false;
             /** @var eZContentObjectTreeNode[] $treeCategories */
             $treeCategories = self::postCategoriesNode()->subTree( array(
-                    'Depth' => 1,
-                    'DepthOperator' => 'eq',
-                    'ClassFilterType' => 'include',
-                    'ClassFilterArray' => $includeClasses,
-                    'Limitation' => array(),
-                    'SortBy' => array( 'name', true )
-                ) );
+                'Depth' => 1,
+                'DepthOperator' => 'eq',
+                'ClassFilterType' => 'include',
+                'ClassFilterArray' => $includeClasses,
+                'Limitation' => array(),
+                'SortBy' => array( 'name', true )
+            ) );
 
             foreach( $treeCategories as $node )
-            {                
+            {
                 $data[] = array(
                     'node' => $node,
                     'children' => self::walkSubtree( $node, $false, $includeClasses )
@@ -1185,13 +1176,13 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
         {
             $existingData[$identifier] = $attribute->toString();
             if ( $attribute->hasContent()
-                     && $attribute->attribute( 'data_type_string' ) == 'eztext'
-                     && isset( $data[$identifier] ) )
+                 && $attribute->attribute( 'data_type_string' ) == 'eztext'
+                 && isset( $data[$identifier] ) )
             {
                 $data[$identifier] = $existingData[$identifier] . ' ' . $data[$identifier];
             }
             if ( $attribute->hasContent()
-                     && $identifier == 'subject' )
+                 && $identifier == 'subject' )
             {
                 $data[$identifier] = $existingData[$identifier];
             }
@@ -1199,7 +1190,7 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
             {
                 $data[$identifier] = $existingData[$identifier];
             }
-            
+
         }
         $params = array();
         $params['attributes'] = $data;
@@ -1285,6 +1276,23 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
         $root = eZContentObject::fetchByRemoteID( self::sensorRootRemoteId() );
         $rootHandler = OpenPAObjectHandler::instanceFromContentObject( $root );
         return $rootHandler->hasAttribute( $identifier );
+    }
+
+    public static function defaultApproverIdArray()
+    {
+        $data = array();
+        $areas = self::areas();
+        $area = isset( $areas['tree'][0]['node'] ) ? $areas['tree'][0]['node'] : false;
+        if ( $area instanceof eZContentObjectTreeNode )
+        {
+            /** @var eZContentObjectAttribute[] $areaDataMap */
+            $areaDataMap = $area->attribute( 'data_map' );
+            if ( isset( $areaDataMap['approver'] ) )
+            {
+                $data = explode( '-', $areaDataMap['approver']->toString() );
+            }
+        }
+        return $data;
     }
 
     public function siteTitle()
@@ -1487,6 +1495,12 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
             $userMenu[] = array(
                 'name' => ezpI18n::tr( 'sensor/menu', 'Settings' ),
                 'url' => 'sensor/config',
+                'highlight' => false,
+                'has_children' => false
+            );
+            $userMenu[] = array(
+                'name' => ezpI18n::tr( 'sensor/menu', 'Statistiche' ),
+                'url' => 'sensor/stat',
                 'highlight' => false,
                 'has_children' => false
             );
