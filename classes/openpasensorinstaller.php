@@ -536,6 +536,11 @@ class OpenPASensorInstaller implements OpenPAInstaller
                 array(
                     'ModuleName' => 'content',
                     'FunctionName' => 'read',
+                    'Limitation' => array( 'Class' => eZContentClass::classIDByIdentifier( 'sensor_post' ) )
+                ),
+                array(
+                    'ModuleName' => 'content',
+                    'FunctionName' => 'read',
                     'Limitation' => array(
                         'Class' => array(
                             eZContentClass::classIDByIdentifier( 'sensor_area' ),
