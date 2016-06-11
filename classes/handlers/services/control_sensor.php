@@ -1489,18 +1489,24 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
                 'has_children' => false
             )
         );
+
+        $hasAccess = eZUser::currentUser()->hasAccessTo( 'sensor', 'stat' );
+        if ( $hasAccess['accessWord'] == 'yes' )
+        {
+            $userMenu[] = array(
+                'name' => ezpI18n::tr( 'sensor/menu', 'Statistiche' ),
+                'url' => 'sensor/stat',
+                'highlight' => false,
+                'has_children' => false
+            );
+        }
+
         $hasAccess = eZUser::currentUser()->hasAccessTo( 'sensor', 'config' );
         if ( $hasAccess['accessWord'] == 'yes' )
         {
             $userMenu[] = array(
                 'name' => ezpI18n::tr( 'sensor/menu', 'Settings' ),
                 'url' => 'sensor/config',
-                'highlight' => false,
-                'has_children' => false
-            );
-            $userMenu[] = array(
-                'name' => ezpI18n::tr( 'sensor/menu', 'Statistiche' ),
-                'url' => 'sensor/stat',
                 'highlight' => false,
                 'has_children' => false
             );
