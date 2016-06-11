@@ -1491,7 +1491,7 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
         );
 
         $hasAccess = eZUser::currentUser()->hasAccessTo( 'sensor', 'stat' );
-        if ( $hasAccess['accessWord'] == 'yes' )
+        if ( $hasAccess['accessWord'] != 'no' )
         {
             $userMenu[] = array(
                 'name' => ezpI18n::tr( 'sensor/menu', 'Statistiche' ),
