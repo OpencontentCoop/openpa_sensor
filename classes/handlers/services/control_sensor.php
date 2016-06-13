@@ -1424,29 +1424,42 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
 
     public function menu()
     {
+        $infoChildren = array(
+            array(
+                'name' => ezpI18n::tr( 'sensor/menu', 'Faq' ),
+                'url' => 'sensor/info/faq',
+                'has_children' => false,
+            ),
+            array(
+                'name' => ezpI18n::tr( 'sensor/menu', 'Privacy' ),
+                'url' => 'sensor/info/privacy',
+                'has_children' => false,
+            ),
+            array(
+                'name' => ezpI18n::tr( 'sensor/menu', 'Termini di utilizzo' ),
+                'url' => 'sensor/info/terms',
+                'has_children' => false,
+            )
+        );
+
+        $hasAccess = eZUser::currentUser()->hasAccessTo( 'sensor', 'stat' );
+        if ( $hasAccess['accessWord'] != 'no' )
+        {
+            $infoChildren[] = array(
+                'name' => ezpI18n::tr( 'sensor/chart', 'Statistiche' ),
+                'url' => 'sensor/stat',
+                'highlight' => false,
+                'has_children' => false
+            );
+        }
+
         $menu = array(
             array(
                 'name' => ezpI18n::tr( 'sensor/menu', 'Informazioni' ),
                 'url' => 'sensor/info',
                 'highlight' => false,
                 'has_children' => true,
-                'children' => array(
-                    array(
-                        'name' => ezpI18n::tr( 'sensor/menu', 'Faq' ),
-                        'url' => 'sensor/info/faq',
-                        'has_children' => false,
-                    ),
-                    array(
-                        'name' => ezpI18n::tr( 'sensor/menu', 'Privacy' ),
-                        'url' => 'sensor/info/privacy',
-                        'has_children' => false,
-                    ),
-                    array(
-                        'name' => ezpI18n::tr( 'sensor/menu', 'Termini di utilizzo' ),
-                        'url' => 'sensor/info/terms',
-                        'has_children' => false,
-                    )
-                )
+                'children' => $infoChildren
             ),
             array(
                 'name' => ezpI18n::tr( 'sensor/menu', 'Segnalazioni' ),
