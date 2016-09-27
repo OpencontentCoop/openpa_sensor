@@ -112,7 +112,7 @@ class OpenPASensorInstaller implements OpenPAInstaller
         if ( ( $this->installOnlyStep !== null && $this->installOnlyStep == 'r' ) || $this->installOnlyStep === null )
         {
             OpenPALog::warning( "Installazione ruoli" );
-            self::installRoles( $section, $states );
+            self::installRoles();
         }
 
         if ( ( $this->installOnlyStep !== null && $this->installOnlyStep == 'c' ) || $this->installOnlyStep === null )
@@ -476,8 +476,16 @@ class OpenPASensorInstaller implements OpenPAInstaller
         return str_replace($search, $replace, OpenPASensorInstaller::$textContent[$type]);
     }
 
-    protected static function installRoles( eZSection $section, array $states )
+    public static function roleDefinitions()
     {
+        /** @var eZContentObjectState[] $states */
+        $states = self::installStates();
+        $section = self::installSections();
+
+        $memberNodeId = eZINI::instance()->variable( 'UserSettings', 'DefaultUserPlacement' );
+        $memberNode = eZContentObjectTreeNode::fetch($memberNodeId);
+
+
         $roles = array(
 
             "Sensor Admin" => array(
@@ -492,6 +500,10 @@ class OpenPASensorInstaller implements OpenPAInstaller
 
                 array(
                     'ModuleName' => 'sensor',
+                    'FunctionName' => '*'
+                ),
+                array(
+                    'ModuleName' => 'social_user',
                     'FunctionName' => '*'
                 ),
                 array(
@@ -514,6 +526,11 @@ class OpenPASensorInstaller implements OpenPAInstaller
                     'ModuleName' => 'content',
                     'FunctionName' => 'read',
                     'Limitation' => array( 'Section' => $section->attribute( 'id' ) )
+                ),
+                array(
+                    'ModuleName' => 'content',
+                    'FunctionName' => 'read',
+                    'Limitation' => array( 'Subtree' => $memberNode instanceof eZContentObjectTreeNode ? $memberNode->attribute('path_string') : null)
                 ),
                 array(
                     'ModuleName' => 'content',
@@ -595,7 +612,7 @@ class OpenPASensorInstaller implements OpenPAInstaller
                     'FunctionName' => '*'
                 ),
             ),
-            
+
             "Sensor Assistant" => array(
                 array(
                     'ModuleName' => 'sensor',
@@ -643,6 +660,12 @@ class OpenPASensorInstaller implements OpenPAInstaller
             )
         );
 
+        return $roles;
+    }
+
+    protected static function installRoles()
+    {
+        $roles = self::roleDefinitions();
         foreach( $roles as $roleName => $policies )
         {
             OpenPABase::initRole( $roleName, $policies, true );
@@ -663,6 +686,7 @@ class OpenPASensorInstaller implements OpenPAInstaller
         {
             throw new Exception( "Error: problem with roles" );
         }
+
         $memberNodeId = eZINI::instance()->variable( 'UserSettings', 'DefaultUserPlacement' );
         $members = eZContentObject::fetchByNodeID( $memberNodeId );
         if ( $members instanceof eZContentObject )
@@ -728,7 +752,7 @@ class OpenPASensorInstaller implements OpenPAInstaller
         //$frontendSiteUrl = $parts[0];
         $frontendSiteUrl = eZINI::instance()->variable( 'SiteSettings', 'SiteURL' );
         $parts = explode( '/', $frontendSiteUrl );
-        $siteAccess = array_pop($parts);
+        array_pop($parts);
         $frontendSiteUrl = implode('/', $parts);
 
         eZFileHandler::copy( $frontendPath . 'site.ini.append.php', $sensorPath . 'site.ini.append.php' );
