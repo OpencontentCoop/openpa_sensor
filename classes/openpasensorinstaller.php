@@ -553,6 +553,7 @@ class OpenPASensorInstaller implements OpenPAInstaller
                             eZContentClass::classIDByIdentifier( 'dipendente' ),
                             eZContentClass::classIDByIdentifier( 'politico' )
                         )
+                    )
                 ),
                 array(
                     'ModuleName' => 'content',
