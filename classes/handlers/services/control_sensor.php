@@ -243,7 +243,7 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
             }
             else
             {
-                $children = $node->subTree( array(
+                $children = (array)$node->subTree( array(
                     'Depth' => 1,
                     'DepthOperator' => 'eq',
                     'ClassFilterType' => 'include',
@@ -909,7 +909,7 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
             $includeClasses = array( 'sensor_area' );
             $data = $coords = array();
             /** @var eZContentObjectTreeNode[] $treeAreas */
-            $treeAreas = self::rootNode()->subTree( array(
+            $treeAreas = (array)self::rootNode()->subTree( array(
                 'ClassFilterType' => 'include',
                 'Depth' => 1,
                 'DepthOperator' => 'eq',
@@ -945,7 +945,7 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
             $data = array();
             $false = false;
             /** @var eZContentObjectTreeNode[] $treeCategories */
-            $treeCategories = self::postCategoriesNode()->subTree( array(
+            $treeCategories = (array)self::postCategoriesNode()->subTree( array(
                 'Depth' => 1,
                 'DepthOperator' => 'eq',
                 'ClassFilterType' => 'include',
