@@ -15,7 +15,7 @@ class OpenPASensorType extends eZWorkflowEventType
 
     /**
      * @param eZWorkflowProcess $process
-     * @param eZEvent $event
+     * @param eZWorkflowEvent $event
      *
      * @return int
      */

@@ -17,4 +17,13 @@ UseShortUrl=disabled
 #tre settimane
 CloseCommentsAfterSeconds=1814400
 
+MultipleOwnerAssign=disabled
+MultipleObserverAssign=disabled
+SensorPostContentClass=sensor_post
+SensorPostContentClasses[]=sensor_post
+RemoteIdSuffix=_openpa_sensor
+CollaborationGroupName=Sensor
+CollaborationHandlerTypeString=openpasensor
+AlertOwnerComment=enabled
+
 */ ?>

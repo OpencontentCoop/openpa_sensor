@@ -55,8 +55,8 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
 
     function run()
     {
-        $this->data['moderation_is_enabled'] = self::ModerationIsEnabled();
-        $this->data['timed_moderation_is_enabled'] = self::TimedModerationIsEnabled();
+        $this->data['moderation_is_enabled'] = static::ModerationIsEnabled();
+        $this->data['timed_moderation_is_enabled'] = static::TimedModerationIsEnabled();
         $this->data['use_per_area_approver'] = false; //@todo impostare da ini?
         $this->fnData['post_container_node'] = 'postContainerNode';
         $this->fnData['post_categories_container_node'] = 'postCategoriesNode';
@@ -90,7 +90,7 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
      */
     protected function getPrivacy()
     {
-        $dataMap = self::rootNodeDataMap();
+        $dataMap = static::rootNodeDataMap();
         return $dataMap['privacy'];
     }
 
@@ -100,7 +100,7 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
      */
     protected function getFaq()
     {
-        $dataMap = self::rootNodeDataMap();
+        $dataMap = static::rootNodeDataMap();
         return $dataMap['faq'];
     }
 
@@ -110,7 +110,7 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
      */
     protected function getTerms()
     {
-        $dataMap = self::rootNodeDataMap();
+        $dataMap = static::rootNodeDataMap();
         return $dataMap['terms'];
     }
 
@@ -120,7 +120,7 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
      */
     protected function getCookie()
     {
-        $dataMap = self::rootNodeDataMap();
+        $dataMap = static::rootNodeDataMap();
         return $dataMap['cookie'];
     }
 
@@ -130,7 +130,7 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
      */
     public static function sensorRootRemoteId()
     {
-        return OpenPABase::getCurrentSiteaccessIdentifier() . '_openpa_sensor';
+        return OpenPABase::getCurrentSiteaccessIdentifier() . eZINI::instance( 'ocsensor.ini' )->variable( 'SensorConfig', 'RemoteIdSuffix' );
     }
 
     /**
@@ -138,29 +138,29 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
      */
     public static function rootNode()
     {
-        if ( self::$rootNode == null )
+        if ( static::$rootNode == null )
         {
             if ( !isset( $GLOBALS['SensorRootNode'] ) )
             {
-                $root = eZContentObject::fetchByRemoteID( self::sensorRootRemoteId() );
+                $root = eZContentObject::fetchByRemoteID( static::sensorRootRemoteId() );
                 if ( $root instanceof eZContentObject )
                 {
                     $GLOBALS['SensorRootNode'] = $root->attribute( 'main_node' );
                 }
             }
-            self::$rootNode = $GLOBALS['SensorRootNode'];
+            static::$rootNode = $GLOBALS['SensorRootNode'];
         }
-        return self::$rootNode;
+        return static::$rootNode;
     }
 
     public static function rootNodeDataMap()
     {
-        if ( self::$rootNodeDataMap == null )
+        if ( static::$rootNodeDataMap == null )
         {
-            $node = self::rootNode();
-            self::$rootNodeDataMap = $node->attribute( 'data_map' );
+            $node = static::rootNode();
+            static::$rootNodeDataMap = $node->attribute( 'data_map' );
         }
-        return self::$rootNodeDataMap;
+        return static::$rootNodeDataMap;
     }
 
     /**
@@ -168,19 +168,19 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
      */
     public static function postCategoriesNode()
     {
-        if ( self::$postCategoriesNode == null )
+        if ( static::$postCategoriesNode == null )
         {
-            $root = eZContentObject::fetchByRemoteID( self::sensorRootRemoteId() . '_postcategories' );
+            $root = eZContentObject::fetchByRemoteID( static::sensorRootRemoteId() . '_postcategories' );
             if ( $root instanceof eZContentObject )
             {
-                self::$postCategoriesNode = $root->attribute( 'main_node' );
+                static::$postCategoriesNode = $root->attribute( 'main_node' );
             }
             else
             {
-                self::$postCategoriesNode = self::rootNode();;
+                static::$postCategoriesNode = static::rootNode();;
             }
         }
-        return self::$postCategoriesNode;
+        return static::$postCategoriesNode;
     }
 
     /**
@@ -188,36 +188,36 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
      */
     public static function postContainerNode()
     {
-        if ( self::$postContainerNode == null )
+        if ( static::$postContainerNode == null )
         {
-            $root = eZContentObject::fetchByRemoteID( self::sensorRootRemoteId() . '_postcontainer' );
+            $root = eZContentObject::fetchByRemoteID( static::sensorRootRemoteId() . '_postcontainer' );
             if ( $root instanceof eZContentObject )
             {
-                self::$postContainerNode = $root->attribute( 'main_node' );
+                static::$postContainerNode = $root->attribute( 'main_node' );
             }
             else
             {
-                self::$postContainerNode = self::rootNode();;
+                static::$postContainerNode = static::rootNode();;
             }
         }
-        return self::$postContainerNode;
+        return static::$postContainerNode;
     }
 
     public static function operatorsNode()
     {
-        if ( self::$operatorsNode == null )
+        if ( static::$operatorsNode == null )
         {
-            $root = eZContentObject::fetchByRemoteID( self::sensorRootRemoteId() . '_operators' );
+            $root = eZContentObject::fetchByRemoteID( static::sensorRootRemoteId() . '_operators' );
             if ( $root instanceof eZContentObject )
             {
-                self::$operatorsNode = $root->attribute( 'main_node' );
+                static::$operatorsNode = $root->attribute( 'main_node' );
             }
             else
             {
-                self::$operatorsNode = self::rootNode();;
+                static::$operatorsNode = static::rootNode();;
             }
         }
-        return self::$operatorsNode;
+        return static::$operatorsNode;
     }
 
     /**
@@ -225,11 +225,11 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
      */
     public static function postContentClass()
     {
-        if ( self::$postContentClass == null )
+        if ( static::$postContentClass == null )
         {
-            self::$postContentClass = eZContentClass::fetchByIdentifier( 'sensor_post' );
+            static::$postContentClass = eZContentClass::fetchByIdentifier( eZINI::instance( 'ocsensor.ini' )->variable( 'SensorConfig', 'SensorPostContentClass' ) );
         }
-        return self::$postContentClass;
+        return static::$postContentClass;
     }
 
     protected static function walkSubtree( eZContentObjectTreeNode $node, &$coords, $includeClasses = array() )
@@ -257,11 +257,11 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
             {
                 if ( is_array( $coords ) )
                 {
-                    self::findAreaCoords( $subNode->attribute( 'object' ), $coords );
+                    static::findAreaCoords( $subNode->attribute( 'object' ), $coords );
                 }
                 $data[] = array(
                     'node' => $subNode,
-                    'children' => self::walkSubtree( $subNode, $coords, $includeClasses )
+                    'children' => static::walkSubtree( $subNode, $coords, $includeClasses )
                 );
             }
         }
@@ -302,11 +302,11 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
     {
         $states = array();
         if ( $stateGroup == 'privacy' )
-            $states = OpenPABase::initStateGroup( self::$privacyStateGroupIdentifier, self::$privacyStateIdentifiers );
+            $states = OpenPABase::initStateGroup( static::$privacyStateGroupIdentifier, static::$privacyStateIdentifiers );
         elseif ( $stateGroup == 'sensor' )
-            $states = OpenPABase::initStateGroup( self::$stateGroupIdentifier, self::$stateIdentifiers );
+            $states = OpenPABase::initStateGroup( static::$stateGroupIdentifier, static::$stateIdentifiers );
         elseif ( $stateGroup == 'moderation' )
-            $states = OpenPABase::initStateGroup( self::$moderationStateGroupIdentifier, self::$moderationStateIdentifiers );
+            $states = OpenPABase::initStateGroup( static::$moderationStateGroupIdentifier, static::$moderationStateIdentifiers );
 
         $state = $states[$stateGroup . '.' . $stateIdentifier];
         if ( $state instanceof eZContentObjectState )
@@ -326,7 +326,7 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
 
     /**
      * @param array $parameters
-     * @param eZProcess $process
+     * @param eZWorkflowProcess $process
      * @param eZWorkflowEvent $event
      *
      * @throws Exception
@@ -341,7 +341,7 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
             $object = eZContentObject::fetch( $id );
             if ( $object instanceof eZContentObject )
             {
-                if ( $object->attribute( 'class_identifier' ) == 'sensor_post' )
+                if ( in_array($object->attribute( 'class_identifier' ), eZINI::instance( 'ocsensor.ini' )->variable( 'SensorConfig', 'SensorPostContentClasses' ) ))
                 {
                     if ( $object->attribute( 'current_version') == 1  )
                     {
@@ -380,7 +380,8 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
             foreach( $nodeIdList as $nodeId )
             {
                 $object = eZContentObject::fetchByNodeID( $nodeId );
-                if ( $object instanceof eZContentObject && $object->attribute( 'class_identifier' ) == 'sensor_post' )
+                if ( $object instanceof eZContentObject
+                     && in_array($object->attribute( 'class_identifier' ), eZINI::instance( 'ocsensor.ini' )->variable( 'SensorConfig', 'SensorPostContentClasses' ) ) )
                 {
                     try
                     {
@@ -406,19 +407,19 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
             return true;
         }
 
-        if ( self::ModerationIsEnabled() )
+        if ( static::ModerationIsEnabled() )
         {
             return true;
         }
 
-        if ( self::TimedModerationIsEnabled() )
+        if ( static::TimedModerationIsEnabled() )
         {
             if ( !$timestamp )
             {
                 $timestamp = time();
             }
             $current = DateTime::createFromFormat( 'U', $timestamp );
-            $dataMap = self::rootNodeDataMap();
+            $dataMap = static::rootNodeDataMap();
             if ( $dataMap['office_timetable']->attribute( 'data_type_string' ) == 'ocrecurrence' )
             {
                 $officeTimeTable = $dataMap['office_timetable']->content();
@@ -431,7 +432,7 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
 
     public static function ModerationIsEnabled()
     {
-        $dataMap = self::rootNodeDataMap();
+        $dataMap = static::rootNodeDataMap();
         return isset( $dataMap['enable_moderation'] )
                && $dataMap['enable_moderation']->attribute( 'data_int' ) == 1
                && $dataMap['enable_moderation']->attribute( 'data_type_string' ) == 'ezboolean';
@@ -439,7 +440,7 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
 
     public static function TimedModerationIsEnabled()
     {
-        $dataMap = self::rootNodeDataMap();
+        $dataMap = static::rootNodeDataMap();
         return isset( $dataMap['office_timetable'] )
                && $dataMap['office_timetable']->attribute( 'has_content' )
                && $dataMap['office_timetable']->attribute( 'data_type_string' ) == 'ocrecurrence';
@@ -458,9 +459,9 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
             'Facet' => null,
             'SortBy' => array( 'published' => 'desc' ),
             'Filter' => array(),
-            'SearchContentClassID' => array( 'sensor_post' ),
+            'SearchContentClassID' => array( static::postContentClass()->attribute('identifier') ),
             'SearchSectionID' => null,
-            'SearchSubTreeArray' => array( self::postContainerNode()->attribute( 'node_id' ) ),
+            'SearchSubTreeArray' => array( static::postContainerNode()->attribute( 'node_id' ) ),
             'AsObjects' => $asObject,
             'SpellCheck' => null,
             'IgnoreVisibility' => null,
@@ -492,7 +493,7 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
      */
     public static function fetchSensorGeoJsonFeatureCollection()
     {
-        $items = self::fetchPosts( false );
+        $items = static::fetchPosts( false );
         $data = $items['SearchCount'] > 0 ? new SensorGeoJsonFeatureCollection() : null;
         foreach( $items['SearchResult'] as $item )
         {
@@ -521,7 +522,7 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
     {
         if ( !isset( $GLOBALS['SensorRootHandler'] ) )
         {
-            $root = eZContentObject::fetchByRemoteID( self::sensorRootRemoteId() );
+            $root = eZContentObject::fetchByRemoteID( static::sensorRootRemoteId() );
             $rootHandler = OpenPAObjectHandler::instanceFromContentObject( $root );
             $GLOBALS['SensorRootHandler'] = $rootHandler->attribute( 'control_sensor' );
         }
@@ -530,7 +531,7 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
 
     public function defaultModerationStateIdentifier( SensorUserInfo $userInfo = null  )
     {
-        return self::needModeration( null, $userInfo ) ? 'waiting' : null;
+        return static::needModeration( null, $userInfo ) ? 'waiting' : null;
     }
 
     /**
@@ -579,7 +580,7 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
         }
         if ( empty( $data ) )
         {
-            $data = self::defaultApproverIdArray();
+            $data = static::defaultApproverIdArray();
         }
 
         return $data;
@@ -722,8 +723,8 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
         if ( $this->getContentObject() instanceof eZContentObject )
         {
             $states = OpenPABase::initStateGroup(
-                self::$moderationStateGroupIdentifier,
-                self::$moderationStateIdentifiers
+                static::$moderationStateGroupIdentifier,
+                static::$moderationStateIdentifiers
             );
             foreach ( $states as $state )
             {
@@ -750,8 +751,8 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
         if ( $this->getContentObject() instanceof eZContentObject )
         {
             $states = OpenPABase::initStateGroup(
-                self::$privacyStateGroupIdentifier,
-                self::$privacyStateIdentifiers
+                static::$privacyStateGroupIdentifier,
+                static::$privacyStateIdentifiers
             );
             foreach ( $states as $state )
             {
@@ -778,8 +779,8 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
         if ( $this->getContentObject() instanceof eZContentObject )
         {
             $states = OpenPABase::initStateGroup(
-                self::$stateGroupIdentifier,
-                self::$stateIdentifiers
+                static::$stateGroupIdentifier,
+                static::$stateIdentifiers
             );
             foreach ( $states as $state )
             {
@@ -817,8 +818,8 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
      */
     public static function observers( SensorPost $post = null, $queryParams = null )
     {
-        $setting = self::getSensorConfigParams();
-        return self::fetchOperators( $post, $setting['FilterObserversByOwner'], $queryParams );
+        $setting = static::getSensorConfigParams();
+        return static::fetchOperators( $post, $setting['FilterObserversByOwner'], $queryParams );
     }
 
     /**
@@ -829,14 +830,14 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
      */
     public static function operators( SensorPost $post = null, $queryParams = null )
     {
-        $setting = self::getSensorConfigParams();
-        return self::fetchOperators( $post, $setting['FilterOperatorsByOwner'], $queryParams );
+        $setting = static::getSensorConfigParams();
+        return static::fetchOperators( $post, $setting['FilterOperatorsByOwner'], $queryParams );
     }
 
     protected static function fetchOperators( SensorPost $post = null, $filterByOwner = false, $queryParams = null )
     {
         $searchParams = array(
-            'subtree_array' => array( self::operatorsNode()->attribute( 'node_id' ) ),
+            'subtree_array' => array( static::operatorsNode()->attribute( 'node_id' ) ),
             'class_id' => eZUser::fetchUserClassNames(),
             'limitation' => array(),
             'limit' => 1500
@@ -899,17 +900,17 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
 
     /**
      * Restituisce un array tree
-     * @see self::walkSubtree
+     * @see static::walkSubtree
      * @return array
      */
     public static function areas()
     {
-        if ( self::$postAreas == null )
+        if ( static::$postAreas == null )
         {
             $includeClasses = array( 'sensor_area' );
             $data = $coords = array();
             /** @var eZContentObjectTreeNode[] $treeAreas */
-            $treeAreas = (array)self::rootNode()->subTree( array(
+            $treeAreas = (array)static::rootNode()->subTree( array(
                 'ClassFilterType' => 'include',
                 'Depth' => 1,
                 'DepthOperator' => 'eq',
@@ -920,32 +921,32 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
 
             foreach( $treeAreas as $node )
             {
-                self::findAreaCoords( $node->attribute( 'object' ), $coords );
+                static::findAreaCoords( $node->attribute( 'object' ), $coords );
                 $data[] = array(
                     'node' => $node,
-                    'children' => self::walkSubtree( $node, $coords, $includeClasses )
+                    'children' => static::walkSubtree( $node, $coords, $includeClasses )
                 );
             }
 
-            self::$postAreas = array( 'tree' => $data, 'coords_json' => json_encode( $coords ), 'coords', $coords );
+            static::$postAreas = array( 'tree' => $data, 'coords_json' => json_encode( $coords ), 'coords', $coords );
         }
-        return self::$postAreas;
+        return static::$postAreas;
     }
 
     /**
      * Restituisce un array tree
-     * @see self::walkSubtree
+     * @see static::walkSubtree
      * @return array
      */
     public static function categories()
     {
-        if ( self::$postCategories == null )
+        if ( static::$postCategories == null )
         {
             $includeClasses = array( 'sensor_category' );
             $data = array();
             $false = false;
             /** @var eZContentObjectTreeNode[] $treeCategories */
-            $treeCategories = (array)self::postCategoriesNode()->subTree( array(
+            $treeCategories = (array)static::postCategoriesNode()->subTree( array(
                 'Depth' => 1,
                 'DepthOperator' => 'eq',
                 'ClassFilterType' => 'include',
@@ -958,12 +959,12 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
             {
                 $data[] = array(
                     'node' => $node,
-                    'children' => self::walkSubtree( $node, $false, $includeClasses )
+                    'children' => static::walkSubtree( $node, $false, $includeClasses )
                 );
             }
-            self::$postCategories = array( 'tree' => $data );
+            static::$postCategories = array( 'tree' => $data );
         }
-        return self::$postCategories;
+        return static::$postCategories;
     }
 
     public function makePrivate()
@@ -1161,8 +1162,8 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
     {
         $params                     = array();
         $params['creator_id']       = $user->user()->id();
-        $params['class_identifier'] = self::postContentClass()->attribute( 'identifier' );
-        $params['parent_node_id']   = self::postContainerNode()->attribute( 'node_id' );
+        $params['class_identifier'] = static::postContentClass()->attribute( 'identifier' );
+        $params['parent_node_id']   = static::postContainerNode()->attribute( 'node_id' );
         $params['attributes']       = $data;
         return eZContentFunctions::createAndPublishObject( $params );
     }
@@ -1213,7 +1214,7 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
      */
     public function getSensorCollaborationHandlerTypeString()
     {
-        return 'openpasensor';
+        return eZINI::instance( 'ocsensor.ini' )->variable( 'SensorConfig', 'CollaborationHandlerTypeString' );
     }
 
     public function sensorPostObjectFactory( SensorUserInfo $user, $data, eZContentObject $update = null )
@@ -1223,11 +1224,11 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
             $id = $update->attribute( 'id' );
             eZContentObject::clearCache( array( $id ) );
             $update = eZContentObject::fetch( $id );
-            return self::updatePost( $user, $data, $update );
+            return static::updatePost( $user, $data, $update );
         }
         else
         {
-            return self::createPost( $user, $data );
+            return static::createPost( $user, $data );
         }
     }
 
@@ -1237,15 +1238,15 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
     public static function getSensorConfigParams()
     {
         return array(
-            'DefaultPostExpirationDaysInterval' => self::iniVariable( 'SensorConfig', 'DefaultPostExpirationDaysInterval', 15 ),
-            'UniqueCategoryCount' => self::iniVariable( 'SensorConfig', 'CategoryCount', 'unique' ) == 'unique',
-            'CategoryAutomaticAssign' => self::iniVariable( 'SensorConfig', 'CategoryAutomaticAssign', 'disabled' ) == 'enabled',
-            'AuthorCanReopen' => self::iniVariable( 'SensorConfig', 'AuthorCanReopen', 'disabled' ) == 'enabled',
-            'ApproverCanReopen' => self::iniVariable( 'SensorConfig', 'ApproverCanReopen', 'disabled' ) == 'enabled',
-            'CloseCommentsAfterSeconds' => self::iniVariable( 'SensorConfig', 'CloseCommentsAfterSeconds', 1 ),
-            'ModerateNewWhatsAppUser' => self::iniVariable( 'SensorConfig', 'ModerateNewWhatsAppUser', 'enabled' ) == 'enabled',
-            'FilterOperatorsByOwner' => self::iniVariable( 'SensorConfig', 'FilterOperatorsByOwner', 'disabled' ) == 'enabled',
-            'FilterObserversByOwner' => self::iniVariable( 'SensorConfig', 'FilterObserversByOwner', 'disabled' ) == 'enabled'
+            'DefaultPostExpirationDaysInterval' => static::iniVariable( 'SensorConfig', 'DefaultPostExpirationDaysInterval', 15 ),
+            'UniqueCategoryCount' => static::iniVariable( 'SensorConfig', 'CategoryCount', 'unique' ) == 'unique',
+            'CategoryAutomaticAssign' => static::iniVariable( 'SensorConfig', 'CategoryAutomaticAssign', 'disabled' ) == 'enabled',
+            'AuthorCanReopen' => static::iniVariable( 'SensorConfig', 'AuthorCanReopen', 'disabled' ) == 'enabled',
+            'ApproverCanReopen' => static::iniVariable( 'SensorConfig', 'ApproverCanReopen', 'disabled' ) == 'enabled',
+            'CloseCommentsAfterSeconds' => static::iniVariable( 'SensorConfig', 'CloseCommentsAfterSeconds', 1 ),
+            'ModerateNewWhatsAppUser' => static::iniVariable( 'SensorConfig', 'ModerateNewWhatsAppUser', 'enabled' ) == 'enabled',
+            'FilterOperatorsByOwner' => static::iniVariable( 'SensorConfig', 'FilterOperatorsByOwner', 'disabled' ) == 'enabled',
+            'FilterObserversByOwner' => static::iniVariable( 'SensorConfig', 'FilterObserversByOwner', 'disabled' ) == 'enabled'
         );
     }
 
@@ -1262,7 +1263,7 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
 
     public function getWhatsAppUserId()
     {
-        $postContainerNode = self::postContainerNode();
+        $postContainerNode = static::postContainerNode();
         return $postContainerNode->attribute( 'contentobject_id' );
     }
 
@@ -1273,7 +1274,7 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
      */
     public static function rootNodeHasAttribute( $identifier )
     {
-        $root = eZContentObject::fetchByRemoteID( self::sensorRootRemoteId() );
+        $root = eZContentObject::fetchByRemoteID( static::sensorRootRemoteId() );
         $rootHandler = OpenPAObjectHandler::instanceFromContentObject( $root );
         return $rootHandler->hasAttribute( $identifier );
     }
@@ -1281,7 +1282,7 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
     public static function defaultApproverIdArray()
     {
         $data = array();
-        $areas = self::areas();
+        $areas = static::areas();
         $area = isset( $areas['tree'][0]['node'] ) ? $areas['tree'][0]['node'] : false;
         if ( $area instanceof eZContentObjectTreeNode )
         {
@@ -1304,9 +1305,9 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
     {
         $currentSiteaccess = eZSiteAccess::current();
         $sitaccessIdentifier = $currentSiteaccess['name'];
-        if ( !self::isSensorSiteAccessName( $sitaccessIdentifier ) )
+        if ( !static::isSensorSiteAccessName( $sitaccessIdentifier ) )
         {
-            $sitaccessIdentifier = self::getSensorSiteAccessName();
+            $sitaccessIdentifier = static::getSensorSiteAccessName();
         }
         $path = "settings/siteaccess/{$sitaccessIdentifier}/";
         $ini = new eZINI( 'site.ini.append', $path, null, null, null, true, true );
@@ -1328,7 +1329,7 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
     public function logoPath()
     {
         $data = false;
-        $root = eZContentObject::fetchByRemoteID( self::sensorRootRemoteId() );
+        $root = eZContentObject::fetchByRemoteID( static::sensorRootRemoteId() );
         $rootHandler = OpenPAObjectHandler::instanceFromContentObject( $root );
         if ( $rootHandler->hasAttribute( 'logo' ) )
         {
@@ -1376,7 +1377,7 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
     public function attributeContacts()
     {
         $data = '';
-        $root = eZContentObject::fetchByRemoteID( self::sensorRootRemoteId() );
+        $root = eZContentObject::fetchByRemoteID( static::sensorRootRemoteId() );
         $rootHandler = OpenPAObjectHandler::instanceFromContentObject( $root );
         if ( $rootHandler->hasAttribute( 'contacts' ) )
         {
@@ -1392,7 +1393,7 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
     public function attributeFooter()
     {
         $data = '';
-        $root = eZContentObject::fetchByRemoteID( self::sensorRootRemoteId() );
+        $root = eZContentObject::fetchByRemoteID( static::sensorRootRemoteId() );
         $rootHandler = OpenPAObjectHandler::instanceFromContentObject( $root );
         if ( $rootHandler->hasAttribute( 'footer' ) )
         {
@@ -1536,7 +1537,7 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
     public function bannerPath()
     {
         $data = false;
-        $root = eZContentObject::fetchByRemoteID( self::sensorRootRemoteId() );
+        $root = eZContentObject::fetchByRemoteID( static::sensorRootRemoteId() );
         $rootHandler = OpenPAObjectHandler::instanceFromContentObject( $root );
         if ( $rootHandler->hasAttribute( 'banner' ) )
         {
@@ -1570,14 +1571,14 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
     private function getAttributeString( $identifier )
     {
         $data = '';
-        $root = eZContentObject::fetchByRemoteID( self::sensorRootRemoteId() );
+        $root = eZContentObject::fetchByRemoteID( static::sensorRootRemoteId() );
         $rootHandler = OpenPAObjectHandler::instanceFromContentObject( $root );
         if ( $rootHandler->hasAttribute( $identifier ) )
         {
             $attribute = $rootHandler->attribute( $identifier )->attribute( 'contentobject_attribute' );
             if ( $attribute instanceof eZContentObjectAttribute )
             {
-                $data = self::replaceBracket( $attribute->toString() );
+                $data = static::replaceBracket( $attribute->toString() );
             }
         }
         return $data;
