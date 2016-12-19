@@ -26,4 +26,11 @@ CollaborationGroupName=Sensor
 CollaborationHandlerTypeString=openpasensor
 AlertOwnerComment=enabled
 
+RoleNames[]
+RoleNames[ROLE_STANDARD]=Standard
+RoleNames[ROLE_OBSERVER]=Osservatore
+RoleNames[ROLE_OWNER]=In carico a
+RoleNames[ROLE_APPROVER]=Riferimento per il cittadino
+RoleNames[ROLE_AUTHOR]=Autore
+
 */ ?>
