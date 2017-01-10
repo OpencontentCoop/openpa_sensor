@@ -31,6 +31,7 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
     protected static $postContentClass;
     protected static $postAreas;
     protected static $postCategories;
+    protected static $operatorGroups;
 
     public static $stateGroupIdentifier = 'sensor';
     public static $stateIdentifiers = array(
@@ -52,6 +53,9 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
         'accepted' => "Accettato",
         'refused' => "Rifiutato"
     );
+
+    public static $referenceGroupStateGroupIdentifier = 'reference_group';
+    public static $referenceGroupStateIdentifiers = array();
 
     function run()
     {
@@ -367,6 +371,46 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
                         }
                     }
                 }
+                elseif ( $object->attribute( 'class_identifier' ) == 'user_group' )
+                {
+                    if ( $object->attribute( 'current_version') == 1  )
+                    {
+                        try
+                        {
+                            GroupHelper::createGroup( $object );
+                        }
+                        catch( Exception $e )
+                        {
+                            eZDebug::writeError( $e->getMessage(), __METHOD__ );
+                        }
+                    }
+                }
+                /*elseif ( $object->attribute( 'class_identifier' ) == 'sensor_category' )
+                {
+                    if ( $object->attribute( 'current_version') == 1  )
+                    {
+                        try
+                        {
+                            CategoryHelper::createCategory( $object );
+
+                        }
+                        catch( Exception $e )
+                        {
+                            eZDebug::writeError( $e->getMessage(), __METHOD__ );
+                        }
+                    }
+                    else
+                    {
+                        try
+                        {
+                            CategoryHelper::updateCategory( $object );
+                        }
+                        catch( Exception $e )
+                        {
+                            eZDebug::writeError( $e->getMessage(), __METHOD__ );
+                        }
+                    }
+                }*/
                 elseif ( $object->attribute( 'class_identifier' ) == 'sensor_root'  )
                 {
                     eZCache::clearByTag( 'template' );
@@ -965,6 +1009,43 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
             static::$postCategories = array( 'tree' => $data );
         }
         return static::$postCategories;
+    }
+
+    /**
+     * Restituisce un array tree
+     * @see static::walkSubtree
+     * @return array
+     */
+    public static function operatorGroups()
+    {
+        if ( static::$operatorGroups == null )
+        {
+            $includeClasses = array( 'user_group' );
+            $data = array();
+            $false = false;
+            /** @var eZContentObjectTreeNode[] $treeCategories */
+            $treeCategories = (array)static::operatorsNode()->subTree( array(
+                'Depth' => 1,
+                'DepthOperator' => 'eq',
+                'ClassFilterType' => 'include',
+                'ClassFilterArray' => $includeClasses,
+                'Limitation' => array(),
+                'SortBy' => array( 'name', true )
+            ) );
+
+            $treeCategories []= static::operatorsNode();
+
+            $userClasses = eZUser::fetchUserClassNames();
+            foreach( $treeCategories as $node )
+            {
+                $data[] = array(
+                    'node' => $node,
+                    'children' => static::walkSubtree( $node, $false, $userClasses )
+                );
+            }
+            static::$operatorGroups = array( 'tree' => $data );
+        }
+        return static::$operatorGroups;
     }
 
     public function makePrivate()
