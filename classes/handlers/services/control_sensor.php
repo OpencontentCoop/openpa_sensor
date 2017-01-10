@@ -54,8 +54,7 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
         'refused' => "Rifiutato"
     );
 
-    public static $referenceGroupStateGroupIdentifier = 'reference_group';
-    public static $referenceGroupStateIdentifiers = array();
+    public static $referenceGroupStateIdentifier = 'reference_group';
 
     function run()
     {
