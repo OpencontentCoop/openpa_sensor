@@ -56,6 +56,8 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
 
     public static $referenceGroupStateIdentifier = 'reference_group';
 
+    public static $categoryStateGroupIdentifier = 'sensor_category';
+
     function run()
     {
         $this->data['moderation_is_enabled'] = static::ModerationIsEnabled();
@@ -372,44 +374,26 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
                 }
                 elseif ( $object->attribute( 'class_identifier' ) == 'user_group' )
                 {
-                    if ( $object->attribute( 'current_version') == 1  )
+                    try
                     {
-                        try
-                        {
-                            GroupHelper::createGroup( $object );
-                        }
-                        catch( Exception $e )
-                        {
-                            eZDebug::writeError( $e->getMessage(), __METHOD__ );
-                        }
+                        GroupHelper::createGroup( $object );
+                    }
+                    catch( Exception $e )
+                    {
+                        eZDebug::writeError( $e->getMessage(), __METHOD__ );
                     }
                 }
-                /*elseif ( $object->attribute( 'class_identifier' ) == 'sensor_category' )
+                elseif ( $object->attribute( 'class_identifier' ) == 'sensor_category' )
                 {
-                    if ( $object->attribute( 'current_version') == 1  )
+                    try
                     {
-                        try
-                        {
-                            CategoryHelper::createCategory( $object );
-
-                        }
-                        catch( Exception $e )
-                        {
-                            eZDebug::writeError( $e->getMessage(), __METHOD__ );
-                        }
+                        CategoryHelper::executePostpublish( $object );
                     }
-                    else
+                    catch( Exception $e )
                     {
-                        try
-                        {
-                            CategoryHelper::updateCategory( $object );
-                        }
-                        catch( Exception $e )
-                        {
-                            eZDebug::writeError( $e->getMessage(), __METHOD__ );
-                        }
+                        eZDebug::writeError( $e->getMessage(), __METHOD__ );
                     }
-                }*/
+                }
                 elseif ( $object->attribute( 'class_identifier' ) == 'sensor_root'  )
                 {
                     eZCache::clearByTag( 'template' );
