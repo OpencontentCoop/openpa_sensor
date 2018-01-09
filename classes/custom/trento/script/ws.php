@@ -46,13 +46,13 @@ try
     }
     elseif ( $options['list_pendings'] )
     {
-        $cli->warning( "List pending items" );
+        $cli->output( "List pending items" );
         $entries = TrentoWsSensorPost::listPendingItems();
         print_r( $entries );
     }
     elseif ( $options['send_pendings'] )
     {        
-        $cli->warning( "Send pending items" );
+        $cli->output( "Send pending items" );
         TrentoWsSensorPost::sendPendingItems( isset( $options['verbose'] ) );
     }
 

@@ -271,8 +271,8 @@ class TrentoWsSensorPost
         }
         return $result;
     }
-    
-    protected function makePending()
+
+    public function makePending()
     {
         $pendingAction = eZPendingActions::fetchObject( eZPendingActions::definition(), null, array( 'action' => TrentoWsSensorPost::PENDING_ACTION_SEND_TO_WS, 'param' => $this->object->attribute( 'id' ) ) );        
         if ( !$pendingAction instanceof eZPendingActions )

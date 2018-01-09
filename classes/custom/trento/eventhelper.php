@@ -11,7 +11,7 @@ class TrentoSensorPostEventHelper extends SensorPostEventHelper
             try
             {
                 $wsPost = new TrentoWsSensorPost( $this->post );
-                $wsPost->send();
+                $wsPost->makePending();
             }
             catch( Exception $e )
             {
