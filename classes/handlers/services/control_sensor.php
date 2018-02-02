@@ -577,6 +577,15 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
                 }
             }
         }
+
+        // Assegnazione in base a select consulente
+        $dataMap = $this->getContentObject()->dataMap();
+        if ( isset($dataMap['consultant']) && $dataMap['consultant']->hasContent() )
+        {
+            $temp = explode( '-', $dataMap['consultant']->toString());
+            $data = array_merge($data, $temp);
+        }
+
         if ( empty( $data ) )
         {
             $data = self::defaultApproverIdArray();
