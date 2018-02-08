@@ -551,7 +551,9 @@ class OpenPASensorInstaller implements OpenPAInstaller
                     'Limitation' => array(
                         'Class' => array(
                             eZContentClass::classIDByIdentifier( 'dipendente' ),
-                            eZContentClass::classIDByIdentifier( 'politico' )
+                            eZContentClass::classIDByIdentifier( 'politico' ),
+                            eZContentClass::classIDByIdentifier( 'user' ),
+                            eZContentClass::classIDByIdentifier( 'sensor_operator' ),
                         )
                     )
                 ),
