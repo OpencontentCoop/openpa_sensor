@@ -312,7 +312,7 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
         if ( $state instanceof eZContentObjectState )
         {
             $object->assignState( $state );
-            eZSearch::updateObjectState($object->attribute( 'id' ), array( $state->attribute( 'id' ));
+            eZSearch::updateObjectState($object->attribute( 'id' ), array( $state->attribute( 'id' )));
             eZContentCacheManager::clearContentCache( $object->attribute( 'id' ) );
         }
     }
