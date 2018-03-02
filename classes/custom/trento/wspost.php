@@ -300,7 +300,7 @@ class TrentoWsSensorPost
             $object = $this->object;
 
             $object->assignState( $state );
-            eZSearch::updateObjectState($object->attribute( 'id' ), array( $state->attribute( 'id' ));
+            eZSearch::updateObjectState($object->attribute( 'id' ), array( $state->attribute( 'id' )));
             eZContentCacheManager::clearContentCache( $object->attribute( 'id' ) );
         }
         else
