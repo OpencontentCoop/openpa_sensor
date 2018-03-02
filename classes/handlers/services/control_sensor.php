@@ -311,9 +311,16 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
         $state = $states[$stateGroup . '.' . $stateIdentifier];
         if ( $state instanceof eZContentObjectState )
         {
-            $object->assignState( $state );
-            eZSearch::updateObjectState($object->attribute( 'id' ), array( $state->attribute( 'id' ));
-            eZContentCacheManager::clearContentCache( $object->attribute( 'id' ) );
+            if ( eZOperationHandler::operationIsAvailable( 'content_updateobjectstate' ) )
+            {
+                eZOperationHandler::execute( 'content', 'updateobjectstate',
+                    array( 'object_id' => $object->attribute( 'id' ),
+                           'state_id_list' => array( $state->attribute( 'id' ) ) ) );
+            }
+            else
+            {
+                eZContentOperationCollection::updateObjectState( $object->attribute( 'id' ), array( $state->attribute( 'id' ) ) );
+            }
         }
     }
 
@@ -973,7 +980,12 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
         $object = $this->getContentObject();
         if ( $object instanceof eZContentObject )
         {
-            ObjectHandlerServiceControlSensor::setState( $object, 'privacy', 'private' );
+            OpenPABase::sudo(
+                function () use ( $object )
+                {
+                    ObjectHandlerServiceControlSensor::setState( $object, 'privacy', 'private' );
+                }
+            );
         }
     }
 
@@ -982,7 +994,12 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
         $object = $this->getContentObject();
         if ( $object instanceof eZContentObject )
         {
-            ObjectHandlerServiceControlSensor::setState( $object, 'privacy', 'public' );
+            OpenPABase::sudo(
+                function () use ( $object )
+                {
+                    ObjectHandlerServiceControlSensor::setState( $object, 'privacy', 'public' );
+                }
+            );
         }
     }
 
@@ -991,7 +1008,11 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
         $object = $this->getContentObject();
         if ( $object instanceof eZContentObject )
         {
-            ObjectHandlerServiceControlSensor::setState( $object, 'moderation', $identifier );
+            OpenPABase::sudo(
+                function() use( $object, $identifier ){
+                    ObjectHandlerServiceControlSensor::setState( $object, 'moderation', $identifier );
+                }
+            );
         }
     }
 
@@ -1001,15 +1022,30 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
         {
             if ( $status == SensorPost::STATUS_READ )
             {
-                ObjectHandlerServiceControlSensor::setState( $object, 'sensor', 'open' );
+                OpenPABase::sudo(
+                    function () use ( $object )
+                    {
+                        ObjectHandlerServiceControlSensor::setState( $object, 'sensor', 'open' );
+                    }
+                );
             }
             elseif ( $status == SensorPost::STATUS_CLOSED )
             {
-                ObjectHandlerServiceControlSensor::setState( $object, 'sensor', 'close' );
+                OpenPABase::sudo(
+                    function () use ( $object )
+                    {
+                        ObjectHandlerServiceControlSensor::setState( $object, 'sensor', 'close' );
+                    }
+                );
             }
             elseif ( $status == SensorPost::STATUS_REOPENED )
             {
-                ObjectHandlerServiceControlSensor::setState( $object, 'sensor', 'pending' );
+                OpenPABase::sudo(
+                    function () use ( $object )
+                    {
+                        ObjectHandlerServiceControlSensor::setState( $object, 'sensor', 'pending' );
+                    }
+                );
             }
         }
     }
