@@ -298,10 +298,21 @@ class TrentoWsSensorPost
         if ( $state instanceof eZContentObjectState )
         {
             $object = $this->object;
-
-            $object->assignState( $state );
-            eZSearch::updateObjectState($object->attribute( 'id' ), array( $state->attribute( 'id' ));
-            eZContentCacheManager::clearContentCache( $object->attribute( 'id' ) );
+            OpenPABase::sudo(
+                function () use ( $object, $state )
+                {
+                    if ( eZOperationHandler::operationIsAvailable( 'content_updateobjectstate' ) )
+                    {
+                        eZOperationHandler::execute( 'content', 'updateobjectstate',
+                            array( 'object_id' => $object->attribute( 'id' ),
+                                   'state_id_list' => array( $state->attribute( 'id' ) ) ) );
+                    }
+                    else
+                    {
+                        eZContentOperationCollection::updateObjectState( $object->attribute( 'id' ), array( $state->attribute( 'id' ) ) );
+                    }
+                }
+            );
         }
         else
         {
@@ -362,14 +373,12 @@ class TrentoWsSensorPost
                 }
             }
         
-            if (!empty($postIDList)) {
-                eZPendingActions::removeByAction(
-                    TrentoWsSensorPost::PENDING_ACTION_SEND_TO_WS,
-                    array(
-                        'param' => array( $postIDList )
-                    )
-                );
-            }
+            eZPendingActions::removeByAction(
+                TrentoWsSensorPost::PENDING_ACTION_SEND_TO_WS,
+                array(
+                    'param' => array( $postIDList )
+                )
+            );
         }
     }
     
