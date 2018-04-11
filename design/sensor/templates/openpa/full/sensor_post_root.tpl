@@ -1,6 +1,7 @@
 {ezpagedata_set('left_menu',false())}
 {def $page_limit = 10}
 {def $filterSettings =  ezini( 'ListSettings', 'FilterAttributes', 'ocsensor.ini' )
+     $showModifiedTime =  ezini( 'ListSettings', 'ShowModifiedTime', 'ocsensor.ini' )
      $facets = array()}
 {foreach $filterSettings as $k => $v}
     {set $facets = $facets|append( hash( 'field', $k, 'name', $v, 'limit', 500, 'sort', 'alpha' ) )}
@@ -11,7 +12,7 @@
         'subtree_array', array( sensor_postcontainer().node_id ),
         'class_id', array( 'sensor_post' ),
         'offset', $view_parameters.offset,
-        'sort_by', hash( 'published', 'desc' ),
+        'sort_by', hash( 'modified', 'desc' ),
         'facet', $facets,
         'limit', $page_limit
     ),
