@@ -1,17 +1,19 @@
 {ezpagedata_set('left_menu',false())}
 {def $page_limit = 10}
+{def $filterSettings =  ezini( 'ListSettings', 'FilterAttributes', 'ocsensor.ini' )
+     $showModifiedTime =  ezini( 'ListSettings', 'ShowModifiedTime', 'ocsensor.ini' )
+     $facets = array()}
+{foreach $filterSettings as $k => $v}
+    {set $facets = $facets|append( hash( 'field', $k, 'name', $v, 'limit', 500, 'sort', 'alpha' ) )}
+{/foreach}
+
 {def $data = facet_navigation(
     hash(
         'subtree_array', array( sensor_postcontainer().node_id ),
         'class_id', array( 'sensor_post' ),
         'offset', $view_parameters.offset,
-        'sort_by', hash( 'published', 'desc' ),
-        'facet', array(
-                        hash( 'field', 'subattr_area___name____s', 'name', 'Zona', 'limit', 500, 'sort', 'alpha' ),
-                        hash( 'field', 'attr_type_s', 'name', 'Tipo', 'limit', 500, 'sort', 'alpha' ),
-                        hash( 'field', 'subattr_category___name____s', 'name', 'Area tematica', 'limit', 500, 'sort', 'alpha' ),
-                        hash( 'field', 'meta_object_states_si', 'name', 'Stato', 'limit', 500, 'sort', 'alpha' )
-                        ),
+        'sort_by', hash( 'modified', 'desc' ),
+        'facet', $facets,
         'limit', $page_limit
     ),
     $view_parameters,
