@@ -1426,6 +1426,13 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
             );
         }
 
+        $menuSegnalazioni = ezpI18n::tr( 'sensor/menu', 'Segnalazioni' );
+
+
+        if (eZINI::instance('ocsensor.ini')->hasVariable('MenuSettings', 'Segnalazioni'))
+        {
+            $menuSegnalazioni = eZINI::instance('ocsensor.ini')->variable('MenuSettings', 'Segnalazioni');
+        }
         $menu = array(
             array(
                 'name' => ezpI18n::tr( 'sensor/menu', 'Informazioni' ),
@@ -1435,7 +1442,7 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
                 'children' => $infoChildren
             ),
             array(
-                'name' => ezpI18n::tr( 'sensor/menu', 'Segnalazioni' ),
+                'name' => $menuSegnalazioni,
                 'url' => 'sensor/posts',
                 'highlight' => false,
                 'has_children' => false
