@@ -465,11 +465,11 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
             'SearchDate' => null,
             'DistributedSearch' => null,
             'FieldsToReturn' => array(
-                'subattr_geo___coordinates____gpt',
-                'attr_type_s',
-                'attr_subject_t',
-                'subattr_category___name____s',
-                'meta_object_states_si'
+                SearchFormOperator::generateSolrSubField('geo', 'coordinates', 'geopoint'),
+                SearchFormOperator::generateSolrField('type', 'string'),
+                SearchFormOperator::generateSolrField('subject', 'text'),
+                SearchFormOperator::generateSolrSubField('category', 'name', 'string'),
+                SearchFormOperator::generateSolrMetaField('object_states')
             ),
             'SearchResultClustering' => null,
             'ExtendedAttributeFilter' => array()
@@ -487,16 +487,19 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
     {
         $items = self::fetchPosts( false );
         $data = $items['SearchCount'] > 0 ? new SensorGeoJsonFeatureCollection() : null;
+        $geoField = SearchFormOperator::generateSolrSubField('geo', 'coordinates', 'geopoint');
+        $typeField = SearchFormOperator::generateSolrField('type', 'string');
+        $subjectField = SearchFormOperator::generateSolrField('subject', 'text');
         foreach( $items['SearchResult'] as $item )
         {
-            $geo = isset( $item['fields']['subattr_geo___coordinates____gpt'] ) ? $item['fields']['subattr_geo___coordinates____gpt'] : array();
+            $geo = isset( $item['fields'][$geoField] ) ? $item['fields'][$geoField] : array();
             if ( count( $geo ) > 0 )
             {
                 $geometryArray = explode( ',', $geo[0] );
 
                 $id = isset( $item['id_si'] ) ? $item['id_si'] : $item['id'];
-                $type = isset( $item['fields']['attr_type_s'] ) ? $item['fields']['attr_type_s'] : false;
-                $name = isset( $item['fields']['attr_subject_t'] ) ? $item['fields']['attr_subject_t'] : false;
+                $type = isset( $item['fields'][$typeField] ) ? $item['fields'][$typeField] : false;
+                $name = isset( $item['fields'][$subjectField] ) ? $item['fields'][$subjectField] : false;
 
                 $properties = array(
                     'type' => $type,
@@ -883,7 +886,7 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
                 $searchFilters = count( $struttureIds ) > 1 ? array( 'or' ) : array();
                 foreach( $struttureIds as $struttureId )
                 {
-                    $searchFilters[] = 'submeta_struttura_di_competenza___id_si:' . $struttureId;
+                    $searchFilters[] = SearchFormOperator::generateSolrSubMetaField('struttura_di_competenza', 'id') . ':' . $struttureId;
                 }
                 $searchParams['filter'] = $searchFilters;
             }
