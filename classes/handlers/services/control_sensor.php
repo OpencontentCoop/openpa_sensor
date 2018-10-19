@@ -55,9 +55,12 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
 
     function run()
     {
+        $setting = self::getSensorConfigParams();
+
         $this->data['moderation_is_enabled'] = self::ModerationIsEnabled();
         $this->data['timed_moderation_is_enabled'] = self::TimedModerationIsEnabled();
-        $this->data['use_per_area_approver'] = false; //@todo impostare da ini?
+        $this->data['use_per_area_approver'] = $setting['AreaAutomaticAssign'];
+        $this->data['use_per_category_approver'] = $setting['CategoryAutomaticAssign'];
         $this->fnData['post_container_node'] = 'postContainerNode';
         $this->fnData['post_categories_container_node'] = 'postCategoriesNode';
         $this->fnData['post_class'] = 'postContentClass';
@@ -550,36 +553,24 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
     public function getApproverIdArray()
     {
         $data = array();
+        
+        // Assegnazione in base a select di punto sulla mappa
         if ( $this->attribute( 'use_per_area_approver' ) )
         {
-            if ( $this->container->hasAttribute( 'area' ) )
-            {
-                $areaRelationList = explode(
-                    '-',
-                    $this->container->attribute( 'area' )->attribute(
-                        'contentobject_attribute'
-                    )->toString()
-                );
-                foreach ( $areaRelationList as $item )
-                {
-                    $area = eZContentObject::fetch( $item );
-                    /** @var eZContentObjectAttribute[] $areaDataMap */
-                    $areaDataMap = $area->attribute( 'data_map' );
-                    if ( isset( $areaDataMap['approver'] ) )
-                    {
-                        $data = explode( '-', $areaDataMap['approver']->toString() );
-                        break;
-                    }
-                }
-            }
+            $data = array_merge( $data, $this->getApproverIdsByArea() );
+        }
+
+        // Assegnazione in base a select di categoria (area tematica)
+        if ( $this->attribute( 'use_per_category_approver' ) )
+        {            
+            $data = array_merge( $data, $this->getApproverIdsByCategory() );
         }
 
         // Assegnazione in base a select consulente
         $dataMap = $this->getContentObject()->dataMap();
         if ( isset($dataMap['consultant']) && $dataMap['consultant']->hasContent() )
-        {
-            $temp = explode( '-', $dataMap['consultant']->toString());
-            $data = array_merge($data, $temp);
+        {            
+            $data = array_merge( $data, explode( '-', $dataMap['consultant']->toString()) );
         }
 
         if ( empty( $data ) )
@@ -587,6 +578,18 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
             $data = self::defaultApproverIdArray();
         }
 
+        $data = array_unique( $data );
+
+        return $data;
+    }
+
+    public function getObserverIdArray()
+    {
+        $data = array();
+        if ( $this->attribute( 'use_per_area_approver' ) || $this->attribute( 'use_per_category_approver' ) )
+        {
+            $data = self::defaultApproverIdArray();
+        }
         return $data;
     }
 
@@ -1077,6 +1080,30 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
         return $userIds;
     }
 
+    public function getApproverIdsByArea()
+    {
+        $userIds = array();
+        $area = $this->getContentObjectAttribute( 'area' );
+        if ( $area instanceof eZContentObjectAttribute )
+        {
+            $categories = explode( '-', $area->toString() );
+            foreach( $areas as $areaId )
+            {
+                $area = eZContentObject::fetch( $areaId );
+                if ( $area instanceof eZContentObject )
+                {
+                    /** @var eZContentObjectAttribute[] $areaDataMap */
+                    $areaDataMap = $area->attribute( 'data_map' );
+                    if ( isset( $areaDataMap['approver'] ) )
+                    {
+                        $userIds = array_merge( $userIds, explode( '-', $areaDataMap['approver']->toString() ) );
+                    }
+                }
+            }
+        }
+        return $userIds;
+    }
+
     public function getPostUrl()
     {
         $url = 'http://' . $this->siteUrl() . '/sensor/posts/' . $this->getContentObject()->attribute( 'id' );
@@ -1216,12 +1243,14 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
             'DefaultPostExpirationDaysInterval' => self::iniVariable( 'SensorConfig', 'DefaultPostExpirationDaysInterval', 15 ),
             'UniqueCategoryCount' => self::iniVariable( 'SensorConfig', 'CategoryCount', 'unique' ) == 'unique',
             'CategoryAutomaticAssign' => self::iniVariable( 'SensorConfig', 'CategoryAutomaticAssign', 'disabled' ) == 'enabled',
+            'AreaAutomaticAssign' => self::iniVariable( 'SensorConfig', 'AreaAutomaticAssign', 'disabled' ) == 'enabled',
             'AuthorCanReopen' => self::iniVariable( 'SensorConfig', 'AuthorCanReopen', 'disabled' ) == 'enabled',
             'ApproverCanReopen' => self::iniVariable( 'SensorConfig', 'ApproverCanReopen', 'disabled' ) == 'enabled',
             'CloseCommentsAfterSeconds' => self::iniVariable( 'SensorConfig', 'CloseCommentsAfterSeconds', 1 ),
             'ModerateNewWhatsAppUser' => self::iniVariable( 'SensorConfig', 'ModerateNewWhatsAppUser', 'enabled' ) == 'enabled',
             'FilterOperatorsByOwner' => self::iniVariable( 'SensorConfig', 'FilterOperatorsByOwner', 'disabled' ) == 'enabled',
-            'FilterObserversByOwner' => self::iniVariable( 'SensorConfig', 'FilterObserversByOwner', 'disabled' ) == 'enabled'
+            'FilterObserversByOwner' => self::iniVariable( 'SensorConfig', 'FilterObserversByOwner', 'disabled' ) == 'enabled',
+            'CommentsIsAllowed' => self::iniVariable( 'SensorConfig', 'CommentsIsAllowed', 'enabled' ) == 'enabled'
         );
     }
 
