@@ -1250,7 +1250,7 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
             'ModerateNewWhatsAppUser' => self::iniVariable( 'SensorConfig', 'ModerateNewWhatsAppUser', 'enabled' ) == 'enabled',
             'FilterOperatorsByOwner' => self::iniVariable( 'SensorConfig', 'FilterOperatorsByOwner', 'disabled' ) == 'enabled',
             'FilterObserversByOwner' => self::iniVariable( 'SensorConfig', 'FilterObserversByOwner', 'disabled' ) == 'enabled',
-            'CommentsIsAllowed' => self::iniVariable( 'SensorConfig', 'CommentsIsAllowed', 'enabled' ) == 'enabled'
+            'CommentsAllowed' => self::iniVariable( 'SensorConfig', 'CommentsAllowed', 'enabled' ) == 'enabled'
         );
     }
 
