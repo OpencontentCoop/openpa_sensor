@@ -28,14 +28,6 @@
     </message>
 </context>
 <context>
-    <name>sensor</name>
-    <message>
-        <location filename="control_sensor.php" line="1289"/>
-        <source>Sensorcivico - progetto di riuso del Consorzio dei Comuni Trentini - realizzato da Opencontent con ComunWeb</source>
-        <translation>StadtSensor (SensorCivico) in Zusammenarbeit mit dem Gemeindenverband des Trentino. Technische Umsetzung: Opencontent mit ComunWeb</translation>
-    </message>
-</context>
-<context>
     <name>sensor/menu</name>
     <message>
         <location filename="control_sensor.php" line="1308"/>

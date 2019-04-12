@@ -1419,7 +1419,7 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
 
     public function textCredits()
     {
-        return ezpI18n::tr( 'sensor', 'Sensorcivico - progetto di riuso del Consorzio dei Comuni Trentini - realizzato da Opencontent con ComunWeb' );
+        return OpenPAINI::variable('CreditsSettings', 'Sensor');
     }
 
     public function googleAnalyticsId()
