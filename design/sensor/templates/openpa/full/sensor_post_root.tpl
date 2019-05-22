@@ -41,44 +41,50 @@ ezscript_require(array('ezjsc::jquery', 'plugins/chosen.jquery.js'))}
 
 </section>
 
-{if fetch( 'user', 'has_access_to', hash( 'module', 'sensor', 'function', 'config' ) )}
-    <div id="posts_search">
-        <div class="container">
-            <form class="form-horizontal" role="search" action={concat('facet/proxy/', $node.node_id)|ezurl()}>
-                <div class="col-md-2">
-                    <input id="searchfacet" data-content="Premi invio per cercare" type="text" class="form-control" placeholder="Cerca" name="query" value="{$data.query|wash()}">
-                </div>
-                {if $data.navigation|count}
-                    {foreach $data.navigation as $name => $items}
-                        <div class="col-md-2">
-                            <select class="facet-select form-control chosen" data-placeholder="{$name|wash()}" name="{$name|wash()}">
-                                <option value="">{$name|wash()}</option>
-                                {foreach $items as $item}
-                                    {if $name|eq('Stato')}
-                                        {def $state = $item.name|objectstate_by_id()}
-                                        {if array( 'sensor', 'privacy', 'moderation' )|contains( $state.group.identifier )}
-                                            <option {if $item.active}selected="selected"{/if} value="{$item.query|wash()}">
-                                                {$state.group.current_translation.name|wash()}/{$state.current_translation.name|wash()}
-                                                {if $item.count|gt(0)}({$item.count}){/if}
-                                            </option>
-                                        {/if}
-                                        {undef $state}
-                                    {else}
+{def $userIsAdmin = cond(fetch( 'user', 'has_access_to', hash( 'module', 'sensor', 'function', 'config' ) ), true(), false())}
+
+<div id="posts_search">
+    <div class="container">
+        <form class="form-horizontal" role="search" action={concat('facet/proxy/', $node.node_id)|ezurl()}>
+            <div class="col-md-2">
+                <input id="searchfacet" data-content="Premi invio per cercare" type="text" class="form-control" placeholder="Cerca" name="query" value="{$data.query|wash()}">
+            </div>
+            {if $data.navigation|count}
+                {foreach $data.navigation as $name => $items}
+                    {if and($name|eq($filterSettings['meta_object_states_si']), $userIsAdmin|not())}
+                        {skip}
+                    {/if}
+                    {if count($items)|eq(0)}
+                        {skip}
+                    {/if}
+                    <div class="col-md-2">
+                        <select class="facet-select form-control chosen" data-placeholder="{$name|wash()}" name="{$name|wash()}">
+                            <option value="">{$name|wash()}</option>
+                            {foreach $items as $item}
+                                {if $name|eq('Stato')}
+                                    {def $state = $item.name|objectstate_by_id()}
+                                    {if array( 'sensor', 'privacy', 'moderation' )|contains( $state.group.identifier )}
                                         <option {if $item.active}selected="selected"{/if} value="{$item.query|wash()}">
-                                            {$item.name|wash()}
+                                            {$state.group.current_translation.name|wash()}/{$state.current_translation.name|wash()}
                                             {if $item.count|gt(0)}({$item.count}){/if}
                                         </option>
                                     {/if}
-                                {/foreach}
-                            </select>
-                        </div>
-                    {/foreach}
-                {/if}
-                <div class="col-md-2">
-                    <button type="submit" class="btn btn-info"><span class="fa fa-search"></span></button>
-                    <a href={$node.url_alias|ezurl()} title="Reset" class="btn btn-danger"><span class="fa fa-close"></span></a>
-                </div>
-            </form>
-        </div>
+                                    {undef $state}
+                                {else}
+                                    <option {if $item.active}selected="selected"{/if} value="{$item.query|wash()}">
+                                        {$item.name|wash()}
+                                        {if $item.count|gt(0)}({$item.count}){/if}
+                                    </option>
+                                {/if}
+                            {/foreach}
+                        </select>
+                    </div>
+                {/foreach}
+            {/if}
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-info"><span class="fa fa-search"></span></button>
+                <a href="{$node.url_alias|ezurl(no)}" title="Reset" class="btn btn-danger"><span class="fa fa-close"></span></a>
+            </div>
+        </form>
     </div>
-{/if}
+</div>
