@@ -196,8 +196,7 @@ class TrentoWsSensorPost
             '10' => 'Sul posto',
             '11' => 'Richiesta Difensore civico',
             '12' => 'Istanza / Petizione',
-            '13' => 'Aiutaci a migliorare',
-            '14' => 'WhatsApp',
+            '13' => 'Aiutaci a migliorare'
         );
         foreach( $data as $id => $match )
         {

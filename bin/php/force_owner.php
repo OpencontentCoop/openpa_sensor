@@ -1,10 +1,10 @@
 <?php
 require 'autoload.php';
 
-$script = eZScript::instance( array( 'description' => ( "OpenPA Sensor Force Owner for a ticket\n\n" ),
-                                     'use-session' => false,
-                                     'use-modules' => true,
-                                     'use-extensions' => true ) );
+$script = eZScript::instance(array('description' => ("OpenPA Sensor Force Owner for a ticket\n\n"),
+    'use-session' => false,
+    'use-modules' => true,
+    'use-extensions' => true));
 
 $script->startup();
 
@@ -17,30 +17,35 @@ $options = $script->getOptions(
     )
 );
 $script->initialize();
-$script->setUseDebugAccumulators( true );
+$script->setUseDebugAccumulators(true);
 
 $cli = eZCLI::instance();
 
-OpenPALog::setOutputLevel( OpenPALog::ALL );
+OpenPALog::setOutputLevel(OpenPALog::ALL);
 
-try
-{
-    if ( isset( $options['id'] ) )
-    {
-        $helper = SensorHelper::instanceFromContentObjectId( $options['id'] );
-        if ( isset( $options['user_id'] ) )
-        {
-            $newOwnerId = $options['user_id'];
-            $helper->currentSensorUserRoles->actionHandler->assign( array( $newOwnerId ) );
-        }
+try {
+    if (isset($options['id']) && isset($options['user_id'])) {
+        $newOwnerId = $options['user_id'];
+
+        $repository = OpenPaSensorRepository::instance();
+        $post = $repository->getPostService()->loadPost($objectId);
+
+        $action = new \Opencontent\Sensor\Api\Action\Action();
+        $action->identifier = 'assign';
+        $action->setParameter('participant_ids', [$newOwnerId]);
+
+        $repository->getActionService()->loadActionDefinitionByIdentifier($action->identifier)->run(
+            $repository,
+            $action,
+            $post,
+            $repository->getCurrentUser()
+        );
     }
 
 
     $script->shutdown();
-}
-catch( Exception $e )
-{
+} catch (Exception $e) {
     $errCode = $e->getCode();
     $errCode = $errCode != 0 ? $errCode : 1; // If an error has occured, script must terminate with a status other than 0
-    $script->shutdown( $errCode, $e->getMessage() );
+    $script->shutdown($errCode, $e->getMessage());
 }

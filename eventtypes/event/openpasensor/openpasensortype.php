@@ -9,32 +9,29 @@ class OpenPASensorType extends eZWorkflowEventType
     {
         $this->eZWorkflowEventType(
             self::WORKFLOW_TYPE_STRING,
-            ezpI18n::tr( 'openpa/workflow/event', 'Workflow Sensor' )
+            ezpI18n::tr('openpa/workflow/event', 'Workflow Sensor')
         );
     }
 
     /**
      * @param eZWorkflowProcess $process
-     * @param eZEvent $event
+     * @param eZWorkflowEvent $event
      *
      * @return int
      */
-    function execute( $process, $event )
+    function execute($process, $event)
     {
-        $parameters = $process->attribute( 'parameter_list' );
+        $parameters = $process->attribute('parameter_list');
 
-        try
-        {
-            ObjectHandlerServiceControlSensor::executeWorkflow( $parameters, $process, $event );
+        try {
+            ObjectHandlerServiceControlSensor::executeWorkflow($parameters, $process, $event);
             return eZWorkflowType::STATUS_ACCEPTED;
-        }
-        catch( Exception $e )
-        {
-            eZDebug::writeError( $e->getMessage(), __METHOD__ );
+        } catch (Exception $e) {
+            eZDebug::writeError($e->getMessage(), __METHOD__);
             return eZWorkflowType::STATUS_REJECTED;
         }
 
     }
 }
 
-eZWorkflowEventType::registerEventType( OpenPASensorType::WORKFLOW_TYPE_STRING, 'OpenPASensorType' );
+eZWorkflowEventType::registerEventType(OpenPASensorType::WORKFLOW_TYPE_STRING, 'OpenPASensorType');
