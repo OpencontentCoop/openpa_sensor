@@ -47,7 +47,6 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
                                 $object
                             );
                             $postInitializer->init();
-                            eZSearch::addObject($object, true);
                         } catch (Exception $e) {
                             eZDebug::writeError($e->getMessage(), __METHOD__);
                         }
@@ -58,7 +57,6 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
                                 $object
                             );
                             $postInitializer->refresh();
-                            eZSearch::addObject($object, true);
                         } catch (Exception $e) {
                             eZDebug::writeError($e->getMessage(), __METHOD__);
                         }
