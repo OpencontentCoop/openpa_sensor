@@ -36,11 +36,14 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
         $trigger = $parameters['trigger_name'];
         eZDebug::writeNotice("Sensor workflow for $trigger", __METHOD__);
         $repository = OpenPaSensorRepository::instance();
+
         if ($trigger == 'pre_publish') {
             $id = $parameters['object_id'];
             $object = eZContentObject::fetch($id);
             $version = $object->version($parameters['version']);
             if ($object instanceof eZContentObject) {
+
+                // create/update sensor stuff
                 if ($object->attribute('class_identifier') == 'sensor_post') {
                     $postInitializer = new \Opencontent\Sensor\Legacy\PostService\PostInitializer(
                         $repository,
@@ -62,24 +65,47 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
                             eZDebug::writeError($e->getMessage(), __METHOD__);
                         }
                     }
+
+                // empty cache
                 } elseif ($object->attribute('class_identifier') == 'sensor_root') {
                     eZCache::clearByTag('template');
+
+                // empty area tree cache
                 } elseif ($object->attribute('class_identifier') == 'sensor_area') {
                     \Opencontent\Sensor\Legacy\Utils\TreeNode::clearCache($repository->getAreasRootNode()->attribute('node_id'));
+
+                // empty category tree cache
                 } elseif ($object->attribute('class_identifier') == 'sensor_category') {
                     \Opencontent\Sensor\Legacy\Utils\TreeNode::clearCache($repository->getCategoriesRootNode()->attribute('node_id'));
+
+                // set default dahboard filters
+                } elseif ($object->attribute('class_identifier') == 'sensor_operator') {
+                    eZPreferences::setValue('sensor_participant_filter_approver', 1, $id);
+                    eZPreferences::setValue('sensor_participant_filter_owner', 1, $id);
+
+                // set default notification subscriptions
+                } elseif ($object->attribute('class_identifier') == 'user' && $object->attribute('current_version') == 1) {
+                    $defaultNotificationRules = ['on_create', 'on_assign', 'on_close', 'reminder'];
+                    $notificationPrefix = $repository->getSensorCollaborationHandlerTypeString() . '_';
+                    foreach ($defaultNotificationRules as $rule) {
+                        $defaultNotificationRule = $notificationPrefix . $rule;
+                        eZCollaborationNotificationRule::create($defaultNotificationRule, $id)->store();
+                    }
                 }
             }
+
         } elseif ($trigger == 'pre_delete') {
             $nodeIdList = $parameters['node_id_list'];
             $inTrash = (bool)$parameters['move_to_trash'];
             foreach ($nodeIdList as $nodeId) {
                 $object = eZContentObject::fetchByNodeID($nodeId);
+                // remove sensor stuff
                 if ($object instanceof eZContentObject && $object->attribute('class_identifier') == 'sensor_post') {
                     try {
                         $postInitializer = new \Opencontent\Sensor\Legacy\PostService\PostInitializer(
                             $repository,
-                            $object
+                            $object,
+                            $object->currentVersion()
                         );
                         if ($inTrash) {
                             $postInitializer->trash();
@@ -89,8 +115,12 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
                     } catch (Exception $e) {
                         eZDebug::writeError($e->getMessage(), __METHOD__);
                     }
+
+                // empty area tree cache
                 } elseif ($object instanceof eZContentObject && $object->attribute('class_identifier') == 'sensor_area') {
                     \Opencontent\Sensor\Legacy\Utils\TreeNode::clearCache($repository->getAreasRootNode()->attribute('node_id'));
+
+                // empty category tree cache
                 } elseif ($object instanceof eZContentObject && $object->attribute('class_identifier') == 'sensor_category') {
                     \Opencontent\Sensor\Legacy\Utils\TreeNode::clearCache($repository->getCategoriesRootNode()->attribute('node_id'));
                 }
@@ -261,7 +291,7 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
                 'has_children' => false
             )
         );
-        if (eZUser::currentUser()->isLoggedIn()) {
+        if (eZUser::currentUser()->isRegistered()) {
             $menu[] = array(
                 'name' => ezpI18n::tr('sensor/menu', 'Le mie attività'),
                 'url' => 'sensor/dashboard',
