@@ -344,6 +344,19 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
                 'has_children' => false
             );
         }
+
+        if (in_array('ocwebhookserver', eZExtension::activeExtensions())) {
+            $hasAccess = eZUser::currentUser()->hasAccessTo('webhook', 'admin');
+            if ($hasAccess['accessWord'] == 'yes') {
+                $userMenu[] = array(
+                    'name' => ezpI18n::tr('sensor/menu', 'Webhooks'),
+                    'url' => 'webhook/list',
+                    'highlight' => false,
+                    'has_children' => false
+                );
+            }
+        }
+
         $userMenu[] = array(
             'name' => ezpI18n::tr('sensor/menu', 'Esci'),
             'url' => 'user/logout',
