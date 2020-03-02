@@ -225,6 +225,11 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
 
     public function textCredits()
     {
+        $versionFile = eZSys::rootDir() . '/opensegnalazioni.version';
+        if (file_exists($versionFile)){
+            return file_get_contents($versionFile);
+        }
+
         return OpenPAINI::variable('CreditsSettings', 'Sensor');
     }
 
