@@ -34,7 +34,7 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
     public static function executeWorkflow($parameters, $process, $event)
     {
         $trigger = $parameters['trigger_name'];
-        eZDebug::writeNotice("Sensor workflow for $trigger", __METHOD__);
+        eZDebug::writeDebug("Sensor workflow for $trigger", __METHOD__);
         $repository = OpenPaSensorRepository::instance();
 
         if ($trigger == 'pre_publish') {
