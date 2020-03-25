@@ -50,7 +50,7 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
                         $object,
                         $version
                     );
-                    if ($object->attribute('current_version') == 1) {
+                    if ($parameters['version'] == 1) {
                         try {
                             $postInitializer->init();
                         } catch (Exception $e) {
