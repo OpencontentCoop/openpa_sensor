@@ -78,6 +78,12 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
                 } elseif ($object->attribute('class_identifier') == 'sensor_category') {
                     \Opencontent\Sensor\Legacy\Utils\TreeNode::clearCache($repository->getCategoriesRootNode()->attribute('node_id'));
 
+                } elseif ($object->attribute('class_identifier') == 'sensor_operator') {
+                    \Opencontent\Sensor\Legacy\Utils\TreeNode::clearCache($repository->getOperatorsRootNode()->attribute('node_id'));
+
+                } elseif ($object->attribute('class_identifier') == 'sensor_group') {
+                    \Opencontent\Sensor\Legacy\Utils\TreeNode::clearCache($repository->getGroupsRootNode()->attribute('node_id'));
+
                 // set default dahboard filters
                 } elseif ($object->attribute('class_identifier') == 'sensor_operator') {
                     eZPreferences::setValue('sensor_participant_filter_approver', 1, $id);
