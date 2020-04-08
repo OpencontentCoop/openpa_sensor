@@ -148,19 +148,26 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
             $sitaccessIdentifier = self::getSensorSiteAccessName();
         }
         $path = "settings/siteaccess/{$sitaccessIdentifier}/";
-        $ini = new eZINI('site.ini.append', $path, null, null, null, true, true);
+
+        $ini = new eZINI('site.ini', $path, null, null, null, true, true);
         return rtrim($ini->variable('SiteSettings', 'SiteURL'), '/');
     }
 
     public function assetUrl()
     {
+        // se il cluster è su aws o simili l'asset url è già presente nell'url delle immagini
+        if (eZINI::instance('file.ini')->variable('eZDFSClusteringSettings', 'DFSBackend') == 'OpenPADFSFileHandlerDFSDispatcher'){
+            return '';
+        }
+
         $siteUrl = eZINI::instance()->variable('SiteSettings', 'SiteURL');
         $parts = explode('/', $siteUrl);
         if (count($parts) >= 2) {
             array_pop($parts);
             $siteUrl = implode('/', $parts);
         }
-        return rtrim($siteUrl, '/');
+
+        return 'https//' . rtrim($siteUrl, '/');
     }
 
     public function logoPath()
