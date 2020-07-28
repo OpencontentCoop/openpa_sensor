@@ -167,7 +167,7 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
             $siteUrl = implode('/', $parts);
         }
 
-        return 'https//' . rtrim($siteUrl, '/');
+        return 'https://' . rtrim($siteUrl, '/');
     }
 
     public function logoPath()
