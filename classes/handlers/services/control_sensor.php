@@ -129,6 +129,12 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
                 // empty category tree cache
                 } elseif ($object instanceof eZContentObject && $object->attribute('class_identifier') == 'sensor_category') {
                     \Opencontent\Sensor\Legacy\Utils\TreeNode::clearCache($repository->getCategoriesRootNode()->attribute('node_id'));
+
+                } elseif ($object instanceof eZContentObject && $object->attribute('class_identifier') == 'sensor_operator') {
+                    \Opencontent\Sensor\Legacy\Utils\TreeNode::clearCache($repository->getOperatorsRootNode()->attribute('node_id'));
+
+                } elseif ($object instanceof eZContentObject && $object->attribute('class_identifier') == 'sensor_group') {
+                    \Opencontent\Sensor\Legacy\Utils\TreeNode::clearCache($repository->getGroupsRootNode()->attribute('node_id'));
                 }
             }
         }
