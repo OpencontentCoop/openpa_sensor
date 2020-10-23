@@ -1,5 +1,7 @@
 <?php
 
+use Opencontent\Sensor\Legacy\Utils\TreeNode;
+
 class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase implements OCPageDataHandlerInterface
 {
     private $repository;
@@ -72,22 +74,25 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
 
                 // empty area tree cache
                 } elseif ($object->attribute('class_identifier') == 'sensor_area') {
-                    \Opencontent\Sensor\Legacy\Utils\TreeNode::clearCache($repository->getAreasRootNode()->attribute('node_id'));
+                    TreeNode::clearCache($repository->getAreasRootNode()->attribute('node_id'));
 
                 // empty category tree cache
                 } elseif ($object->attribute('class_identifier') == 'sensor_category') {
-                    \Opencontent\Sensor\Legacy\Utils\TreeNode::clearCache($repository->getCategoriesRootNode()->attribute('node_id'));
-
-                } elseif ($object->attribute('class_identifier') == 'sensor_operator') {
-                    \Opencontent\Sensor\Legacy\Utils\TreeNode::clearCache($repository->getOperatorsRootNode()->attribute('node_id'));
+                    TreeNode::clearCache($repository->getCategoriesRootNode()->attribute('node_id'));
 
                 } elseif ($object->attribute('class_identifier') == 'sensor_group') {
-                    \Opencontent\Sensor\Legacy\Utils\TreeNode::clearCache($repository->getGroupsRootNode()->attribute('node_id'));
+                    TreeNode::clearCache($repository->getOperatorsRootNode()->attribute('node_id'));
+                    TreeNode::clearCache($repository->getGroupsRootNode()->attribute('node_id'));
+                    exec("sh extension/openpa_sensor/bin/bash/reindex_by_class.sh sensor_operator");
 
                 // set default dahboard filters
                 } elseif ($object->attribute('class_identifier') == 'sensor_operator') {
-                    eZPreferences::setValue('sensor_participant_filter_approver', 1, $id);
-                    eZPreferences::setValue('sensor_participant_filter_owner', 1, $id);
+                    if ($object->attribute('current_version') == 1) {
+                        eZPreferences::setValue('sensor_participant_filter_approver', 1, $id);
+                        eZPreferences::setValue('sensor_participant_filter_owner', 1, $id);
+                    }
+                    TreeNode::clearCache($repository->getOperatorsRootNode()->attribute('node_id'));
+                    TreeNode::clearCache($repository->getGroupsRootNode()->attribute('node_id'));
 
                 // set default notification subscriptions
                 } elseif ($object->attribute('class_identifier') == 'user' && $object->attribute('current_version') == 1) {
@@ -124,22 +129,24 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
 
                 // empty area tree cache
                 } elseif ($object instanceof eZContentObject && $object->attribute('class_identifier') == 'sensor_area') {
-                    \Opencontent\Sensor\Legacy\Utils\TreeNode::clearCache($repository->getAreasRootNode()->attribute('node_id'));
+                    TreeNode::clearCache($repository->getAreasRootNode()->attribute('node_id'));
 
                 // empty category tree cache
                 } elseif ($object instanceof eZContentObject && $object->attribute('class_identifier') == 'sensor_category') {
-                    \Opencontent\Sensor\Legacy\Utils\TreeNode::clearCache($repository->getCategoriesRootNode()->attribute('node_id'));
+                    TreeNode::clearCache($repository->getCategoriesRootNode()->attribute('node_id'));
 
                 } elseif ($object instanceof eZContentObject && $object->attribute('class_identifier') == 'sensor_operator') {
-                    \Opencontent\Sensor\Legacy\Utils\TreeNode::clearCache($repository->getOperatorsRootNode()->attribute('node_id'));
+                    TreeNode::clearCache($repository->getOperatorsRootNode()->attribute('node_id'));
+                    TreeNode::clearCache($repository->getGroupsRootNode()->attribute('node_id'));
 
                 } elseif ($object instanceof eZContentObject && $object->attribute('class_identifier') == 'sensor_group') {
-                    \Opencontent\Sensor\Legacy\Utils\TreeNode::clearCache($repository->getGroupsRootNode()->attribute('node_id'));
+                    TreeNode::clearCache($repository->getOperatorsRootNode()->attribute('node_id'));
+                    TreeNode::clearCache($repository->getGroupsRootNode()->attribute('node_id'));
+                    exec("sh extension/openpa_sensor/bin/bash/reindex_by_class.sh sensor_operator");
                 }
             }
         }
     }
-
 
     public function siteTitle()
     {
