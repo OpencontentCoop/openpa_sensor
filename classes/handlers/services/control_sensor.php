@@ -302,11 +302,10 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
             );
         }
 
+        $sensorIni = eZINI::instance('ocsensor.ini');
         $menuSegnalazioni = ezpI18n::tr('sensor/menu', 'Segnalazioni');
-
-
-        if (eZINI::instance('ocsensor.ini')->hasVariable('MenuSettings', 'Segnalazioni')) {
-            $menuSegnalazioni = eZINI::instance('ocsensor.ini')->variable('MenuSettings', 'Segnalazioni');
+        if ($sensorIni->hasVariable('MenuSettings', 'Segnalazioni')) {
+            $menuSegnalazioni = $sensorIni->variable('MenuSettings', 'Segnalazioni');
         }
         $menu = array(
             array(
@@ -330,6 +329,20 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
                 'highlight' => false,
                 'has_children' => false
             );
+            if ($sensorIni->hasVariable('SensorConfig', 'ShowInboxWidget')
+                && $sensorIni->variable('SensorConfig', 'ShowInboxWidget') == 'menu'
+                && $sensorIni->hasVariable('SocketSettings', 'Enabled')
+                && $sensorIni->variable('SocketSettings', 'Enabled') == 'true') {
+                $hasAccess = eZUser::currentUser()->hasAccessTo('sensor', 'manage');
+                if ($hasAccess['accessWord'] != 'no') {
+                    $menu[] = array(
+                        'name' => ezpI18n::tr('sensor/menu', 'Inbox'),
+                        'url' => 'sensor/inbox',
+                        'highlight' => false,
+                        'has_children' => false
+                    );
+                }
+            }
             $menu[] = array(
                 'name' => ezpI18n::tr('sensor/menu', 'Segnala'),
                 'url' => 'sensor/add',
