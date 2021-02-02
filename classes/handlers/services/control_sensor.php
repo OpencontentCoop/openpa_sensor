@@ -329,6 +329,19 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
                 'highlight' => false,
                 'has_children' => false
             );
+            if ($sensorIni->hasVariable('SensorConfig', 'ShowUserWidget')
+                && $sensorIni->variable('SensorConfig', 'ShowUserWidget') == 'menu'){
+                $hasAccess = eZUser::currentUser()->hasAccessTo('sensor', 'manage');
+                if ($hasAccess['accessWord'] != 'no') {
+                    $menu[] = array(
+                        'name' => ezpI18n::tr('sensor/menu', 'Utenti'),
+                        'url' => 'sensor/user',
+                        'highlight' => false,
+                        'has_children' => false
+                    );
+                }
+            }
+
             if ($sensorIni->hasVariable('SensorConfig', 'ShowInboxWidget')
                 && $sensorIni->variable('SensorConfig', 'ShowInboxWidget') == 'menu'
                 && $sensorIni->hasVariable('SocketSettings', 'Enabled')
