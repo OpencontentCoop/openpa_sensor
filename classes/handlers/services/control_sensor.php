@@ -1,5 +1,7 @@
 <?php
 
+use Opencontent\Sensor\Api\Values\Event;
+use Opencontent\Sensor\Api\Values\Post;
 use Opencontent\Sensor\Legacy\Utils\TreeNode;
 
 class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase implements OCPageDataHandlerInterface
@@ -103,6 +105,17 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
                         eZCollaborationNotificationRule::create($defaultNotificationRule, $id)->store();
                     }
                 }
+            }
+
+        } elseif ($trigger == 'post_publish') {
+            $id = $parameters['object_id'];
+            $object = eZContentObject::fetch($id);
+            if ($object->attribute('class_identifier') == 'sensor_operator' && $object->attribute('current_version') == 1) {
+                $event = new Event();
+                $event->identifier = 'on_new_operator';
+                $event->post = new Post();
+                $event->user = $repository->getUserService()->loadUser($object->attribute('id'));
+                $repository->getEventService()->fire($event);
             }
 
         } elseif ($trigger == 'pre_delete') {
