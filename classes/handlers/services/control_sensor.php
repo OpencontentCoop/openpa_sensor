@@ -344,7 +344,7 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
             );
             if ($sensorIni->hasVariable('SensorConfig', 'ShowUserWidget')
                 && $sensorIni->variable('SensorConfig', 'ShowUserWidget') == 'menu'){
-                $hasAccess = eZUser::currentUser()->hasAccessTo('sensor', 'manage');
+                $hasAccess = eZUser::currentUser()->hasAccessTo('sensor', 'user_list');
                 if ($hasAccess['accessWord'] != 'no') {
                     $menu[] = array(
                         'name' => ezpI18n::tr('sensor/menu', 'Utenti'),
