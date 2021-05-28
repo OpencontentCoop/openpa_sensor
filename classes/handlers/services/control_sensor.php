@@ -1106,7 +1106,7 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
 
     public function getPostUrl()
     {
-        $url = 'http://' . $this->siteUrl() . '/sensor/posts/' . $this->getContentObject()->attribute( 'id' );
+        $url = 'https://' . $this->siteUrl() . '/sensor/posts/' . $this->getContentObject()->attribute( 'id' );
         if ( $this->iniVariable( 'SensorConfig', 'UseShortUrl', 'disabled' ) == 'enabled' )
         {
             $bitly = $this->bitlyShorten( $url );
@@ -1320,6 +1320,11 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
 
     public function assetUrl()
     {
+        // se il cluster è su aws o simili l'asset url è già presente nell'url delle immagini
+        if (eZINI::instance('file.ini')->variable('eZDFSClusteringSettings', 'DFSBackend') == 'OpenPADFSFileHandlerDFSDispatcher'){
+            return '';
+        }
+
         $siteUrl = eZINI::instance()->variable( 'SiteSettings', 'SiteURL' );
         $parts = explode( '/', $siteUrl );
         if ( count( $parts ) >= 2 )
@@ -1327,7 +1332,8 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
             array_pop( $parts );
             $siteUrl = implode( '/', $parts );
         }
-        return rtrim( $siteUrl, '/' );
+
+        return 'https://' . rtrim($siteUrl, '/');
     }
 
     public function logoPath()
