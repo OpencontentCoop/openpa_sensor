@@ -110,7 +110,17 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
         } elseif ($trigger == 'post_publish') {
             $id = $parameters['object_id'];
             $object = eZContentObject::fetch($id);
-            if ($object->attribute('class_identifier') == 'sensor_operator' && $object->attribute('current_version') == 1) {
+            if ($object->attribute('class_identifier') == 'sensor_post' && $parameters['version'] == 1) {
+                $post = $repository->getPostService()->loadPost((int)$id);
+                if ($post instanceof Post) {
+                    $event = new Event();
+                    $event->identifier = 'on_create';
+                    $event->post = $post;
+                    $event->user = $repository->getCurrentUser();
+                    $repository->getEventService()->fire($event);
+                }
+
+            } elseif ($object->attribute('class_identifier') == 'sensor_operator' && $object->attribute('current_version') == 1) {
                 $event = new Event();
                 $event->identifier = 'on_new_operator';
                 $event->post = new Post();
