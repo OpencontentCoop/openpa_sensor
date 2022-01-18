@@ -120,9 +120,9 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
                     $repository->getEventService()->fire($event);
                 }
 
-            } elseif ($object->attribute('class_identifier') == 'sensor_operator' && $object->attribute('current_version') == 1) {
+            } elseif ($object->attribute('class_identifier') == 'sensor_operator') {
                 $event = new Event();
-                $event->identifier = 'on_new_operator';
+                $event->identifier = $object->attribute('current_version') == 1 ? 'on_new_operator' : 'on_update_operator';
                 $event->post = new Post();
                 $event->user = $repository->getUserService()->loadUser($object->attribute('id'));
                 $repository->getEventService()->fire($event);
