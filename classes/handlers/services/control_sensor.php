@@ -186,7 +186,19 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
         $path = "settings/siteaccess/{$sitaccessIdentifier}/";
 
         $ini = new eZINI('site.ini', $path, null, null, null, true, true);
-        return rtrim($ini->variable('SiteSettings', 'SiteURL'), '/');
+        $siteUrl = rtrim($ini->variable('SiteSettings', 'SiteURL'), '/');
+        $siteLanguages = $this->repository->getSensorSettings()->get('SiteLanguages');
+        $currentLocale = $this->repository->getCurrentLanguage();
+        if (!empty($siteLanguages)){
+            if (in_array($currentLocale, $siteLanguages)){
+                $languageStaticURIList = eZINI::instance()->variable('SiteAccessSettings', 'LanguageStaticURI');
+                if (isset($languageStaticURIList[$currentLocale])){
+                    $siteUrl .= rtrim($languageStaticURIList[$currentLocale], '/');
+                }
+            }
+        }
+
+        return $siteUrl;
     }
 
     public function assetUrl()
@@ -297,19 +309,20 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
 
     public function menu()
     {
+        $trans = SensorTranslationHelper::instance();
         $infoChildren = array(
             array(
-                'name' => ezpI18n::tr('sensor/menu', 'Faq'),
+                'name' => $trans->translate('Faq', 'menu'),
                 'url' => 'sensor/info/faq',
                 'has_children' => false,
             ),
             array(
-                'name' => ezpI18n::tr('sensor/menu', 'Privacy'),
+                'name' => $trans->translate('Privacy', 'menu'),
                 'url' => 'sensor/info/privacy',
                 'has_children' => false,
             ),
             array(
-                'name' => ezpI18n::tr('sensor/menu', 'Termini di utilizzo'),
+                'name' => $trans->translate('Terms of use', 'menu'),
                 'url' => 'sensor/info/terms',
                 'has_children' => false,
             )
@@ -318,7 +331,7 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
         $hasAccess = eZUser::currentUser()->hasAccessTo('sensor', 'stat');
         if ($hasAccess['accessWord'] != 'no') {
             $infoChildren[] = array(
-                'name' => ezpI18n::tr('sensor/chart', 'Statistiche'),
+                'name' => $trans->translate( 'Statistics', 'menu'),
                 'url' => 'sensor/stat',
                 'highlight' => false,
                 'has_children' => false
@@ -326,13 +339,13 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
         }
 
         $sensorIni = eZINI::instance('ocsensor.ini');
-        $menuSegnalazioni = ezpI18n::tr('sensor/menu', 'Segnalazioni');
+        $menuSegnalazioni = $trans->translate( 'Issues', 'menu');
         if ($sensorIni->hasVariable('MenuSettings', 'Segnalazioni')) {
             $menuSegnalazioni = $sensorIni->variable('MenuSettings', 'Segnalazioni');
         }
         $menu = array(
             array(
-                'name' => ezpI18n::tr('sensor/menu', 'Informazioni'),
+                'name' => $trans->translate('Informations', 'menu'),
                 'url' => 'sensor/info',
                 'highlight' => false,
                 'has_children' => true,
@@ -347,7 +360,7 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
         );
         if (eZUser::currentUser()->isRegistered()) {
             $menu[] = array(
-                'name' => ezpI18n::tr('sensor/menu', 'Le mie attività'),
+                'name' => $trans->translate('My activities', 'menu'),
                 'url' => 'sensor/dashboard',
                 'highlight' => false,
                 'has_children' => false
@@ -357,7 +370,7 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
                 $hasAccess = eZUser::currentUser()->hasAccessTo('sensor', 'user_list');
                 if ($hasAccess['accessWord'] != 'no') {
                     $menu[] = array(
-                        'name' => ezpI18n::tr('sensor/menu', 'Utenti'),
+                        'name' => $trans->translate('Users', 'menu'),
                         'url' => 'sensor/user',
                         'highlight' => false,
                         'has_children' => false
@@ -372,7 +385,7 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
                 $hasAccess = eZUser::currentUser()->hasAccessTo('sensor', 'manage');
                 if ($hasAccess['accessWord'] != 'no') {
                     $menu[] = array(
-                        'name' => ezpI18n::tr('sensor/menu', 'Inbox'),
+                        'name' => $trans->translate('Inbox', 'menu'),
                         'url' => 'sensor/inbox',
                         'highlight' => false,
                         'has_children' => false
@@ -380,7 +393,7 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
                 }
             }
             $menu[] = array(
-                'name' => ezpI18n::tr('sensor/menu', 'Segnala'),
+                'name' => $trans->translate('Create issue', 'menu'),
                 'url' => 'sensor/add',
                 'highlight' => true,
                 'has_children' => false
@@ -391,15 +404,16 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
 
     public function userMenu()
     {
+        $trans = SensorTranslationHelper::instance();
         $userMenu = array(
             array(
-                'name' => ezpI18n::tr('sensor/menu', 'Profilo'),
+                'name' => $trans->translate('Profile', 'menu'),
                 'url' => 'user/edit',
                 'highlight' => false,
                 'has_children' => false
             ),
             array(
-                'name' => ezpI18n::tr('sensor/menu', 'Notifiche'),
+                'name' => $trans->translate('Notifications', 'menu'),
                 'url' => 'notification/settings',
                 'highlight' => false,
                 'has_children' => false
@@ -409,7 +423,7 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
         $hasAccess = eZUser::currentUser()->hasAccessTo('sensor', 'stat');
         if ($hasAccess['accessWord'] != 'no') {
             $userMenu[] = array(
-                'name' => ezpI18n::tr('sensor/chart', 'Statistiche'),
+                'name' => $trans->translate( 'Statistics', 'menu'),
                 'url' => 'sensor/stat',
                 'highlight' => false,
                 'has_children' => false
@@ -419,7 +433,7 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
         $hasAccess = eZUser::currentUser()->hasAccessTo('sensor', 'config');
         if ($hasAccess['accessWord'] == 'yes') {
             $userMenu[] = array(
-                'name' => ezpI18n::tr('sensor/menu', 'Settings'),
+                'name' => $trans->translate('Settings', 'menu'),
                 'url' => 'sensor/config',
                 'highlight' => false,
                 'has_children' => false
@@ -430,7 +444,7 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
             $hasAccess = eZUser::currentUser()->hasAccessTo('webhook', 'admin');
             if ($hasAccess['accessWord'] == 'yes') {
                 $userMenu[] = array(
-                    'name' => ezpI18n::tr('sensor/menu', 'Webhooks'),
+                    'name' => $trans->translate('Webhooks', 'menu'),
                     'url' => 'webhook/list',
                     'highlight' => false,
                     'has_children' => false
@@ -439,7 +453,7 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
         }
 
         $userMenu[] = array(
-            'name' => ezpI18n::tr('sensor/menu', 'Esci'),
+            'name' => $trans->translate('Logout', 'menu'),
             'url' => 'user/logout',
             'highlight' => false,
             'has_children' => false

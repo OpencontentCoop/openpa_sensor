@@ -9,7 +9,7 @@ class OpenPASensorType extends eZWorkflowEventType
     {
         $this->eZWorkflowEventType(
             self::WORKFLOW_TYPE_STRING,
-            ezpI18n::tr('openpa/workflow/event', 'Workflow Sensor')
+            'Workflow Sensor'
         );
     }
 
