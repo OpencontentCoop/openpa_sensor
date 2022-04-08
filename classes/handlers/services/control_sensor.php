@@ -6,14 +6,6 @@ use Opencontent\Sensor\Legacy\Utils\TreeNode;
 
 class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase implements OCPageDataHandlerInterface
 {
-    private $repository;
-
-    function __construct($data = array())
-    {
-        parent::__construct($data);
-        $this->repository = OpenPaSensorRepository::instance();
-    }
-
     function run()
     {
     }
@@ -39,7 +31,6 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
     {
         $trigger = $parameters['trigger_name'];
         eZDebug::writeDebug("Sensor workflow for $trigger", __METHOD__);
-        $repository = OpenPaSensorRepository::instance();
 
         if ($trigger == 'pre_publish') {
             $id = $parameters['object_id'];
@@ -50,7 +41,7 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
                 // create/update sensor stuff
                 if ($object->attribute('class_identifier') == 'sensor_post') {
                     $postInitializer = new \Opencontent\Sensor\Legacy\PostService\PostInitializer(
-                        $repository,
+                        OpenPaSensorRepository::instance(),
                         $object,
                         $version
                     );
@@ -58,14 +49,14 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
                         try {
                             $postInitializer->init();
                         } catch (Exception $e) {
-                            $repository->getLogger()->error($e->getMessage(), ['method' => __METHOD__, 'line' => __LINE__]);
+                            OpenPaSensorRepository::instance()->getLogger()->error($e->getMessage(), ['method' => __METHOD__, 'line' => __LINE__]);
                             eZDebug::writeError($e->getMessage(), __METHOD__);
                         }
                     } else {
                         try {
                             $postInitializer->refresh();
                         } catch (Exception $e) {
-                            $repository->getLogger()->error($e->getMessage(), ['method' => __METHOD__, 'line' => __LINE__]);
+                            OpenPaSensorRepository::instance()->getLogger()->error($e->getMessage(), ['method' => __METHOD__, 'line' => __LINE__]);
                             eZDebug::writeError($e->getMessage(), __METHOD__);
                         }
                     }
@@ -76,15 +67,15 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
 
                 // empty area tree cache
                 } elseif ($object->attribute('class_identifier') == 'sensor_area') {
-                    TreeNode::clearCache($repository->getAreasRootNode()->attribute('node_id'));
+                    TreeNode::clearCache(OpenPaSensorRepository::instance()->getAreasRootNode()->attribute('node_id'));
 
                 // empty category tree cache
                 } elseif ($object->attribute('class_identifier') == 'sensor_category') {
-                    TreeNode::clearCache($repository->getCategoriesRootNode()->attribute('node_id'));
+                    TreeNode::clearCache(OpenPaSensorRepository::instance()->getCategoriesRootNode()->attribute('node_id'));
 
                 } elseif ($object->attribute('class_identifier') == 'sensor_group') {
-                    TreeNode::clearCache($repository->getOperatorsRootNode()->attribute('node_id'));
-                    TreeNode::clearCache($repository->getGroupsRootNode()->attribute('node_id'));
+                    TreeNode::clearCache(OpenPaSensorRepository::instance()->getOperatorsRootNode()->attribute('node_id'));
+                    TreeNode::clearCache(OpenPaSensorRepository::instance()->getGroupsRootNode()->attribute('node_id'));
                     exec("sh extension/openpa_sensor/bin/bash/reindex_by_class.sh sensor_operator");
 
                 // set default dahboard filters
@@ -93,13 +84,13 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
                         eZPreferences::setValue('sensor_participant_filter_approver', 1, $id);
                         eZPreferences::setValue('sensor_participant_filter_owner', 1, $id);
                     }
-                    TreeNode::clearCache($repository->getOperatorsRootNode()->attribute('node_id'));
-                    TreeNode::clearCache($repository->getGroupsRootNode()->attribute('node_id'));
+                    TreeNode::clearCache(OpenPaSensorRepository::instance()->getOperatorsRootNode()->attribute('node_id'));
+                    TreeNode::clearCache(OpenPaSensorRepository::instance()->getGroupsRootNode()->attribute('node_id'));
 
                 // set default notification subscriptions
                 } elseif ($object->attribute('class_identifier') == 'user' && $object->attribute('current_version') == 1) {
                     $defaultNotificationRules = ['on_create', 'on_assign', 'on_close', 'reminder'];
-                    $notificationPrefix = $repository->getSensorCollaborationHandlerTypeString() . '_';
+                    $notificationPrefix = OpenPaSensorRepository::instance()->getSensorCollaborationHandlerTypeString() . '_';
                     foreach ($defaultNotificationRules as $rule) {
                         $defaultNotificationRule = $notificationPrefix . $rule;
                         eZCollaborationNotificationRule::create($defaultNotificationRule, $id)->store();
@@ -111,21 +102,21 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
             $id = $parameters['object_id'];
             $object = eZContentObject::fetch($id);
             if ($object->attribute('class_identifier') == 'sensor_post' && $parameters['version'] == 1) {
-                $post = $repository->getPostService()->loadPost((int)$id);
+                $post = OpenPaSensorRepository::instance()->getPostService()->loadPost((int)$id);
                 if ($post instanceof Post) {
                     $event = new Event();
                     $event->identifier = 'on_create';
                     $event->post = $post;
-                    $event->user = $repository->getCurrentUser();
-                    $repository->getEventService()->fire($event);
+                    $event->user = OpenPaSensorRepository::instance()->getCurrentUser();
+                    OpenPaSensorRepository::instance()->getEventService()->fire($event);
                 }
 
             } elseif ($object->attribute('class_identifier') == 'sensor_operator') {
                 $event = new Event();
                 $event->identifier = $object->attribute('current_version') == 1 ? 'on_new_operator' : 'on_update_operator';
                 $event->post = new Post();
-                $event->user = $repository->getUserService()->loadUser($object->attribute('id'));
-                $repository->getEventService()->fire($event);
+                $event->user = OpenPaSensorRepository::instance()->getUserService()->loadUser($object->attribute('id'));
+                OpenPaSensorRepository::instance()->getEventService()->fire($event);
             }
 
         } elseif ($trigger == 'pre_delete') {
@@ -137,7 +128,7 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
                 if ($object instanceof eZContentObject && $object->attribute('class_identifier') == 'sensor_post') {
                     try {
                         $postInitializer = new \Opencontent\Sensor\Legacy\PostService\PostInitializer(
-                            $repository,
+                            OpenPaSensorRepository::instance(),
                             $object,
                             $object->currentVersion()
                         );
@@ -152,19 +143,19 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
 
                 // empty area tree cache
                 } elseif ($object instanceof eZContentObject && $object->attribute('class_identifier') == 'sensor_area') {
-                    TreeNode::clearCache($repository->getAreasRootNode()->attribute('node_id'));
+                    TreeNode::clearCache(OpenPaSensorRepository::instance()->getAreasRootNode()->attribute('node_id'));
 
                 // empty category tree cache
                 } elseif ($object instanceof eZContentObject && $object->attribute('class_identifier') == 'sensor_category') {
-                    TreeNode::clearCache($repository->getCategoriesRootNode()->attribute('node_id'));
+                    TreeNode::clearCache(OpenPaSensorRepository::instance()->getCategoriesRootNode()->attribute('node_id'));
 
                 } elseif ($object instanceof eZContentObject && $object->attribute('class_identifier') == 'sensor_operator') {
-                    TreeNode::clearCache($repository->getOperatorsRootNode()->attribute('node_id'));
-                    TreeNode::clearCache($repository->getGroupsRootNode()->attribute('node_id'));
+                    TreeNode::clearCache(OpenPaSensorRepository::instance()->getOperatorsRootNode()->attribute('node_id'));
+                    TreeNode::clearCache(OpenPaSensorRepository::instance()->getGroupsRootNode()->attribute('node_id'));
 
                 } elseif ($object instanceof eZContentObject && $object->attribute('class_identifier') == 'sensor_group') {
-                    TreeNode::clearCache($repository->getOperatorsRootNode()->attribute('node_id'));
-                    TreeNode::clearCache($repository->getGroupsRootNode()->attribute('node_id'));
+                    TreeNode::clearCache(OpenPaSensorRepository::instance()->getOperatorsRootNode()->attribute('node_id'));
+                    TreeNode::clearCache(OpenPaSensorRepository::instance()->getGroupsRootNode()->attribute('node_id'));
                     exec("sh extension/openpa_sensor/bin/bash/reindex_by_class.sh sensor_operator");
                 }
             }
@@ -187,8 +178,8 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
 
         $ini = new eZINI('site.ini', $path, null, null, null, true, true);
         $siteUrl = rtrim($ini->variable('SiteSettings', 'SiteURL'), '/');
-        $siteLanguages = $this->repository->getSensorSettings()->get('SiteLanguages');
-        $currentLocale = $this->repository->getCurrentLanguage();
+        $siteLanguages = OpenPaSensorRepository::instance()->getSensorSettings()->get('SiteLanguages');
+        $currentLocale = OpenPaSensorRepository::instance()->getCurrentLanguage();
         if (!empty($siteLanguages)){
             if (in_array($currentLocale, $siteLanguages)){
                 $languageStaticURIList = eZINI::instance()->variable('SiteAccessSettings', 'LanguageStaticURI');
@@ -220,7 +211,7 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
 
     public function logoPath()
     {
-        $attribute = $this->repository->getRootNodeAttribute('logo');
+        $attribute = OpenPaSensorRepository::instance()->getRootNodeAttribute('logo');
         if ($attribute instanceof eZContentObjectAttribute && $attribute->hasContent()) {
             /** @var eZImageAliasHandler $content */
             $content = $attribute->content();
@@ -267,7 +258,7 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
     public function attributeContacts()
     {
         $data = '';
-        $attribute = $this->repository->getRootNodeAttribute('contacts');
+        $attribute = OpenPaSensorRepository::instance()->getRootNodeAttribute('contacts');
         if ($attribute instanceof eZContentObjectAttribute) {
             $data = $attribute;
         }
@@ -277,7 +268,7 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
     public function attributeFooter()
     {
         $data = '';
-        $attribute = $this->repository->getRootNodeAttribute('footer');
+        $attribute = OpenPaSensorRepository::instance()->getRootNodeAttribute('footer');
         if ($attribute instanceof eZContentObjectAttribute) {
             $data = $attribute;
         }
@@ -464,7 +455,7 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
     public function bannerPath()
     {
         $data = false;
-        $attribute = $this->repository->getRootNodeAttribute('banner');
+        $attribute = OpenPaSensorRepository::instance()->getRootNodeAttribute('banner');
         if ($attribute instanceof eZContentObjectAttribute && $attribute->hasContent()) {
             /** @var eZImageAliasHandler $content */
             $content = $attribute->content();
@@ -492,7 +483,7 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
     private function getAttributeString($identifier)
     {
         $data = '';
-        $attribute = $this->repository->getRootNodeAttribute($identifier);
+        $attribute = OpenPaSensorRepository::instance()->getRootNodeAttribute($identifier);
         if ($attribute instanceof eZContentObjectAttribute) {
             $data = self::replaceBracket($attribute->toString());
         }
