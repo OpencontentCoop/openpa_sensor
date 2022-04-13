@@ -99,24 +99,35 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
             }
 
         } elseif ($trigger == 'post_publish') {
+            $timelineListener = new SensorTimelineListener();
             $id = $parameters['object_id'];
             $object = eZContentObject::fetch($id);
-            if ($object->attribute('class_identifier') == 'sensor_post' && $parameters['version'] == 1) {
-                $post = OpenPaSensorRepository::instance()->getPostService()->loadPost((int)$id);
-                if ($post instanceof Post) {
+            if ($object instanceof eZContentObject) {
+                if ($object->attribute('class_identifier') == 'sensor_post' && $parameters['version'] == 1) {
+                    $post = OpenPaSensorRepository::instance()->getPostService()->loadPost((int)$id);
+                    if ($post instanceof Post) {
+                        $event = new Event();
+                        $event->identifier = 'on_create';
+                        $event->post = $post;
+                        $event->user = OpenPaSensorRepository::instance()->getCurrentUser();
+                        OpenPaSensorRepository::instance()->getEventService()->fire($event);
+                    }
+                } elseif ($object->attribute('class_identifier') == 'sensor_operator') {
                     $event = new Event();
-                    $event->identifier = 'on_create';
-                    $event->post = $post;
-                    $event->user = OpenPaSensorRepository::instance()->getCurrentUser();
+                    $event->identifier = $object->attribute('current_version') == 1 ? 'on_new_operator' : 'on_update_operator';
+                    $event->post = new Post();
+                    $event->user = OpenPaSensorRepository::instance()->getUserService()->loadUser($object->attribute('id'));
                     OpenPaSensorRepository::instance()->getEventService()->fire($event);
+                    $timelineListener->refreshHelpers(['groups', 'operators']);
+                } elseif ($object->attribute('class_identifier') == 'sensor_area') {
+                    $timelineListener->refreshHelpers(['areas']);
+                } elseif ($object->attribute('class_identifier') == 'sensor_category') {
+                    $timelineListener->refreshHelpers(['categories']);
+                } elseif ($object->attribute('class_identifier') == 'sensor_group' || $object->attribute('class_identifier') == 'user_group') {
+                    $timelineListener->refreshHelpers(['groups', 'operators']);
+                } elseif ($object->attribute('class_identifier') == 'user') {
+                    $timelineListener->refreshHelpers(['users']);
                 }
-
-            } elseif ($object->attribute('class_identifier') == 'sensor_operator') {
-                $event = new Event();
-                $event->identifier = $object->attribute('current_version') == 1 ? 'on_new_operator' : 'on_update_operator';
-                $event->post = new Post();
-                $event->user = OpenPaSensorRepository::instance()->getUserService()->loadUser($object->attribute('id'));
-                OpenPaSensorRepository::instance()->getEventService()->fire($event);
             }
 
         } elseif ($trigger == 'pre_delete') {
@@ -159,7 +170,28 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
                     exec("sh extension/openpa_sensor/bin/bash/reindex_by_class.sh sensor_operator");
                 }
             }
+
+        } elseif ($trigger == 'post_delete') {
+            $nodeIdList = $parameters['node_id_list'];
+            $timelineListener = new SensorTimelineListener();
+            foreach ($nodeIdList as $nodeId) {
+                $object = eZContentObject::fetchByNodeID($nodeId);
+                if ($object instanceof eZContentObject) {
+                    if ($object->attribute('class_identifier') == 'sensor_operator') {
+                        $timelineListener->refreshHelpers(['groups', 'operators']);
+                    } elseif ($object->attribute('class_identifier') == 'sensor_area') {
+                        $timelineListener->refreshHelpers(['areas']);
+                    } elseif ($object->attribute('class_identifier') == 'sensor_category') {
+                        $timelineListener->refreshHelpers(['categories']);
+                    } elseif ($object->attribute('class_identifier') == 'sensor_group') {
+                        $timelineListener->refreshHelpers(['groups', 'operators']);
+                    } elseif ($object->attribute('class_identifier') == 'user') {
+                        $timelineListener->refreshHelpers(['users']);
+                    }
+                }
+            }
         }
+
     }
 
     public function siteTitle()
