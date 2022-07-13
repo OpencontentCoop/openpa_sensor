@@ -95,6 +95,8 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
                         $defaultNotificationRule = $notificationPrefix . $rule;
                         eZCollaborationNotificationRule::create($defaultNotificationRule, $id)->store();
                     }
+                } elseif ($object->attribute('class_identifier') == 'user_group') {
+                    TreeNode::clearCache(\eZINI::instance()->variable("UserSettings", "DefaultUserPlacement"));
                 }
             }
 
@@ -168,6 +170,9 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
                     TreeNode::clearCache(OpenPaSensorRepository::instance()->getOperatorsRootNode()->attribute('node_id'));
                     TreeNode::clearCache(OpenPaSensorRepository::instance()->getGroupsRootNode()->attribute('node_id'));
                     exec("sh extension/openpa_sensor/bin/bash/reindex_by_class.sh sensor_operator");
+
+                } elseif ($object->attribute('class_identifier') == 'user_group') {
+                    TreeNode::clearCache(\eZINI::instance()->variable("UserSettings", "DefaultUserPlacement"));
                 }
             }
 
