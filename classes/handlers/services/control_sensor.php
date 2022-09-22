@@ -391,7 +391,21 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
                 'name' => $trans->translate('My activities', 'menu'),
                 'url' => 'sensor/dashboard',
                 'highlight' => false,
-                'has_children' => false
+                'has_children' => true,
+                'children' => [
+                    array(
+                        'name' => $trans->translate('My proposals', 'menu'),
+                        'url' => 'sensor/dashboard',
+                        'highlight' => false,
+                        'has_children' => false
+                    ),
+                    array(
+                        'name' => $trans->translate('My subscriptions', 'menu'),
+                        'url' => 'sensor/subscriptions',
+                        'highlight' => false,
+                        'has_children' => false
+                    )
+                ]
             );
             if ($sensorIni->hasVariable('SensorConfig', 'ShowUserWidget')
                 && $sensorIni->variable('SensorConfig', 'ShowUserWidget') == 'menu'){
