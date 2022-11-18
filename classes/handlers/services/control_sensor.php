@@ -106,6 +106,11 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
             $object = eZContentObject::fetch($id);
             if ($object instanceof eZContentObject) {
                 if ($object->attribute('class_identifier') == 'sensor_post' && $parameters['version'] == 1) {
+                    $superUser = OpenPaSensorRepository::instance()->getUserService()->loadUser(
+                        (int)eZINI::instance()->variable("UserSettings", "UserCreatorID")
+                    );
+                    $currentUser = OpenPaSensorRepository::instance()->getCurrentUser();
+                    OpenPaSensorRepository::instance()->setCurrentUser($superUser);
                     $post = OpenPaSensorRepository::instance()->getPostService()->loadPost((int)$id);
                     if ($post instanceof Post) {
                         $event = new Event();
@@ -114,6 +119,7 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
                         $event->user = OpenPaSensorRepository::instance()->getCurrentUser();
                         OpenPaSensorRepository::instance()->getEventService()->fire($event);
                     }
+                    OpenPaSensorRepository::instance()->setCurrentUser($currentUser);
                 } elseif ($object->attribute('class_identifier') == 'sensor_operator') {
                     $event = new Event();
                     $event->identifier = $object->attribute('current_version') == 1 ? 'on_new_operator' : 'on_update_operator';
