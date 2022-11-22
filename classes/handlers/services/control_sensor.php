@@ -379,6 +379,12 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
         }
         $menu = array(
             array(
+                'name' => $trans->translate('Privacy', 'menu'),
+                'url' => 'sensor/info/privacy',
+                'highlight' => false,
+                'has_children' => false,
+            ),
+            array(
                 'name' => $trans->translate('Informations', 'menu'),
                 'url' => 'sensor/info',
                 'highlight' => false,
