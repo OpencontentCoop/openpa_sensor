@@ -227,7 +227,12 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
             if (in_array($currentLocale, $siteLanguages)){
                 $languageStaticURIList = eZINI::instance()->variable('SiteAccessSettings', 'LanguageStaticURI');
                 if (isset($languageStaticURIList[$currentLocale])){
-                    $siteUrl .= rtrim($languageStaticURIList[$currentLocale], '/');
+                    $localizedSiteUrl = rtrim($languageStaticURIList[$currentLocale], '/');
+                    if (strpos($localizedSiteUrl, 'http') !== false){
+                        $siteUrl = $localizedSiteUrl;
+                    } else {
+                        $siteUrl .= $localizedSiteUrl;
+                    }
                 }
             }
         }
