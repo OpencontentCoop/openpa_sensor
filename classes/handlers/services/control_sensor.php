@@ -229,7 +229,7 @@ class ObjectHandlerServiceControlSensor extends ObjectHandlerServiceBase impleme
                 if (isset($languageStaticURIList[$currentLocale])){
                     $localizedSiteUrl = rtrim($languageStaticURIList[$currentLocale], '/');
                     if (strpos($localizedSiteUrl, 'http') !== false){
-                        $siteUrl = $localizedSiteUrl;
+                        $siteUrl = str_replace('https://', '', $localizedSiteUrl);
                     } else {
                         $siteUrl .= $localizedSiteUrl;
                     }
